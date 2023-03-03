@@ -1,0 +1,2 @@
+class IllegalValueCombination(Exception):
+    pass
