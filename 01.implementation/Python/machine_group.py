@@ -1,3 +1,7 @@
+"""
+My change.
+"""
+
 from machine import Machine
 
 class MachineGroup(Machine):
