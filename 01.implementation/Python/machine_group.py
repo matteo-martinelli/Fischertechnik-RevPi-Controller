@@ -14,9 +14,9 @@ import time
 
 #class MachineGroup(Machine):
 class MachineGroup(object):
-    #def __init__(self, id1):
+    #def __init__(self, id1):   # TODO: TO BE DELETED
     def __init__(self):
-        #super().__init__(id1)
+        #super().__init__(id1)  # TODO: TO BE DELETED
         self.__turntable_pos_vacuum = False
         self.__turntable_pos_conveyor  = False
         self.__processing_sens_delivery = False
@@ -55,6 +55,7 @@ class MachineGroup(object):
 
     # Extendend from the abc of the Ancestor Machine class
     # modify after the ancestor method
+    # TODO: TO BE DELETED
     """
     @property
     def isExecuting(self):
@@ -291,9 +292,15 @@ class MachineGroup(object):
       
     # Rotates the turntable to the vacuum.
     def turntable_to_vacuum(self):
+        # If the turntable_pos_vacuum sensor is False, that is 
+        # if the turntable is not at the vacuum gripper carrier
         if not self.__turntable_pos_vacuum:
+            # Activate the conveyor rotation clockwise
             self.__act_rot_counter_clockwise = True
+        # Otherwise, if the turntable_pos_vacuum sensor is True, that is 
+        # if the turntable is at the vacuum gripper carrier
         else:
+            # Deactivate the conveyor rotation clockwise
             self.__act_rot_counter_clockwise = False
             
     # Uses the saw on the package. sawCount >= 20 is an artbitrary number.
@@ -362,7 +369,7 @@ class MachineGroup(object):
 
     # Brings the feeder outside to the vacuum gripper along with the readied 
     # product. Requires the product to have been in the oven before via
-    #  startOven().
+    # startOven().
     def end_oven(self):
         #print('endOven')
         # It the oven is in ready state
