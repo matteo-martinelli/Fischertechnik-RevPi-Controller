@@ -22,7 +22,8 @@ class CycleEventManager():
         # Handle SIGINT / SIGTERM to exit program cleanly
         self.rpi.handlesignalend(self.cleanup_revpi)
         #create multiprocessing object (not the Python Multiprocessing lib!)
-        self.machine_group = MachineGroup(1)
+        #self.machine_group = MachineGroup(1)
+        self.machine_group = MachineGroup()
 
 
     def cleanup_revpi(self):
@@ -44,7 +45,6 @@ class CycleEventManager():
         # Start event system loop without blocking here. Reference at 
         # https://revpimodio.org/en/events-in-the-mainloop/
         self.rpi.mainloop(blocking=False)
-
         # My own loop to do some work next to the event system. We will stay
         # here till self.rpi.exitsignal.wait returns True after SIGINT/SIGTERM
         # The loop does 3 things, continuously: 
