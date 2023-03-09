@@ -52,11 +52,12 @@ class CycleEventManager():
         #   1. Reads the sensors states
         #   2. Calls the .process_product function
         #   3. Writes the actuators desired states
+        # TODO: import here the whole cycle, reorder and reorganise it, test with while loops and then rearrange in single objects.
         while not self.rpi.exitsignal.wait(0.05):
             # Sets the Rpi a1 light: switch on / off green part of LED A1 | or 
             # do other things
             self.rpi.core.a1green.value = not self.rpi.core.a1green.value
-            
+
             # 1. Reads the sensors states
             self.read()
 

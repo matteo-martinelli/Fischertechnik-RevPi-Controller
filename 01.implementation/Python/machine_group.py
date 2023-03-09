@@ -268,7 +268,8 @@ class MachineGroup(object):
                 
     # Rotates the turntable to the saw.
     # Does not rotate if the turtable is at the conveyor.
-    def turntable_to_saw(self):
+    # TODO: refactor it in a way that it takes the target place where to be rotate, and then rotates until the position is reached
+    def turntable_to_saw(self): 
         # If the turntable_pos_say sensor is False and the 
         # turntable_pos_conveyor is False that is
         # if the turn-table is not aligned under the saw and is not at the 
@@ -281,6 +282,7 @@ class MachineGroup(object):
             self.__act_rot_clockwise = False    
         
     # Rotates the turntable to conveyor.
+    # TODO: refactor it in a way that it takes the target place where to be rotate, and then rotates until the position is reached
     def turntable_to_conveyor(self):
         # If the turntable_pos_conveyor sensor is False
         if not self.__turntable_pos_conveyor:
@@ -291,6 +293,7 @@ class MachineGroup(object):
             self.__act_rot_clockwise = False
       
     # Rotates the turntable to the vacuum.
+    # TODO: refactor it in a way that it takes the target place where to be rotate, and then rotates until the position is reached
     def turntable_to_vacuum(self):
         # If the turntable_pos_vacuum sensor is False, that is 
         # if the turntable is not at the vacuum gripper carrier
@@ -316,6 +319,7 @@ class MachineGroup(object):
             self.__act_saw  = False # Deactivate the saw
             
     # Moves the vacuum carrier gripper to the oven.
+    # TODO: refactor it in a way that it takes the target place where to move, and then moves until the position is reached
     def vacuum_to_oven(self):
         #print('vacuumToOven')
         # If the carrier is not in front of the oven
@@ -478,7 +482,7 @@ class MachineGroup(object):
         # If vacuum count is greater than 30
         elif self.vacuum_count >= 30:
             # Bring the carrier vacuum gripper to the turn-table
-            self.vacuum_to_turntable()   
+            self.vacuum_to_turntable()
 
     # Brings product from vacuum to saw, uses it and then brings it to the 
     # conveyor.
@@ -544,8 +548,10 @@ class MachineGroup(object):
     def process_product(self):
         #print('processProduct')
         # If the conveyor-light sensor is True = there is no product
+        print('Conveyor sensor state: ' + str(self.__processing_sens_delivery))
         if self.__processing_sens_delivery:
             # If oven_ready == False
+            print('Oven ready state: ' + str(self.oven_ready))
             if not self.oven_ready:
                 # Move the carrier towards the oven
                 self.vacuum_to_oven()
