@@ -367,6 +367,41 @@ class MachineGroup(object):
                 self.oven_ready = True          # Set the oven to ready
                 self.oven_count = 0             # Set the oven counter to 0
 
+    def oven_process(self):
+        # If the oven is not ready and the vacuum carrier grip sensor is True, 
+        # that is the carrier grip sensor is at the oven: 
+        if not self.oven_ready and self.__vacuum_gripper_at_oven:
+            # If the oven feeder inside sensor si False, that is the oven 
+            # carrier  is outside the oven
+            if not self.__oven_feeder_in:
+                self.__compressor = True        # Acivate the compressor
+                # TODO: FROM HERE WRAP INTO A SINGLE FUNCTION
+                self.__valve_oven_door = True   # Open the door
+                self.__act_oven_inward = True   # Move the feeder in the oven
+            # If the oven feeder is inside the oven
+            else:
+                self.__act_oven_inward = False  # Deactivate the inward oven
+                self.__compressor = False       # Deactivate the compressor
+                self.__valve_oven_door = False  # Close the door
+                
+                #haha, flashing lights go brrrr
+                if self.oven_count % 2 == 1:    # For making the light flash
+                    self.__oven_light = True    # Activate the process light
+                else:
+                    self.__oven_light = False   # Deactivate the process light
+            
+                self.oven_count += 1            # Time counter
+
+            # If the counter reaches 30, stop the process
+            if self.oven_count >= 30:       
+                self.__oven_light = False       # Deactivate the light
+                self.oven_ready = True          # Set the oven to ready
+                self.oven_count = 0             # Set the oven counter to 0
+        # If the oven is ready
+        elif (self.oven_ready):
+            # TODO: FROM HERE WRAP INTO A SINGLE FUNCTION
+            self.move_feeder_out()
+
     # Brings the feeder outside to the vacuum gripper along with the readied 
     # product. Requires the product to have been in the oven before via
     # startOven().
@@ -514,12 +549,20 @@ class MachineGroup(object):
             if not self.oven_ready:
                 # Move the carrier towards the oven
                 self.vacuum_to_oven()
+            
             # Start the oven
-            self.start_oven()
+            #self.start_oven()  # TODO: TO BE DELETED
             # End the oven
-            self.end_oven()
+            #self.end_oven()    # TODO: TO BE DELETED
+            
+            self.oven_process()
+            
             # Take the product with the carrier grip
             self.grip_product()
+            # Move the carrier to the turntable
+
+            # Release the product on the turntable
+
             # Move the carrier with the product towards the turntable
             self.move_product_to_turntable()
             # Deliver the product (where?)
