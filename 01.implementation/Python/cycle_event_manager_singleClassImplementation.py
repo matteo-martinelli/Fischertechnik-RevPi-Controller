@@ -47,12 +47,13 @@ class CycleEventManager():
         # Sync the values with the physical model
         self.read()
         
-        # Other support sensors
-        self.saw_count_thisClass = 0          # Saw process time counter
-        self.oven_count_thisClass = 0         # Oven process time counter
-        self.vacuum_count_thisClass = 0       # Vacuum process time counter
-        self.delivery_count_thisClass = 0     # Delivery process time counter
-        self.oven_ready_thisClass = False     # Oven ready variable
+        # Other support time sensors
+        self.time_sens_saw_count = 0          # Saw process time counter
+        self.time_sens_oven_count = 0         # Oven process time counter
+        self.time_sens_vacuum_count = 0       # Vacuum process time counter
+        self.time_sens_delivery_count = 0     # Delivery process time counter
+        # Other support bool sensors
+        self.bool_sens_oven_ready = False     # Oven ready variable
         
         # Defining actuators class variables
         # Turn-table - Motor clock wise        
@@ -239,7 +240,7 @@ class CycleEventManager():
             # TODO: change this entry point to "if the product is on the oven carrier"
             if (self.sens_conveyor_light_barrier):
                 # If oven_ready == False
-                if (not self.oven_ready_thisClass):
+                if (not self.bool_sens_oven_ready):
                     # Move the carrier towards the oven
                     # self.vacuum_to_oven() function
                     if (not self.sens_vacuum_gripper_carrier_towards_oven_ref_switch):
@@ -252,7 +253,7 @@ class CycleEventManager():
                 # self.oven_process() function
                 # If the oven is not ready and the vacuum carrier grip sensor is True, 
                 # that is the carrier grip sensor is at the oven: 
-                if (not self.oven_ready_thisClass and 
+                if (not self.bool_sens_oven_ready and 
                     self.sens_vacuum_gripper_carrier_towards_oven_ref_switch):
                     # If the oven feeder inside sensor si False, that is the oven 
                     # carrier  is outside the oven
@@ -268,25 +269,25 @@ class CycleEventManager():
                         self.act_vacuum_oven_door = False  # Close the door
                         
                         #haha, flashing lights go brrrr - For light flashing
-                        if (self.oven_count_thisClass % 2 == 1):
+                        if (self.time_sens_oven_count % 2 == 1):
                             # Activate the process light
                             self.act_oven_process_light = True
                         else:
                             # Deactivate the process light
                             self.act_oven_process_light = False
                         # Time counter
-                        self.oven_count_thisClass += 1            
+                        self.time_sens_oven_count += 1            
 
                     # If the counter reaches 30, stop the process
-                    if (self.oven_count_thisClass >= 30):       
+                    if (self.time_sens_oven_count >= 30):       
                         # Deactivate the light
                         self.act_oven_process_light = False
                         # Set the oven to ready
-                        self.oven_ready_thisClass = True
+                        self.bool_sens_oven_ready = True
                         # Set the oven counter to 0
-                        self.oven_count_thisClass = 0
+                        self.time_sens_oven_count = 0
                 # If the oven is ready
-                elif (self.oven_ready_thisClass):
+                elif (self.bool_sens_oven_ready):
                     # TODO: FROM HERE WRAP INTO A SINGLE FUNCTION
                     #self.move_feeder_out() function
                     # If oven_feeder_out sensor is False = the carrier is not out
@@ -308,15 +309,15 @@ class CycleEventManager():
                 # if the oven feeder is out from the oven and the oven is in ready 
                 # state and the vacuum carrieer gripper is at the oven and the vacuum 
                 # counter is less than 10 
-                if (self.sens_oven_carrier_out_ref_switch and self.oven_ready_thisClass and 
-                self.sens_vacuum_gripper_carrier_towards_oven_ref_switch and self.vacuum_count_thisClass < 10):
-                    print('vacuum count ' + str(self.vacuum_count_thisClass))
+                if (self.sens_oven_carrier_out_ref_switch and self.bool_sens_oven_ready and 
+                self.sens_vacuum_gripper_carrier_towards_oven_ref_switch and self.time_sens_vacuum_count < 10):
+                    print('vacuum count ' + str(self.time_sens_vacuum_count))
                     # Activate the compressor
                     self.act_compressor = True
                     # Lower the carrier vacuum gripper
                     self.act_carrier_vacuum_gripper_lowering = True
                     # Add 1 to the vacuum counter
-                    self.vacuum_count_thisClass += 1
+                    self.time_sens_vacuum_count += 1
 
                 # Move the carrier to the turntable
                 pass    # TODO: Populated with the correct piece of code
@@ -327,28 +328,28 @@ class CycleEventManager():
                 # Move the carrier with the product towards the turntable
                 #self.move_product_to_turntable() function
                 # If vacuum count is greater than 10 and less than 15
-                if (self.vacuum_count_thisClass >= 10 and 
-                    self.vacuum_count_thisClass < 15):
+                if (self.time_sens_vacuum_count >= 10 and 
+                    self.time_sens_vacuum_count < 15):
                     # Activate the carrier vacuum gripper
                     self.act_carrier_vacuum_gripper = True 
                     # Add 1 to the vacuum count
-                    self.vacuum_count_thisClass += 1
+                    self.time_sens_vacuum_count += 1
                 # If vacuum count is greater than 15 and less than 25
-                elif (self.vacuum_count_thisClass >= 15 and 
-                      self.vacuum_count_thisClass < 25):
+                elif (self.time_sens_vacuum_count >= 15 and 
+                      self.time_sens_vacuum_count < 25):
                     # Upper the carrier vacuum gripper
                     self.act_carrier_vacuum_gripper_lowering = False
                     # Add 1 to the vacuum counter
-                    self.vacuum_count_thisClass += 1
+                    self.time_sens_vacuum_count += 1
                 # If vacuum count is greater than 25 and less than 30
-                elif (self.vacuum_count_thisClass >= 25 and 
-                      self.vacuum_count_thisClass < 30):
+                elif (self.time_sens_vacuum_count >= 25 and 
+                      self.time_sens_vacuum_count < 30):
                         # Deactivate the compressor
                         self.act_compressor = False
                         # Add 1 to the vacuum count
-                        self.vacuum_count_thisClass += 1
+                        self.time_sens_vacuum_count += 1
                 # If vacuum count is greater than 30
-                elif (self.vacuum_count_thisClass >= 30):
+                elif (self.time_sens_vacuum_count >= 30):
                     # Bring the carrier vacuum gripper to the turn-table
                     #self.vacuum_to_turntable() function
                     if (not self.sens_vacuum_gripper_carrier_towards_turntable_ref_switch):
@@ -364,27 +365,27 @@ class CycleEventManager():
                 # counter is greater that 30 and the vacuum gripper carrier is at the 
                 # turntable
                 if (self.sens_conveyor_light_barrier and 
-                    self.vacuum_count_thisClass >= 30 and 
+                    self.time_sens_vacuum_count >= 30 and 
                     self.sens_vacuum_gripper_carrier_towards_turntable_ref_switch):
                     # if the delivery count is smaller than 15
-                    if (self.delivery_count_thisClass < 15):
+                    if (self.time_sens_delivery_count < 15):
                         self.act_compressor = True        # Activate the compressor
                         self.act_carrier_vacuum_gripper_lowering = True   # Lower the carrier vacuum grip
-                        self.delivery_count_thisClass += 1        # Add 1 to the delivery count
+                        self.time_sens_delivery_count += 1        # Add 1 to the delivery count
                     # if the delivery count is greater than 15 and smaller that 25
-                    elif (self.delivery_count_thisClass < 25 and 
-                          self.delivery_count_thisClass >= 15):
+                    elif (self.time_sens_delivery_count < 25 and 
+                          self.time_sens_delivery_count >= 15):
                         self.act_carrier_vacuum_gripper = False            # Deactivate the gripper valve
-                        self.delivery_count_thisClass += 1        # Add 1 to the delivery count
+                        self.time_sens_delivery_count += 1        # Add 1 to the delivery count
                     # if the delivery count is greater than 25 and smaller that 35
-                    elif (self.delivery_count_thisClass < 35 and 
-                          self.delivery_count_thisClass >= 25):
+                    elif (self.time_sens_delivery_count < 35 and 
+                          self.time_sens_delivery_count >= 25):
                         self.act_compressor = False       # Deactivate the compressor
                         self.act_carrier_vacuum_gripper_lowering = False  # Upper the carrier vacuum valve
-                        self.delivery_count_thisClass += 1        # Add 1 to the delivery count
+                        self.time_sens_delivery_count += 1        # Add 1 to the delivery count
                     else:
                         # If the saw count is 0
-                        if self.saw_count_thisClass == 0:
+                        if self.time_sens_saw_count == 0:
                             # Rotate the turn-table towards the saw
                             #self.turntable_to_saw() function
                             # If the turntable_pos_say sensor is False and the 
@@ -406,17 +407,17 @@ class CycleEventManager():
                         # if turntable_pos_saw is under the saw and saw counter is not greater 
                         # than 20
                         if (self.sens_turntable_towards_saw_ref_switch and not 
-                            self.saw_count_thisClass >= 20):
+                            self.time_sens_saw_count >= 20):
                             # Activate the saw
                             self.act_saw  = True
                             # Add 1 to the saw counter
-                            self.saw_count_thisClass += 1
+                            self.time_sens_saw_count += 1
                         else:
                             # Deactivate the saw
                             self.act_saw  = False 
 
                         # If the saw conter is greater than 20
-                        if (self.saw_count_thisClass >= 20):
+                        if (self.time_sens_saw_count >= 20):
                             # Rotate the turn-table toward the conveyor
                             #self.turntable_to_conveyor() function
                             # If the turntable_pos_conveyor sensor is False
@@ -464,12 +465,12 @@ class CycleEventManager():
                     #self.reset_station() function    
                     #print('resetStation')
                     # Resets all counters
-                    self.saw_count_thisClass = 0
-                    self.oven_count_thisClass = 0
-                    self.vacuum_count_thisClass = 0
-                    self.delivery_count_thisClass = 0
+                    self.time_sens_saw_count = 0
+                    self.time_sens_oven_count = 0
+                    self.time_sens_vacuum_count = 0
+                    self.time_sens_delivery_count = 0
                     # Sets the oven as "not ready"
-                    self.oven_ready_thisClass_thisClass = False 
+                    self.bool_sens_oven_ready = False 
 
             # 3. Writes the actuators desired states
             self.write()
