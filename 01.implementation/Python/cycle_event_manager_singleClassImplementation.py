@@ -334,14 +334,16 @@ class CycleEventManager():
                         self.act_carrier_vacuum_gripper_lowering = True
                         # Add 1 to the delivery count
                         self.time_sens_delivery_count += 1
-                    # if the delivery count is greater than 15 and smaller that 25
+                    # if the delivery count is greater than 15 and smaller than 
+                    # 25
                     elif (self.time_sens_delivery_count < 25 and 
                           self.time_sens_delivery_count >= 15):
                         # Deactivate the gripper valve
                         self.act_carrier_vacuum_gripper = False
                         # Add 1 to the delivery count
                         self.time_sens_delivery_count += 1
-                    # if the delivery count is greater than 25 and smaller that 35
+                    # if the delivery count is greater than 25 and smaller than 
+                    # 35
                     elif (self.time_sens_delivery_count < 35 and 
                           self.time_sens_delivery_count >= 25):
                         # Deactivate the compressor
