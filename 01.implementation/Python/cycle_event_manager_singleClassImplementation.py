@@ -69,7 +69,7 @@ class CycleEventManager():
         # Reference switch - Vacuum carrier aligned to oven
         self.sens_vacuum_gripper_carrier_towards_oven_ref_switch = False
         # Light sensor - Oven
-        self.sens_oven_light_bar = False
+        self.sens_oven_light_barrier = False
         # Sync the values with the physical model
         self.read()
         
@@ -115,7 +115,7 @@ class CycleEventManager():
         # Reference switch - Vacuum carrier aligned to oven
         self.sens_vacuum_gripper_carrier_towards_oven_ref_switch = self.rpi.io['I_8'].value
         # Light sensor - Oven
-        self.sens_oven_light_bar = self.rpi.io['I_9'].value
+        self.sens_oven_light_barrier = self.rpi.io['I_9'].value
     
     def write(self):
         """Writes the output actuators states"""
