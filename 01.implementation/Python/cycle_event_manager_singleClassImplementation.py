@@ -76,6 +76,7 @@ class CycleEventManager():
         self.time_sens_oven_count = 0         # Oven process time counter
         self.time_sens_vacuum_count = 0       # Vacuum process time counter
         self.time_sens_delivery_count = 0     # Delivery process time counter
+        self.counter = 0
         # Other support bool sensors
         self.bool_sens_oven_ready = False     # Oven ready variable
 
@@ -204,96 +205,80 @@ class CycleEventManager():
                         # Deactivate it towards the oven
                         self.act_vacuum_carrier_to_oven = False
                 
-                # self.oven_process() function
-                # If the oven is not ready and the vacuum carrier grip sensor 
-                # is True, that is the carrier grip sensor is at the oven: 
-                if (self.bool_sens_oven_ready == False and 
-                    self.sens_vacuum_gripper_carrier_towards_oven_ref_switch == True):
-                    # If the oven feeder inside sensor is False, that is the 
-                    # oven carrier  is outside the oven
-                    if (self.sens_oven_carrier_in_ref_switch == False):
-                        # Acivate the compressor
-                        #self.act_compressor = True
-                        # TODO: FROM HERE WRAP INTO A SINGLE FUNCTION
-                        # Open the door
-                        self.act_vacuum_oven_door = True
-                        # Move the feeder in the oven
-                        self.act_oven_career_inward = True
-                    # If the oven feeder is inside the oven
-                    else:
-                        # Deactivate the inward oven
-                        self.act_oven_career_inward = False
-                        # Deactivate the compressor
-                        #self.act_compressor = False
-                        # Close the door
-                        self.act_vacuum_oven_door = False
-                        
-                        #haha, flashing lights go brrrr - For light flashing
-                        if (self.time_sens_oven_count % 2 == 1):
-                            # Activate the process light
-                            self.act_oven_process_light = True
-                        else:
-                            # Deactivate the process light
-                            self.act_oven_process_light = False
-                        # Time counter
-                        self.time_sens_oven_count += 1            
-
-                    # If the counter reaches 30, stop the process
-                    if (self.time_sens_oven_count >= 30):       
-                        # Deactivate the light
-                        self.act_oven_process_light = False
-                        # Set the oven to ready
-                        self.bool_sens_oven_ready = True
-                        # Set the oven counter to 0
-                        self.time_sens_oven_count = 0
-                # If the oven is ready
-                elif (self.bool_sens_oven_ready == True):
+            # self.oven_process() function
+            # If the oven is not ready and the vacuum carrier grip sensor 
+            # is True, that is the carrier grip sensor is at the oven: 
+            if (self.bool_sens_oven_ready == False and 
+                self.sens_vacuum_gripper_carrier_towards_oven_ref_switch == True):
+                # If the oven feeder inside sensor is False, that is the 
+                # oven carrier  is outside the oven
+                if (self.sens_oven_carrier_in_ref_switch == False):
                     # TODO: FROM HERE WRAP INTO A SINGLE FUNCTION
-                    #self.move_feeder_out() function
-                    # If oven_feeder_out sensor is False = the carrier is not 
-                    # out
-                    if (self.sens_oven_carrier_out_ref_switch == False):
-                        # Activate the compressor
-                        #self.act_compressor = True
-                        # Open the door
-                        self.act_vacuum_oven_door = True
-                        # Move the oven outside
-                        self.act_oven_career_outward = True
+                    # Open the door
+                    self.act_vacuum_oven_door = True
+                    # Move the feeder in the oven
+                    self.act_oven_career_inward = True
+                # If the oven feeder is inside the oven
+                else:
+                    # Deactivate the inward oven
+                    self.act_oven_career_inward = False
+                    # Close the door
+                    self.act_vacuum_oven_door = False
+                    # TODO: modify so that the light flashes only AFTER the door is completely closed
+                    #haha, flashing lights go brrrr - For light flashing
+                    if (self.time_sens_oven_count % 2 == 1):
+                        # Activate the process light
+                        self.act_oven_process_light = True
                     else:
-                        # Stop moving the oven carrier
-                        self.act_oven_career_outward = False
-                        # Deactivate the compressor
-                        #self.act_compressor = False
-                        # Close the door
-                        self.act_vacuum_oven_door = False
+                        # Deactivate the process light
+                        self.act_oven_process_light = False
+                    # Time counter
+                    self.time_sens_oven_count += 1            
+
+                # If the counter reaches 30, stop the process
+                if (self.time_sens_oven_count >= 30):       
+                    # Deactivate the light
+                    self.act_oven_process_light = False
+                    # Set the oven to ready
+                    self.bool_sens_oven_ready = True
+                    # Set the oven counter to 0
+                    self.time_sens_oven_count = 0
+            # If the oven is ready
+            elif (self.bool_sens_oven_ready == True):
+                # TODO: FROM HERE WRAP INTO A SINGLE FUNCTION
+                #self.move_feeder_out() function
+                # If oven_feeder_out sensor is False = the carrier is not 
+                # out
+                if (self.sens_oven_carrier_out_ref_switch == False):
+                    # Open the door
+                    self.act_vacuum_oven_door = True
+                    # Move the oven outside
+                    self.act_oven_career_outward = True
+                else:
+                    # Stop moving the oven carrier
+                    self.act_oven_career_outward = False
+                    # Close the door
+                    self.act_vacuum_oven_door = False
                         
                 # Take the product with the carrier grip
-                # self.grip_product() function
-                #print('gripProduct')
+                # Lower the vacuum gripper
                 # If oven feeder sensor is True and oven ready is True and the
                 # vacuum gripper variable is True and vacuum counter is less
                 # than 10, that is if the oven feeder is out from the oven and
                 # the oven is in ready state and the vacuum carrieer gripper 
-                # is at the oven and the vacuum counter is less than 10 
+                # is at the oven and the vacuum counter is less than 10
+                # The counter is needed in order to wait for the vacuum gripper
+                # to be completely lowered  
                 if (self.sens_oven_carrier_out_ref_switch == True 
                     and self.bool_sens_oven_ready == True
                     and self.sens_vacuum_gripper_carrier_towards_oven_ref_switch == True 
                     and self.time_sens_vacuum_count < 10):
-                    # Activate the compressor
-                    #self.act_compressor = True
                     # Lower the carrier vacuum gripper
                     self.act_carrier_vacuum_gripper_lowering = True
                     # Add 1 to the vacuum counter
                     self.time_sens_vacuum_count += 1
-
-                # Move the carrier to the turntable
-                pass    # TODO: Populated with the correct piece of code
-
-                # Release the product on the turntable
-                pass    # TODO: Populated with the correct piece of code 
-
-                # Move the carrier with the product towards the turntable
-                #self.move_product_to_turntable() function
+                
+                # Grip the product 
                 # If vacuum count is greater than 10 and less than 15
                 if (self.time_sens_vacuum_count >= 10 and 
                     self.time_sens_vacuum_count < 15):
@@ -301,29 +286,63 @@ class CycleEventManager():
                     self.act_carrier_vacuum_gripper = True 
                     # Add 1 to the vacuum count
                     self.time_sens_vacuum_count += 1
+
+                # Raise the vacuum gripper 
                 # If vacuum count is greater than 15 and less than 25
-                elif (self.time_sens_vacuum_count >= 15 and 
+                if (self.time_sens_vacuum_count >= 15 and 
                       self.time_sens_vacuum_count < 25):
                     # Upper the carrier vacuum gripper
                     self.act_carrier_vacuum_gripper_lowering = False
                     # Add 1 to the vacuum counter
                     self.time_sens_vacuum_count += 1
+
+                # Wait 5 cycles
                 # If vacuum count is greater than 25 and less than 30
-                elif (self.time_sens_vacuum_count >= 25 and 
-                      self.time_sens_vacuum_count < 30):
-                        # Deactivate the compressor
-                        #self.act_compressor = False
+                #if (self.time_sens_vacuum_count >= 25 and 
+                #      self.time_sens_vacuum_count < 30):
                         # Add 1 to the vacuum count
-                        self.time_sens_vacuum_count += 1
+                        #self.time_sens_vacuum_count += 1
+                
+                # Move the carrier to the turntable
                 # If vacuum count is greater than 30
-                elif (self.time_sens_vacuum_count >= 30):
+                if (self.time_sens_vacuum_count >= 25):
                     # Bring the carrier vacuum gripper to the turn-table
-                    #self.vacuum_to_turntable() function
                     if (self.sens_vacuum_gripper_carrier_towards_turntable_ref_switch == False):
                         self.act_vacuum_carrier_to_turntable = True
                     else:
                         self.act_vacuum_carrier_to_turntable = False
                 
+                # Release the product
+                # Lower the carrier vacuum gripper
+                if (self.sens_vacuum_gripper_carrier_towards_turntable_ref_switch == True 
+                    and self.act_carrier_vacuum_gripper == True
+                    and self.counter < 15):
+                        self.act_carrier_vacuum_gripper_lowering = True
+                        self.counter += 1
+                        print('counter ' + str(self.counter))
+                # Release the product on the turntable
+                elif (self.sens_vacuum_gripper_carrier_towards_turntable_ref_switch == True 
+                    and self.act_carrier_vacuum_gripper_lowering == True
+                    and self.counter >= 15 and self.counter < 30):
+                        self.act_carrier_vacuum_gripper = False
+                        self.counter += 1
+                        print('counter ' + str(self.counter))
+                # Raise the carrier vacuum gripper
+                elif (self.sens_vacuum_gripper_carrier_towards_turntable_ref_switch == True 
+                    and self.act_carrier_vacuum_gripper_lowering == True
+                    and self.act_carrier_vacuum_gripper == False
+                    and self.counter >= 30):
+                        self.act_carrier_vacuum_gripper_lowering = False
+
+                # Turn the turntable towards the saw
+
+                # Activate the saw
+
+                # Turn the turntable towards the conveyor
+
+                # Activate the conveyor
+                
+                """
                 # Deliver the product (where?)
                 #self.deliver_product() function
                 # If the conveyor light sensor is True and the vacuum count is 
@@ -332,14 +351,14 @@ class CycleEventManager():
                 # product and the vacuum counter is greater that 30 and the 
                 # vacuum gripper carrier is at the turntable
                 if (self.sens_conveyor_light_barrier == True 
-                    and self.time_sens_vacuum_count >= 30 
+                    and self.time_sens_vacuum_count >= 25 
                     and self.sens_vacuum_gripper_carrier_towards_turntable_ref_switch == True):
                     # if the delivery count is smaller than 15
                     if (self.time_sens_delivery_count < 15):
                         # Activate the compressor
                         #self.act_compressor = True
                         # Lower the carrier vacuum grip
-                        self.act_carrier_vacuum_gripper_lowering = True
+                        #self.act_carrier_vacuum_gripper_lowering = True
                         # Add 1 to the delivery count
                         self.time_sens_delivery_count += 1
                     # if the delivery count is greater than 15 and smaller than 
@@ -354,8 +373,6 @@ class CycleEventManager():
                     # 35
                     elif (self.time_sens_delivery_count < 35 and 
                           self.time_sens_delivery_count >= 25):
-                        # Deactivate the compressor
-                        #self.act_compressor = False
                         # Upper the carrier vacuum valve
                         self.act_carrier_vacuum_gripper_lowering = False
                         # Add 1 to the delivery count
@@ -413,11 +430,11 @@ class CycleEventManager():
                             self.act_turntable_vacuum_pusher = True
                             # Activate the conveyor
                             self.act_conveyor = True
-                    
+                    """
             # Otherwise, if there is the product in front of the light sensor
-            else:
-                # Turn off the compressor
-                #self.act_compressor = False
+            if(self.sens_conveyor_light_barrier == False):    
+                # Turn off the services
+                self.act_compressor = False
                 
                 # Turn off the valve feeder
                 self.act_turntable_vacuum_pusher = False
