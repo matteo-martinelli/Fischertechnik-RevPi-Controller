@@ -86,6 +86,7 @@ class CycleEventManager():
     def cleanup_revpi(self):
         """Cleanup function to leave the RevPi in a defined state."""
         # Switch of LED and outputs before exit program
+        print('Cleaning the system state')
         self.rpi.core.a1green.value = False
         self.rpi.io['O_1'].value = False
         self.rpi.io['O_2'].value = False
@@ -95,6 +96,12 @@ class CycleEventManager():
         self.rpi.io['O_6'].value = False
         self.rpi.io['O_7'].value = False
         self.rpi.io['O_8'].value = False
+        self.rpi.io['O_9'].value = False
+        self.rpi.io['O_10'].value = False
+        self.rpi.io['O_11'].value = False
+        self.rpi.io['O_12'].value = False
+        self.rpi.io['O_13'].value = False
+        self.rpi.io['O_14'].value = False
 
     def read(self):
         """Reads the input sensors states"""
@@ -165,6 +172,8 @@ class CycleEventManager():
         # Start event system loop without blocking here. Reference at 
         # https://revpimodio.org/en/events-in-the-mainloop/
         self.rpi.mainloop(blocking=False)
+        # Activating the process services - i.e. the compressor
+        self.act_compressor = True
         # My own loop to do some work next to the event system. We will stay
         # here till self.rpi.exitsignal.wait returns True after SIGINT/SIGTERM
         # The loop does 3 things, continuously: 
@@ -182,9 +191,9 @@ class CycleEventManager():
 
             # 2. Calls the machine_group.process_product process description
             #self.machine_group.process_product() 
-            # If the conveyor-light sensor is True = there is no product
+            # If the oven-light sensor is False, that is there is the product
             # TODO: change this entry point to "if the product is on the oven carrier"
-            if (self.sens_conveyor_light_barrier == True):
+            if (self.sens_oven_light_barrier == False):
                 # If oven_ready == False
                 if (self.bool_sens_oven_ready == False):
                     # Move the carrier towards the oven
@@ -204,7 +213,7 @@ class CycleEventManager():
                     # oven carrier  is outside the oven
                     if (self.sens_oven_carrier_in_ref_switch == False):
                         # Acivate the compressor
-                        self.act_compressor = True
+                        #self.act_compressor = True
                         # TODO: FROM HERE WRAP INTO A SINGLE FUNCTION
                         # Open the door
                         self.act_vacuum_oven_door = True
@@ -215,7 +224,7 @@ class CycleEventManager():
                         # Deactivate the inward oven
                         self.act_oven_career_inward = False
                         # Deactivate the compressor
-                        self.act_compressor = False
+                        #self.act_compressor = False
                         # Close the door
                         self.act_vacuum_oven_door = False
                         
@@ -245,7 +254,7 @@ class CycleEventManager():
                     # out
                     if (self.sens_oven_carrier_out_ref_switch == False):
                         # Activate the compressor
-                        self.act_compressor = True
+                        #self.act_compressor = True
                         # Open the door
                         self.act_vacuum_oven_door = True
                         # Move the oven outside
@@ -254,7 +263,7 @@ class CycleEventManager():
                         # Stop moving the oven carrier
                         self.act_oven_career_outward = False
                         # Deactivate the compressor
-                        self.act_compressor = False
+                        #self.act_compressor = False
                         # Close the door
                         self.act_vacuum_oven_door = False
                         
@@ -270,9 +279,8 @@ class CycleEventManager():
                     and self.bool_sens_oven_ready == True
                     and self.sens_vacuum_gripper_carrier_towards_oven_ref_switch == True 
                     and self.time_sens_vacuum_count < 10):
-                    print('vacuum count ' + str(self.time_sens_vacuum_count))
                     # Activate the compressor
-                    self.act_compressor = True
+                    #self.act_compressor = True
                     # Lower the carrier vacuum gripper
                     self.act_carrier_vacuum_gripper_lowering = True
                     # Add 1 to the vacuum counter
@@ -304,7 +312,7 @@ class CycleEventManager():
                 elif (self.time_sens_vacuum_count >= 25 and 
                       self.time_sens_vacuum_count < 30):
                         # Deactivate the compressor
-                        self.act_compressor = False
+                        #self.act_compressor = False
                         # Add 1 to the vacuum count
                         self.time_sens_vacuum_count += 1
                 # If vacuum count is greater than 30
@@ -329,7 +337,7 @@ class CycleEventManager():
                     # if the delivery count is smaller than 15
                     if (self.time_sens_delivery_count < 15):
                         # Activate the compressor
-                        self.act_compressor = True
+                        #self.act_compressor = True
                         # Lower the carrier vacuum grip
                         self.act_carrier_vacuum_gripper_lowering = True
                         # Add 1 to the delivery count
@@ -347,7 +355,7 @@ class CycleEventManager():
                     elif (self.time_sens_delivery_count < 35 and 
                           self.time_sens_delivery_count >= 25):
                         # Deactivate the compressor
-                        self.act_compressor = False
+                        #self.act_compressor = False
                         # Upper the carrier vacuum valve
                         self.act_carrier_vacuum_gripper_lowering = False
                         # Add 1 to the delivery count
@@ -400,7 +408,7 @@ class CycleEventManager():
                         # If the turntable_pos_conveyor is True
                         if (self.sens_turntable_towards_conveyor_ref_switch == True):
                             # Activate the conveyor
-                            self.act_compressor = True
+                            #self.act_compressor = True
                             # Activate the turntable pusher
                             self.act_turntable_vacuum_pusher = True
                             # Activate the conveyor
@@ -409,7 +417,7 @@ class CycleEventManager():
             # Otherwise, if there is the product in front of the light sensor
             else:
                 # Turn off the compressor
-                self.act_compressor = False
+                #self.act_compressor = False
                 
                 # Turn off the valve feeder
                 self.act_turntable_vacuum_pusher = False
