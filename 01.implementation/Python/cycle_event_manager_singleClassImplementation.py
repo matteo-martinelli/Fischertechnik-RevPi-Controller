@@ -21,36 +21,6 @@ class CycleEventManager():
         # Handle SIGINT / SIGTERM to exit program cleanly
         self.rpi.handlesignalend(self.cleanup_revpi)
         
-        # Defining sensor class varaibles
-        # Reference switch - Turntable under vacuum carrier
-        self.sens_turntable_towards_vacuum_ref_switch = False
-        # Reference switch - Turntable aligned to position conveyor
-        self.sens_turntable_towards_conveyor_ref_switch = False
-        # Light sensor - Conveyor belt
-        self.sens_conveyor_light_barrier = False
-        # Reference switch - Turn-table under saw
-        self.sens_turntable_towards_saw_ref_switch = False
-        # Reference switch - Vacuum carrier aligned to turn-table
-        self.sens_vacuum_gripper_carrier_towards_turntable_ref_switch = False
-        # Reference switch - Oven carrier inside the oven
-        self.sens_oven_carrier_in_ref_switch = False
-        # Reference switch - Oven carrier outside the oven
-        self.sens_oven_carrier_out_ref_switch = False
-        # Reference switch - Vacuum carrier aligned to oven
-        self.sens_vacuum_gripper_carrier_towards_oven_ref_switch = False
-        # Light sensor - Oven
-        self.sens_oven_light_bar = False
-        # Sync the values with the physical model
-        self.read()
-        
-        # Other support time sensors
-        self.time_sens_saw_count = 0          # Saw process time counter
-        self.time_sens_oven_count = 0         # Oven process time counter
-        self.time_sens_vacuum_count = 0       # Vacuum process time counter
-        self.time_sens_delivery_count = 0     # Delivery process time counter
-        # Other support bool sensors
-        self.bool_sens_oven_ready = False     # Oven ready variable
-        
         # Defining actuators class variables
         # Turn-table - Motor clock wise        
         self.act_turntable_clockwise = False
@@ -80,6 +50,36 @@ class CycleEventManager():
         self.act_vacuum_oven_door = False
         # Turn-table - Pusher valve activation
         self.act_turntable_vacuum_pusher = False
+
+        # Defining sensor class varaibles
+        # Reference switch - Turntable under vacuum carrier
+        self.sens_turntable_towards_vacuum_ref_switch = False
+        # Reference switch - Turntable aligned to position conveyor
+        self.sens_turntable_towards_conveyor_ref_switch = False
+        # Light sensor - Conveyor belt
+        self.sens_conveyor_light_barrier = False
+        # Reference switch - Turn-table under saw
+        self.sens_turntable_towards_saw_ref_switch = False
+        # Reference switch - Vacuum carrier aligned to turn-table
+        self.sens_vacuum_gripper_carrier_towards_turntable_ref_switch = False
+        # Reference switch - Oven carrier inside the oven
+        self.sens_oven_carrier_in_ref_switch = False
+        # Reference switch - Oven carrier outside the oven
+        self.sens_oven_carrier_out_ref_switch = False
+        # Reference switch - Vacuum carrier aligned to oven
+        self.sens_vacuum_gripper_carrier_towards_oven_ref_switch = False
+        # Light sensor - Oven
+        self.sens_oven_light_bar = False
+        # Sync the values with the physical model
+        self.read()
+        
+        # Other support time sensors
+        self.time_sens_saw_count = 0          # Saw process time counter
+        self.time_sens_oven_count = 0         # Oven process time counter
+        self.time_sens_vacuum_count = 0       # Vacuum process time counter
+        self.time_sens_delivery_count = 0     # Delivery process time counter
+        # Other support bool sensors
+        self.bool_sens_oven_ready = False     # Oven ready variable
 
 
     def cleanup_revpi(self):
