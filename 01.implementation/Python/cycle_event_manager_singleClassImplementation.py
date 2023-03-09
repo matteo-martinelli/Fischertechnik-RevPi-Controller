@@ -10,7 +10,6 @@ blocking, with a personalised while loop next to the event system.
 
 
 import revpimodio2
-from machine_group import MachineGroup
 from time import sleep
 
 class CycleEventManager():
@@ -21,10 +20,7 @@ class CycleEventManager():
         self.rpi = revpimodio2.RevPiModIO(autorefresh=True)
         # Handle SIGINT / SIGTERM to exit program cleanly
         self.rpi.handlesignalend(self.cleanup_revpi)
-        #create multiprocessing object (not the Python Multiprocessing lib!)
-        #self.machine_group = MachineGroup(1)
-        #self.machine_group = MachineGroup()
-
+        
         # Defining sensor class varaibles
         # Reference switch - Turntable under vacuum carrier
         self.sens_turntable_towards_vacuum_ref_switch = False
@@ -99,31 +95,6 @@ class CycleEventManager():
         self.rpi.io['O_7'].value = False
         self.rpi.io['O_8'].value = False
 
-    # TODO: TO BE DELETED
-    """
-    def read_at_machine(self):
-        #Reads the input sensors states
-        # Assigning to a the relative variable, the sensor value
-        # Reference switch - Turntable under vacuum carrier
-        self.machine_group.turntable_pos_vacuum = self.rpi.io['I_1'].value
-        # Reference switch - Turntable aligned to position conveyor
-        self.machine_group.turntable_pos_conveyor = self.rpi.io['I_2'].value
-        # Light sensor - Conveyor belt
-        self.machine_group.sens_delivery= self.rpi.io['I_3'].value
-        # Reference switch - Turn-table under saw
-        self.machine_group.turntable_pos_saw  = self.rpi.io['I_4'].value
-        # Reference switch - Vacuum carrier aligned to turn-table
-        self.machine_group.vacuum_gripper_at_turntable = self.rpi.io['I_5'].value
-        # Reference switch - Oven carrier inside the oven
-        self.machine_group.oven_feeder_in = self.rpi.io['I_6'].value
-        # Reference switch - Oven carrier outside the oven
-        self.machine_group.oven_feeder_out  = self.rpi.io['I_7'].value
-        # Reference switch - Vacuum carrier aligned to oven
-        self.machine_group.vacuum_gripper_at_oven = self.rpi.io['I_8'].value
-        # Light sensor - Oven
-        self.machine_group.sens_oven = self.rpi.io['I_9'].value
-    """
-
     def read(self):
         """Reads the input sensors states"""
         # Assigning to a the relative variable, the sensor value
@@ -145,41 +116,6 @@ class CycleEventManager():
         self.sens_vacuum_gripper_carrier_towards_oven_ref_switch = self.rpi.io['I_8'].value
         # Light sensor - Oven
         self.sens_oven_light_bar = self.rpi.io['I_9'].value
-
-    # TODO: TO BE DELETED
-    """
-    def write_at_machine(self):
-        #Writes the output actuators states
-        # Assigning to a the relative sensor, the variable value
-        # Turn-table - Motor clock wise        
-        self.rpi.io['O_1'].value = self.machine_group.act_turntable_clockwise
-        # Turn-table - Motor counter-clock wise
-        self.rpi.io['O_2'].value = self.machine_group.act_turntable_counterclockwise
-        # Conveyor belt - Motor forward
-        self.rpi.io['O_3'].value = self.machine_group.act_conveyor
-        # Saw - Motor activation
-        self.rpi.io['O_4'].value = self.machine_group.act_saw
-        # Oven - Carrier oven motor move inside
-        self.rpi.io['O_5'].value = self.machine_group.act_oven_career_inward
-        # Oven - Carrier oven motor move outside
-        self.rpi.io['O_6'].value = self.machine_group.act_oven_career_outward
-        # Vacuum carrier - Motor move towards oven
-        self.rpi.io['O_7'].value = self.machine_group.act_vacuum_carrier_to_oven
-        # Vacuum carrier - Move towards turn-table
-        self.rpi.io['O_8'].value = self.machine_group.act_vacuum_carrier_to_turntable
-        # Oven - Processing light
-        self.rpi.io['O_9'].value = self.machine_group.act_oven_process_light
-        # Compressor - activation
-        self.rpi.io['O_10'].value = self.machine_group.compressor
-        # Vacuum carrier - Vacuum valve grip activation
-        self.rpi.io['O_11'].value = self.machine_group.valve
-        # Vacuum carrier - Vacuum valve lowering activation
-        self.rpi.io['O_12'].value = self.machine_group.act_lower_valve
-        # Oven - Door opening activation
-        self.rpi.io['O_13'].value = self.machine_group.valve_oven_door
-        # Turn-table - Pusher valve activation
-        self.rpi.io['O_14'].value = self.machine_group.valve_feeder
-    """
     
     def write(self):
         """Writes the output actuators states"""
