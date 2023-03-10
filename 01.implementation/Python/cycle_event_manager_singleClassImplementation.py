@@ -71,6 +71,12 @@ class CycleEventManager():
         # Light sensor - Oven
         self.sens_oven_light_barrier = False
         
+        # Positioning variables
+        self.prod_on_oven_carrier = False
+        self.prod_on_vacuum_carrier = False
+        self.prod_on_oven_carrier = False
+        self.prod_on_turntable = False
+        self.prod_on_conveyor = False
         # Other support time sensors
         self.time_sens_saw_count = 0          # Saw process time counter
         self.time_sens_oven_count = 0         # Oven process time counter
@@ -79,7 +85,7 @@ class CycleEventManager():
         self.counter = 0
         # Other support bool sensors
         self.bool_sens_oven_ready = False     # Oven ready variable
-
+        
         # Sync sensors digital values with the values of the physical model
         self.read()
         
@@ -196,7 +202,9 @@ class CycleEventManager():
             # TODO: change this entry point to "if the product is on the oven carrier"
             if (self.sens_oven_light_barrier == False):
                 # If oven_ready == False
-                if (self.bool_sens_oven_ready == False):
+                self.prod_on_oven_carrier = True
+                if (self.bool_sens_oven_ready == False and 
+                    self.prod_on_oven_carrier == True):
                     # Move the carrier towards the oven
                     if (self.sens_vacuum_gripper_carrier_towards_oven_ref_switch == False):
                         # Activate it towards the oven
@@ -208,7 +216,8 @@ class CycleEventManager():
             # self.oven_process() function
             # If the oven is not ready and the vacuum carrier grip sensor 
             # is True, that is the carrier grip sensor is at the oven: 
-            if (self.bool_sens_oven_ready == False and 
+            if (self.bool_sens_oven_ready == False and
+                self.prod_on_oven_carrier == True and 
                 self.sens_vacuum_gripper_carrier_towards_oven_ref_switch == True):
                 # If the oven feeder inside sensor is False, that is the 
                 # oven carrier  is outside the oven
@@ -244,7 +253,8 @@ class CycleEventManager():
                     # Set the oven counter to 0
                     self.time_sens_oven_count = 0
             # If the oven is ready
-            elif (self.bool_sens_oven_ready == True):
+            elif (self.bool_sens_oven_ready == True and 
+                  self.prod_on_oven_carrier == True):
                 # TODO: FROM HERE WRAP INTO A SINGLE FUNCTION
                 #self.move_feeder_out() function
                 # If oven_feeder_out sensor is False = the carrier is not 
@@ -260,24 +270,25 @@ class CycleEventManager():
                     # Close the door
                     self.act_vacuum_oven_door = False
                         
-                # Take the product with the carrier grip
-                # Lower the vacuum gripper
-                # If oven feeder sensor is True and oven ready is True and the
-                # vacuum gripper variable is True and vacuum counter is less
-                # than 10, that is if the oven feeder is out from the oven and
-                # the oven is in ready state and the vacuum carrieer gripper 
-                # is at the oven and the vacuum counter is less than 10
-                # The counter is needed in order to wait for the vacuum gripper
-                # to be completely lowered  
-                if (self.sens_oven_carrier_out_ref_switch == True 
-                    and self.bool_sens_oven_ready == True
-                    and self.sens_vacuum_gripper_carrier_towards_oven_ref_switch == True 
-                    and self.time_sens_vacuum_count < 10):
+            # Take the product with the carrier grip
+            # Lower the vacuum gripper
+            # If oven feeder sensor is True and oven ready is True and the
+            # vacuum gripper variable is True and vacuum counter is less
+            # than 10, that is if the oven feeder is out from the oven and
+            # the oven is in ready state and the vacuum carrieer gripper 
+            # is at the oven and the vacuum counter is less than 10
+            # The counter is needed in order to wait for the vacuum gripper
+            # to be completely lowered  
+            if (self.sens_oven_carrier_out_ref_switch == True 
+                and self.bool_sens_oven_ready == True
+                and self.sens_vacuum_gripper_carrier_towards_oven_ref_switch == True 
+                and self.prod_on_oven_carrier == True):
+                if (self.time_sens_vacuum_count < 10):
                     # Lower the carrier vacuum gripper
                     self.act_carrier_vacuum_gripper_lowering = True
                     # Add 1 to the vacuum counter
                     self.time_sens_vacuum_count += 1
-                
+            
                 # Grip the product 
                 # If vacuum count is greater than 10 and less than 15
                 if (self.time_sens_vacuum_count >= 10 and 
@@ -290,147 +301,160 @@ class CycleEventManager():
                 # Raise the vacuum gripper 
                 # If vacuum count is greater than 15 and less than 25
                 if (self.time_sens_vacuum_count >= 15 and 
-                      self.time_sens_vacuum_count < 25):
+                        self.time_sens_vacuum_count < 25):
                     # Upper the carrier vacuum gripper
                     self.act_carrier_vacuum_gripper_lowering = False
                     # Add 1 to the vacuum counter
                     self.time_sens_vacuum_count += 1
+            
+                if(self.sens_vacuum_gripper_carrier_towards_oven_ref_switch == True
+                    and self.act_carrier_vacuum_gripper_lowering == False
+                    and self.act_carrier_vacuum_gripper == True):
+                    self.prod_on_oven_carrier = False
+                    self.prod_on_vacuum_carrier = True
 
-                # Wait 5 cycles
-                # If vacuum count is greater than 25 and less than 30
-                #if (self.time_sens_vacuum_count >= 25 and 
-                #      self.time_sens_vacuum_count < 30):
-                        # Add 1 to the vacuum count
-                        #self.time_sens_vacuum_count += 1
-                
-                # Move the carrier to the turntable
-                # If vacuum count is greater than 30
-                if (self.time_sens_vacuum_count >= 25):
-                    # Bring the carrier vacuum gripper to the turn-table
-                    if (self.sens_vacuum_gripper_carrier_towards_turntable_ref_switch == False):
-                        self.act_vacuum_carrier_to_turntable = True
-                    else:
-                        self.act_vacuum_carrier_to_turntable = False
-                
-                # Release the product
-                # Lower the carrier vacuum gripper
-                if (self.sens_vacuum_gripper_carrier_towards_turntable_ref_switch == True 
-                    and self.act_carrier_vacuum_gripper == True
-                    and self.counter < 15):
-                        self.act_carrier_vacuum_gripper_lowering = True
-                        self.counter += 1
-                        print('counter ' + str(self.counter))
-                # Release the product on the turntable
-                elif (self.sens_vacuum_gripper_carrier_towards_turntable_ref_switch == True 
-                    and self.act_carrier_vacuum_gripper_lowering == True
-                    and self.counter >= 15 and self.counter < 30):
-                        self.act_carrier_vacuum_gripper = False
-                        self.counter += 1
-                        print('counter ' + str(self.counter))
-                # Raise the carrier vacuum gripper
-                elif (self.sens_vacuum_gripper_carrier_towards_turntable_ref_switch == True 
-                    and self.act_carrier_vacuum_gripper_lowering == True
-                    and self.act_carrier_vacuum_gripper == False
-                    and self.counter >= 30):
-                        self.act_carrier_vacuum_gripper_lowering = False
+            # Wait 5 cycles
+            # If vacuum count is greater than 25 and less than 30
+            #if (self.time_sens_vacuum_count >= 25 and 
+            #      self.time_sens_vacuum_count < 30):
+                    # Add 1 to the vacuum count
+                    #self.time_sens_vacuum_count += 1
+            
+            # Move the carrier to the turntable
+            # If vacuum count is greater than 30
+            if (self.prod_on_vacuum_carrier == True and 
+                self.sens_vacuum_gripper_carrier_towards_turntable_ref_switch == False):
+                # Bring the carrier vacuum gripper to the turn-table
+                self.act_vacuum_carrier_to_turntable = True
+                print('vacuum carrier towards ttable')
+            else:
+                self.act_vacuum_carrier_to_turntable = False
+            
+            # Release the product
+            # Lower the carrier vacuum gripper
+            if (self.sens_vacuum_gripper_carrier_towards_turntable_ref_switch == True 
+                and self.act_carrier_vacuum_gripper == True
+                and self.prod_on_vacuum_carrier == True
+                and self.counter < 15):
+                    self.act_carrier_vacuum_gripper_lowering = True
+                    self.counter += 1
+                    print('counter ' + str(self.counter))
+            # Release the product on the turntable
+            elif (self.sens_vacuum_gripper_carrier_towards_turntable_ref_switch == True 
+                and self.act_carrier_vacuum_gripper_lowering == True
+                and self.counter >= 15 and self.counter < 30):
+                    self.act_carrier_vacuum_gripper = False
+                    self.counter += 1
+                    print('counter ' + str(self.counter))
+            # Raise the carrier vacuum gripper
+            elif (self.sens_vacuum_gripper_carrier_towards_turntable_ref_switch == True 
+                and self.act_carrier_vacuum_gripper_lowering == True
+                and self.act_carrier_vacuum_gripper == False
+                and self.counter >= 30):
+                    self.act_carrier_vacuum_gripper_lowering = False
+                    self.prod_on_vacuum_carrier = False
+                    self.prod_on_turntable = True
 
-                # Turn the turntable towards the saw
+            # Turn the turntable towards the saw
+            if (self.prod_on_turntable == True):
+                pass
+            # Activate the saw
 
-                # Activate the saw
+            # Turn the turntable towards the conveyor
 
-                # Turn the turntable towards the conveyor
-
-                # Activate the conveyor
-                
-                """
-                # Deliver the product (where?)
-                #self.deliver_product() function
-                # If the conveyor light sensor is True and the vacuum count is 
-                # greter than 30 and the carrier vacuum gripper at turntable is 
-                # True, that is if the processing sensor delivery have no 
-                # product and the vacuum counter is greater that 30 and the 
-                # vacuum gripper carrier is at the turntable
-                if (self.sens_conveyor_light_barrier == True 
-                    and self.time_sens_vacuum_count >= 25 
-                    and self.sens_vacuum_gripper_carrier_towards_turntable_ref_switch == True):
-                    # if the delivery count is smaller than 15
-                    if (self.time_sens_delivery_count < 15):
-                        # Activate the compressor
-                        #self.act_compressor = True
-                        # Lower the carrier vacuum grip
-                        #self.act_carrier_vacuum_gripper_lowering = True
-                        # Add 1 to the delivery count
-                        self.time_sens_delivery_count += 1
-                    # if the delivery count is greater than 15 and smaller than 
-                    # 25
-                    elif (self.time_sens_delivery_count < 25 and 
-                          self.time_sens_delivery_count >= 15):
-                        # Deactivate the gripper valve
-                        self.act_carrier_vacuum_gripper = False
-                        # Add 1 to the delivery count
-                        self.time_sens_delivery_count += 1
-                    # if the delivery count is greater than 25 and smaller than 
-                    # 35
-                    elif (self.time_sens_delivery_count < 35 and 
-                          self.time_sens_delivery_count >= 25):
-                        # Upper the carrier vacuum valve
-                        self.act_carrier_vacuum_gripper_lowering = False
-                        # Add 1 to the delivery count
-                        self.time_sens_delivery_count += 1
-                    else:
-                        # If the saw count is 0
-                        if (self.time_sens_saw_count == 0):
-                            # Rotate the turn-table towards the saw
-                            #self.turntable_to_saw() function
-                            # If the turntable_pos_say sensor is False and the 
-                            # turntable_pos_conveyor is False that is
-                            # if the turn-table is not aligned under the saw 
-                            # and is not at the conveyor
-                            if (self.sens_turntable_towards_saw_ref_switch == False 
-                                and self.sens_turntable_towards_conveyor_ref_switch == False):
-                                # Activate the turn-table rotation clockwise
-                                self.act_turntable_clockwise = True 
-                            else:
-                                # Deactivate the turn-table rotation clockwise
-                                self.act_turntable_clockwise = False    
-                            
-                        # Activate the saw
-                        #self.use_saw() function
-                        # If the turntable_pos_saw sensor is True and saw 
-                        # counter is not greater than 20 that is if 
-                        # turntable_pos_saw is under the saw and saw counter is 
-                        # not greater than 20
-                        if (self.sens_turntable_towards_saw_ref_switch == True 
-                            and self.time_sens_saw_count < 20):
-                            # Activate the saw
-                            self.act_saw  = True
-                            # Add 1 to the saw counter
-                            self.time_sens_saw_count += 1
+            # Activate the conveyor
+            if (self.prod_on_conveyor == True):
+                pass
+            
+            """
+            # Deliver the product (where?)
+            #self.deliver_product() function
+            # If the conveyor light sensor is True and the vacuum count is 
+            # greter than 30 and the carrier vacuum gripper at turntable is 
+            # True, that is if the processing sensor delivery have no 
+            # product and the vacuum counter is greater that 30 and the 
+            # vacuum gripper carrier is at the turntable
+            if (self.sens_conveyor_light_barrier == True 
+                and self.time_sens_vacuum_count >= 25 
+                and self.sens_vacuum_gripper_carrier_towards_turntable_ref_switch == True):
+                # if the delivery count is smaller than 15
+                if (self.time_sens_delivery_count < 15):
+                    # Activate the compressor
+                    #self.act_compressor = True
+                    # Lower the carrier vacuum grip
+                    #self.act_carrier_vacuum_gripper_lowering = True
+                    # Add 1 to the delivery count
+                    self.time_sens_delivery_count += 1
+                # if the delivery count is greater than 15 and smaller than 
+                # 25
+                elif (self.time_sens_delivery_count < 25 and 
+                        self.time_sens_delivery_count >= 15):
+                    # Deactivate the gripper valve
+                    self.act_carrier_vacuum_gripper = False
+                    # Add 1 to the delivery count
+                    self.time_sens_delivery_count += 1
+                # if the delivery count is greater than 25 and smaller than 
+                # 35
+                elif (self.time_sens_delivery_count < 35 and 
+                        self.time_sens_delivery_count >= 25):
+                    # Upper the carrier vacuum valve
+                    self.act_carrier_vacuum_gripper_lowering = False
+                    # Add 1 to the delivery count
+                    self.time_sens_delivery_count += 1
+                else:
+                    # If the saw count is 0
+                    if (self.time_sens_saw_count == 0):
+                        # Rotate the turn-table towards the saw
+                        #self.turntable_to_saw() function
+                        # If the turntable_pos_say sensor is False and the 
+                        # turntable_pos_conveyor is False that is
+                        # if the turn-table is not aligned under the saw 
+                        # and is not at the conveyor
+                        if (self.sens_turntable_towards_saw_ref_switch == False 
+                            and self.sens_turntable_towards_conveyor_ref_switch == False):
+                            # Activate the turn-table rotation clockwise
+                            self.act_turntable_clockwise = True 
                         else:
-                            # Deactivate the saw
-                            self.act_saw  = False 
+                            # Deactivate the turn-table rotation clockwise
+                            self.act_turntable_clockwise = False    
+                        
+                    # Activate the saw
+                    #self.use_saw() function
+                    # If the turntable_pos_saw sensor is True and saw 
+                    # counter is not greater than 20 that is if 
+                    # turntable_pos_saw is under the saw and saw counter is 
+                    # not greater than 20
+                    if (self.sens_turntable_towards_saw_ref_switch == True 
+                        and self.time_sens_saw_count < 20):
+                        # Activate the saw
+                        self.act_saw  = True
+                        # Add 1 to the saw counter
+                        self.time_sens_saw_count += 1
+                    else:
+                        # Deactivate the saw
+                        self.act_saw  = False 
 
-                        # If the saw conter is greater than 20
-                        if (self.time_sens_saw_count >= 20):
-                            # Rotate the turn-table toward the conveyor
-                            #self.turntable_to_conveyor() function
-                            # If the turntable_pos_conveyor sensor is False
-                            if (self.sens_turntable_towards_conveyor_ref_switch == False):
-                                # Activate the turntable rotation clockwise
-                                self.act_turntable_clockwise = True
-                            else:
-                                # Deactivate the turntable rotation clockwise
-                                self.act_turntable_clockwise = False
+                    # If the saw conter is greater than 20
+                    if (self.time_sens_saw_count >= 20):
+                        # Rotate the turn-table toward the conveyor
+                        #self.turntable_to_conveyor() function
+                        # If the turntable_pos_conveyor sensor is False
+                        if (self.sens_turntable_towards_conveyor_ref_switch == False):
+                            # Activate the turntable rotation clockwise
+                            self.act_turntable_clockwise = True
+                        else:
+                            # Deactivate the turntable rotation clockwise
+                            self.act_turntable_clockwise = False
 
-                        # If the turntable_pos_conveyor is True
-                        if (self.sens_turntable_towards_conveyor_ref_switch == True):
-                            # Activate the conveyor
-                            #self.act_compressor = True
-                            # Activate the turntable pusher
-                            self.act_turntable_vacuum_pusher = True
-                            # Activate the conveyor
-                            self.act_conveyor = True
-                    """
+                    # If the turntable_pos_conveyor is True
+                    if (self.sens_turntable_towards_conveyor_ref_switch == True):
+                        # Activate the conveyor
+                        #self.act_compressor = True
+                        # Activate the turntable pusher
+                        self.act_turntable_vacuum_pusher = True
+                        # Activate the conveyor
+                        self.act_conveyor = True
+            """
             # Otherwise, if there is the product in front of the light sensor
             if(self.sens_conveyor_light_barrier == False):    
                 # Turn off the services
