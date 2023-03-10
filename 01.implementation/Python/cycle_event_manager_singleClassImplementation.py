@@ -10,7 +10,7 @@ blocking, with a personalised while loop next to the event system.
 
 
 import revpimodio2
-from time import sleep
+#from oven import Oven
 
 class CycleEventManager():
     """Entry point for Fischertechnik Multiprocess Station with Oven control 
@@ -216,8 +216,13 @@ class CycleEventManager():
         # Start event system loop without blocking here. Reference at 
         # https://revpimodio.org/en/events-in-the-mainloop/
         self.rpi.mainloop(blocking=False)
+
+        # Instantiating all the needed objects
+        #oven = Oven
+
         # Activating the process services - i.e. the compressor
         self.act_compressor = True
+
         # My own loop to do some work next to the event system. We will stay
         # here till self.rpi.exitsignal.wait returns True after SIGINT/SIGTERM
         # The loop does 3 things, continuously: 
@@ -262,6 +267,7 @@ class CycleEventManager():
                     # TODO: FROM HERE WRAP INTO A SINGLE FUNCTION
                     # Open the door
                     self.act_vacuum_oven_door = True
+                    #oven.door_open
                     # Move the feeder in the oven
                     self.act_oven_career_inward = True
                 # If the oven feeder is inside the oven
@@ -270,6 +276,7 @@ class CycleEventManager():
                     self.act_oven_career_inward = False
                     # Close the door
                     self.act_vacuum_oven_door = False
+                    #oven.door_close
                     # TODO: modify so that the light flashes only AFTER the door is completely closed
                     #haha, flashing lights go brrrr - For light flashing
                     if (self.time_sens_oven_count % 2 == 1):
@@ -351,13 +358,6 @@ class CycleEventManager():
                     self.time_sens_vacuum_count = 0
                     self.prod_on_oven_carrier = False
                     self.prod_on_vacuum_carrier = True
-
-            # Wait 5 cycles
-            # If vacuum count is greater than 25 and less than 30
-            #if (self.time_sens_vacuum_count >= 25 and 
-            #      self.time_sens_vacuum_count < 30):
-                    # Add 1 to the vacuum count
-                    #self.time_sens_vacuum_count += 1
             
             # Move the carrier to the turntable
             if (self.prod_on_vacuum_carrier == True and 
