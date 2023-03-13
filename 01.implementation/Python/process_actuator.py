@@ -16,6 +16,7 @@ from reference_switch import ReferenceSwitch
 from single_motion_actuator import SingleMotionActuator
 from double_motion_actuator import DoubleMotionActuator
 from vacuum_actuator import VacuumActuator
+from oven_station import OvenStation
 
 
 class CycleEventManager():
@@ -27,6 +28,9 @@ class CycleEventManager():
         # Handle SIGINT / SIGTERM to exit program cleanly
         self.rpi.handlesignalend(self.cleanup_revpi)
         
+        # My aggregated objects
+        self.oven = OvenStation(self.rpi)
+
         # My actuator objects
         self.turntable = \
             DoubleMotionActuator(self.rpi, 'Turntable act', 1, 2)
@@ -190,6 +194,7 @@ class CycleEventManager():
                 # Move inside the oven the oven carrier
                 if (self.inside_oven_switch.getState() == False):
                     # TODO: FROM HERE WRAP INTO A SINGLE FUNCTION
+                    """
                     # Open the door
                     self.oven_door_opening.turn_on()
                     # Move the feeder in the oven
@@ -200,6 +205,10 @@ class CycleEventManager():
                     self.oven_carrier.turn_off()
                     # Close the door
                     self.oven_door_opening.turn_off()
+                    """
+
+                    self.oven.move_carrier_inward()
+                
                     # TODO: modify so that the light flashes only AFTER the door is completely closed
                     #haha, flashing lights go brrrr - For light flashing
                     if (self.time_sens_oven_count % 2 == 1):
