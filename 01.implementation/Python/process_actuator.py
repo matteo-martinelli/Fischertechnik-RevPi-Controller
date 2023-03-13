@@ -43,13 +43,13 @@ class CycleEventManager():
         self.compressor = \
             Compressor(self.rpi, 'Multistation Compressor', 10)   # TODO: evaluate class changing
         self.vacuum_valve_grip = \
-            SingleMotionActuator(self.rpi, 'Vacuum valve grip act', 11)
+            VacuumActuator(self.rpi, 'Vacuum valve grip act', 11)
         self.vacuum_grip_lowering = \
-            SingleMotionActuator(self.rpi, 'Vacuum grip lowering act', 12)
+            VacuumActuator(self.rpi, 'Vacuum grip lowering act', 12)
         self.oven_door_opening = \
-            SingleMotionActuator(self.rpi, 'Oven door opening act', 13)
+            VacuumActuator(self.rpi, 'Oven door opening act', 13)
         self.turntable_pusher = \
-            SingleMotionActuator(self.rpi, 'Turntable pusher act', 14)
+            VacuumActuator(self.rpi, 'Turntable pusher act', 14)
 
         # My sensor objects
         self.turntab_under_vacuum_switch = \
@@ -97,10 +97,6 @@ class CycleEventManager():
         self.bool_turntable_proc_completed = False
         self.bool_saw_proc_completed = False
         self.bool_conveyor_proc_completed = False
-
-        # Sync sensors digital values with the values of the physical model
-        #self.read()
-        
 
     def cleanup_revpi(self):
         """Cleanup function to leave the RevPi in a defined state."""

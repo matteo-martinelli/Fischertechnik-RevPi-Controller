@@ -18,8 +18,8 @@ class SingleMotionActuator(object):
         self.rpi = rpi
         self.name = name
         self.pin = pin
+        # TODO: put pin validity check - it should be between 1 and 14
         self.state = False
-
         self.getState()     # First reading of the actual state
 
     def getName(self) -> str:
