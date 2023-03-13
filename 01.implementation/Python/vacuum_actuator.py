@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 
 """
-compressor.py: Compressor class
+vacuum_actuator.py: VacuumActuator class
 
 For following pins: 
-O_10: compressor.
+O_11: vacuum gripper on carrier activation;
+O_12: vacuum gripper on carrier lowering;
+O_13: vacuum activated oven doors opening;
+O_14: turntable vacuum pusher activation.
 """
 
 
-class Compressor(object):
+class VacuumActuator(object):
     """Compressor class for compressor objects."""
     def __init__(self, rpi, name: str, pin: int):
         # Instantiate RevPiModIO controlling library
