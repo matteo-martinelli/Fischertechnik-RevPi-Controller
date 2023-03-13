@@ -11,6 +11,7 @@ blocking, with a personalised while loop next to the event system.
 
 import revpimodio2
 #from oven import Oven
+from compressor import Compressor
 
 class CycleEventManager():
     """Entry point for Fischertechnik Multiprocess Station with Oven control 
@@ -21,6 +22,10 @@ class CycleEventManager():
         # Handle SIGINT / SIGTERM to exit program cleanly
         self.rpi.handlesignalend(self.cleanup_revpi)
         
+        # My model objects
+        self.compressor = Compressor(rpi=self.rpi, 
+                                     name='Multistation Compressor', pin=10)
+
         # Defining actuators class variables
         # Turn-table - Motor clock wise        
         self.act_turntable_clockwise = False
@@ -221,8 +226,9 @@ class CycleEventManager():
         #oven = Oven
 
         # Activating the process services - i.e. the compressor
-        self.act_compressor = True
-
+        #self.act_compressor = True
+        self.compressor.turn_on()
+        
         # My own loop to do some work next to the event system. We will stay
         # here till self.rpi.exitsignal.wait returns True after SIGINT/SIGTERM
         # The loop does 3 things, continuously: 
@@ -475,7 +481,7 @@ class CycleEventManager():
                 self.reset_station_states()    
 
             # 3. Writes the actuators desired states
-            self.write()
+            #self.write()
 
 
 if __name__ == "__main__":

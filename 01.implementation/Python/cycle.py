@@ -10,7 +10,6 @@ blocking, with a personalised while loop next to the event system.
 
 
 import revpimodio2
-import time
 from saw import Saw
 
 class TestCycle():
@@ -22,10 +21,10 @@ class TestCycle():
         self.rpi.handlesignalend(self.cleanup_revpi)
         
         # Saw process time counter
-        self.time_sens_saw_count = 0
+        self.time_sens_count = 0
 
         # Instantiating all the needed objects
-        self.saw = Saw()
+        self.saw = Saw(self.rpi)
         
 
     def cleanup_revpi(self):
@@ -33,7 +32,7 @@ class TestCycle():
         # Switch of LED and outputs before exit program
         self.rpi.core.a1green.value = False
         # Support time sensors
-        self.time_sens_saw_count = 0
+        self.time_sens_count = 0
     
     def write(self):
         """Writes the output actuators states"""
@@ -50,18 +49,25 @@ class TestCycle():
         self.rpi.mainloop(blocking=False)
 
         while (self.rpi.exitsignal.wait(0.05) == False):
+            self.time_sens_count += 1
             # Sets the Rpi a1 light: switch on / off green part of LED A1 | or 
             # do other things
             self.rpi.core.a1green.value = not self.rpi.core.a1green.value
 
+            """
             # 2. Makes something
-            if (self.time_sens_saw_count < 30):
-                self.saw.turn_on()
-            else:
-                self.saw.turn_off()
-                self.time_sens_saw_count = 0
-                time.sleep(5)
-                
+            if (self.time_sens_count < 30):
+                self.saw.conv_turn_on()
+                self.time_sens_count += 1
+            elif (self.time_sens_count >= 30 and 
+                  self.time_sens_count < 60):
+                self.saw.conv_turn_off()
+                self.time_sens_count += 1
+            elif (self.time_sens_count >= 60):
+                self.time_sens_count = 0
+            """
+
+            self.saw.cycle_test()
 
 if __name__ == "__main__":
     # Instantiating the controlling class
