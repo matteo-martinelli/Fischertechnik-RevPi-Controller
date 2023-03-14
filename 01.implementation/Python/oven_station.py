@@ -38,17 +38,30 @@ class OvenStation(object):
             ReferenceSwitch(self.rpi, 'outside oven switch', 7)
         self.oven_barrier = \
             LightBarrier(self.rpi, 'oven barrier', 9)
+        # Class virtual sensors
+        self.prod_on_carrier = False
+        self.oven_process_completed = False
     
+    def get_carrier_position(self) -> str: 
+        if self.inside_oven_switch.getState() == True: 
+            return 'inside'
+        elif self.outside_oven_switch.getState() == True:
+            return 'outside'
+        else:
+            return 'carrier position error'
+
     def move_carrier_inward(self) -> None:
         self.oven_door_opening.turn_on()
-        while (self.inside_oven_switch.getState() == True):
+        while (self.inside_oven_switch.getState() == False):
             self.oven_carrier.move_towards_A()
+        self.oven_carrier.turn_off()
         self.oven_door_opening.turn_off()
 
     def move_carrier_outward(self) -> None:
         self.oven_door_opening.turn_on()
-        while (self.inside_oven_switch.getState() == True):
+        while (self.inside_oven_switch.getState() == False):
             self.oven_carrier.move_towards_B()
+        self.oven_carrier.turn_off()
         self.oven_door_opening.turn_off()
 
     def activate_process_light(self) -> None:

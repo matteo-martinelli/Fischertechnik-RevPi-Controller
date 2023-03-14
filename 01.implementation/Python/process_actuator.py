@@ -75,12 +75,6 @@ class CycleEventManager():
         self.oven_barrier = \
             LightBarrier(self.rpi, 'oven barrier', 9)
         
-        # Prod positioning variables
-        self.prod_on_oven_carrier = False
-        self.prod_on_vacuum_carrier = False
-        self.prod_on_oven_carrier = False
-        self.prod_on_turntable = False
-        self.prod_on_conveyor = False
         
         # Support time sensors 
         # TODO: evaluate if is worth to use all those vars or only one is enough
@@ -94,13 +88,19 @@ class CycleEventManager():
         self.time_sens_turntable_pusher_count = 0
         # Generic counter
         self.counter = 0
+        
+        # Prod positioning variables
+        self.prod_on_oven_carrier = False   # Oven
+        self.prod_on_vacuum_carrier = False # Vacuum car
+        self.prod_on_turntable = False      # Turntable
+        self.prod_on_conveyor = False       # COnveyor
 
         # Processes completed bool sensors
-        self.bool_oven_proc_completed = False
-        self.bool_vacuum_carrier_proc_completed = False
-        self.bool_turntable_proc_completed = False
-        self.bool_saw_proc_completed = False
-        self.bool_conveyor_proc_completed = False
+        self.bool_oven_proc_completed = False           # Oven
+        self.bool_vacuum_carrier_proc_completed = False # Vacuum car
+        self.bool_turntable_proc_completed = False      # Turntable
+        self.bool_saw_proc_completed = False            # Saw
+        self.bool_conveyor_proc_completed = False       # Conveyor
 
     def cleanup_revpi(self):
         """Cleanup function to leave the RevPi in a defined state."""
@@ -154,6 +154,10 @@ class CycleEventManager():
         # https://revpimodio.org/en/events-in-the-mainloop/
         self.rpi.mainloop(blocking=False)
 
+        # Sets the Rpi a1 light: switch on / off green part of LED A1 | or 
+        # do other things
+        self.rpi.core.a1green.value = not self.rpi.core.a1green.value
+        
         # Activating the process services - i.e. the compressor
         #self.act_compressor = True
         self.compressor.turn_on()
@@ -164,10 +168,6 @@ class CycleEventManager():
         #   1. Sets the Rpi a1 light
         #   2. Follows the process description
         while (self.rpi.exitsignal.wait(0.05) == False):
-            # Sets the Rpi a1 light: switch on / off green part of LED A1 | or 
-            # do other things
-            self.rpi.core.a1green.value = not self.rpi.core.a1green.value
-
             # Follows the process description ###############################
             # If the oven-light sensor is False, that is there is the product
             # So, set the self.prod_on_oven_carrier to True
@@ -206,17 +206,18 @@ class CycleEventManager():
                     # Close the door
                     self.oven_door_opening.turn_off()
                     """
-
                     self.oven.move_carrier_inward()
-                
+                else:
                     # TODO: modify so that the light flashes only AFTER the door is completely closed
                     #haha, flashing lights go brrrr - For light flashing
                     if (self.time_sens_oven_count % 2 == 1):
                         # Activate the process light
-                        self.oven_proc_light.turn_on()
+                        #self.oven_proc_light.turn_on()
+                        self.oven.activate_process_light()
                     else:
                         # Deactivate the process light
-                        self.oven_proc_light.turn_off()
+                        #self.oven_proc_light.turn_off()
+                        self.oven.deactivate_process_light()
                     # Time counter
                     self.time_sens_oven_count += 1            
 
