@@ -4,12 +4,12 @@
 oven.py: Oven class
 
 This class is composed by the following objects: 
-    1. light barrier sensor; 
-    2. double actuated product carrier; 
-    3. vacuum actuated oven door;
-    4. inward reference switch;
-    5. outward reference switch;
-    6. process light. 
+    1. light barrier sensor I_9; 
+    2. double actuated product carrier O_5, O_6; 
+    3. vacuum actuated oven door O_13;
+    4. inward reference switch I_6;
+    5. outward reference switch I_7;
+    6. process light O_9. 
 """
 
 from light_barrier import LightBarrier
@@ -36,12 +36,15 @@ class OvenStation(object):
             ReferenceSwitch(self.rpi, 'inside oven switch', 6)
         self.outside_oven_switch = \
             ReferenceSwitch(self.rpi, 'outside oven switch', 7)
-        self.oven_barrier = \
+        self.light_barrier = \
             LightBarrier(self.rpi, 'oven barrier', 9)
         # Class virtual sensors
         self.prod_on_carrier = False
-        self.oven_process_completed = False
+        self.process_completed = False
     
+    def get_light_barrier_state(self) -> bool: 
+        return self.light_barrier.getState()
+
     def get_carrier_position(self) -> str: 
         if self.inside_oven_switch.getState() == True: 
             return 'inside'
@@ -59,7 +62,7 @@ class OvenStation(object):
 
     def move_carrier_outward(self) -> None:
         self.oven_door_opening.turn_on()
-        while (self.inside_oven_switch.getState() == False):
+        while (self.outside_oven_switch.getState() == False):
             self.oven_carrier.move_towards_B()
         self.oven_carrier.turn_off()
         self.oven_door_opening.turn_off()
