@@ -13,12 +13,8 @@ blocking, with a personalised while loop next to the event system.
 
 
 import revpimodio2
-from compressor import Compressor
-from light_barrier import LightBarrier
-from reference_switch import ReferenceSwitch
-from single_motion_actuator import SingleMotionActuator
-from double_motion_actuator import DoubleMotionActuator
-from vacuum_actuator import VacuumActuator
+
+from compressor import Compressor # TODO: evaluate class changing
 
 from oven_station import OvenStation
 from vacuum_carrier import VacuumCarrier
@@ -64,6 +60,8 @@ class ProcessActuator():
         # Switch of LED and outputs before exit program
         print('Cleaning the system state')
         self.rpi.core.a1green.value = False
+
+        # TODO: implement pin reset from within the sensor/actuator class
         self.rpi.io['O_1'].value = False
         self.rpi.io['O_2'].value = False
         self.rpi.io['O_3'].value = False
@@ -83,6 +81,7 @@ class ProcessActuator():
     
     def reset_station_states(self):
         # Support time sensors
+        # TODO: evaluate if to use a single counter var
         self.time_sens_saw_count = 0
         self.time_sens_oven_count = 0
         self.time_sens_vacuum_count = 0
@@ -111,6 +110,7 @@ class ProcessActuator():
         #   1. Sets the Rpi a1 light
         #   2. Follows the process description
         while (self.rpi.exitsignal.wait(0.05) == False):
+            # TODO: simplify the process loop
             # Follows the process description ###############################
             # If the oven-light sensor is False, that is there is the product
             # So, set the self.prod_on_oven_carrier to True
@@ -133,7 +133,6 @@ class ProcessActuator():
                 self.vacuum_gripper_carrier.get_carrier_position() == 'oven'):
                 # Move inside the oven the oven carrier
                 if (self.oven.get_carrier_position() == 'outside'):
-                    # TODO: FROM HERE WRAP INTO A SINGLE FUNCTION
                     self.oven.move_carrier_inward()
                 else:
                     # TODO: modify so that the light flashes only AFTER the door is completely closed
