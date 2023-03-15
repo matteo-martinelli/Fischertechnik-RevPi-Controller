@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
 """
-cycle_event_manager.py: CycleEventManagerRevPi class
+process_actuator.py: ProcessActuator class
 
-This class is aimed at controlling the whole Fischertechnik loop process. 
+This class is aimed at controlling the whole Fischertechnik loop process.
+It contains the RevPi mainloop, and every class used should be attached to this 
+file.
+
 The loop is managed via the RevPi event manager, that is set for being not 
 blocking, with a personalised while loop next to the event system. 
 """
@@ -19,7 +22,7 @@ from vacuum_actuator import VacuumActuator
 from oven_station import OvenStation
 
 
-class CycleEventManager():
+class ProcessActuator():
     """Entry point for Fischertechnik Multiprocess Station with Oven control 
     over RevPi."""
     def __init__(self):
@@ -171,13 +174,14 @@ class CycleEventManager():
             # Follows the process description ###############################
             # If the oven-light sensor is False, that is there is the product
             # So, set the self.prod_on_oven_carrier to True
-            if (self.oven_barrier.getState() == False):
-                self.prod_on_oven_carrier = True
+            #if (self.oven_barrier.getState() == False):
+            if (self.oven.get_light_barrier_state() == False):
+                self.oven.prod_on_carrier = True
             
             # If there is the product on the oven carrier, move the vacuum 
             # carrier towards the oven
-            if (self.bool_oven_proc_completed == False and 
-                self.prod_on_oven_carrier == True):
+            if (self.oven.process_completed == False and 
+                self.oven.prod_on_carrier == True):
                 # Move the carrier towards the oven
                 if (self.vacuum_carrier_towards_oven_switch.getState() == False):
                     # Activate it towards the oven
@@ -188,11 +192,12 @@ class CycleEventManager():
                     
             # If the oven is not ready and the vacuum carrier grip is at the 
             # oven and the product is on the oven carrier: 
-            if (self.bool_oven_proc_completed == False and
-                self.prod_on_oven_carrier == True and 
+            if (self.oven.process_completed == False and
+                self.oven.prod_on_carrier == True and 
                 self.vacuum_carrier_towards_oven_switch.getState() == True):
                 # Move inside the oven the oven carrier
-                if (self.inside_oven_switch.getState() == False):
+                #if (self.inside_oven_switch.getState() == False):
+                if (self.oven.get_carrier_position() == 'outside'):
                     # TODO: FROM HERE WRAP INTO A SINGLE FUNCTION
                     """
                     # Open the door
@@ -224,16 +229,17 @@ class CycleEventManager():
                 # If the counter reaches 30, stop the oven process
                 if (self.time_sens_oven_count >= 30):       
                     # Deactivate the light
-                    self.oven_proc_light.turn_off()
+                    self.oven.deactivate_process_light()
                     # Set the oven process var to True
-                    self.bool_oven_proc_completed = True
+                    self.oven.process_completed = True
                     # Set the oven counter to 0
                     self.time_sens_oven_count = 0
             # If the oven is ready
-            elif (self.bool_oven_proc_completed == True and 
-                  self.prod_on_oven_carrier == True):
+            elif (self.oven.process_completed == True and 
+                  self.oven.prod_on_carrier == True):
                 # If oven_feeder_out sensor is False = the carrier is not 
                 # out
+                """
                 if (self.outside_oven_switch.getState() == False):
                     # Open the door
                     self.oven_door_opening.turn_on()
@@ -244,7 +250,8 @@ class CycleEventManager():
                     self.oven_door_opening.turn_off()
                     # Close the door
                     self.oven_carrier.turn_off()
-                        
+                """
+                self.oven.move_carrier_outward()        
             # Take the product with the carrier grip
             # Lower the vacuum gripper
             # If oven feeder sensor is True and oven ready is True and the
@@ -254,10 +261,10 @@ class CycleEventManager():
             # is at the oven and the vacuum counter is less than 10
             # The counter is needed in order to wait for the vacuum gripper
             # to be completely lowered  
-            if (self.outside_oven_switch.getState() == True 
-                and self.bool_oven_proc_completed == True
+            if (self.oven.get_carrier_position() == 'outside' 
+                and self.oven.process_completed == True
                 and self.vacuum_carrier_towards_oven_switch.getState() == True 
-                and self.prod_on_oven_carrier == True):
+                and self.oven.prod_on_carrier == True):
                 if (self.time_sens_vacuum_count < 10):
                     # Lower the carrier vacuum gripper
                     self.vacuum_grip_lowering.turn_on()
@@ -276,7 +283,7 @@ class CycleEventManager():
                 # Raise the vacuum gripper 
                 # If vacuum count is greater than 15 and less than 25
                 if (self.time_sens_vacuum_count >= 15 and 
-                        self.time_sens_vacuum_count < 25):
+                        self.time_sens_vacuum_count < 35):
                     # Upper the carrier vacuum gripper
                     self.vacuum_grip_lowering.turn_off()
                     # Add 1 to the vacuum counter
@@ -406,6 +413,6 @@ class CycleEventManager():
 
 if __name__ == "__main__":
     # Instantiating the controlling class
-    root = CycleEventManager()
+    root = ProcessActuator()
     # Launch the start function of the RevPi event control system
     root.start()
