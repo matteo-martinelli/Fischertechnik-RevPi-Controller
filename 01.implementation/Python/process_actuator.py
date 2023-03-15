@@ -42,50 +42,8 @@ class ProcessActuator():
         self.saw_actuator = Saw(self.rpi)
         self.conveyor_carrier = Conveyor(self.rpi)
 
-        # My actuator objects
-        #self.turntable = \
-        #    DoubleMotionActuator(self.rpi, 'Turntable act', 1, 2)
-        #self.conveyor = \
-        #    SingleMotionActuator(self.rpi, 'Conveyor act', 3)
-        #self.saw = \
-        #    SingleMotionActuator(self.rpi, 'Saw act', 4)
-        #self.oven_carrier = \
-        #    DoubleMotionActuator(self.rpi, 'Oven carrier act', 5, 6)
-        #self.vacuum_carrier = \
-        #    DoubleMotionActuator(self.rpi, 'Vacuum carrier act', 7, 8)
-        #self.oven_proc_light = \
-        #    SingleMotionActuator(self.rpi, 'Oven proc light act', 9)
         self.compressor = \
             Compressor(self.rpi, 'Multistation Compressor', 10)   # TODO: evaluate class changing
-        #self.vacuum_valve_grip = \
-        #    VacuumActuator(self.rpi, 'Vacuum valve grip act', 11)
-        #self.vacuum_grip_lowering = \
-        #    VacuumActuator(self.rpi, 'Vacuum grip lowering act', 12)
-        #self.oven_door_opening = \
-        #    VacuumActuator(self.rpi, 'Oven door opening act', 13)
-        #self.turntable_pusher = \
-        #    VacuumActuator(self.rpi, 'Turntable pusher act', 14)
-
-        # My sensor objects
-        #self.turntab_under_vacuum_switch = \
-        #    ReferenceSwitch(self.rpi, 'turntable under vacuum switch', 1)
-        #self.turntab_towards_conveyor_switch = \
-        #    ReferenceSwitch(self.rpi, 'turntable towards conveyor switch', 2)
-        #self.conveyor_barrier = \
-        #    LightBarrier(self.rpi, 'conveyor barrier', 3)
-        #self.turntab_under_saw_switch = \
-        #    ReferenceSwitch(self.rpi, 'turntable under saw switch', 4)
-        #self.vacuum_carrier_towards_turntable_switch = \
-        #    ReferenceSwitch(self.rpi, 'vacuum carrier towards turntable switch', 5)
-        #self.inside_oven_switch = \
-        #    ReferenceSwitch(self.rpi, 'inside oven switch', 6)
-        #self.outside_oven_switch = \
-        #    ReferenceSwitch(self.rpi, 'outside oven switch', 7)
-        #self.vacuum_carrier_towards_oven_switch = \
-        #    ReferenceSwitch(self.rpi, 'vacuum carrier towards oven switch', 8)
-        #self.oven_barrier = \
-        #    LightBarrier(self.rpi, 'oven barrier', 9)
-        
         
         # Support time sensors 
         # TODO: evaluate if is worth to use all those vars or only one is enough
@@ -100,18 +58,6 @@ class ProcessActuator():
         # Generic counter
         self.counter = 0
         
-        # Prod positioning variables
-        #self.prod_on_oven_carrier = False   # Oven
-        #self.prod_on_vacuum_carrier = False # Vacuum car
-        #self.prod_on_turntable = False      # Turntable
-        #self.prod_on_conveyor = False       # Conveyor
-
-        # Processes completed bool sensors
-        #self.bool_oven_proc_completed = False           # Oven
-        #self.bool_vacuum_carrier_proc_completed = False # Vacuum car
-        #self.bool_turntable_proc_completed = False      # Turntable
-        #self.bool_saw_proc_completed = False            # Saw
-        #self.bool_conveyor_proc_completed = False       # Conveyor
 
     def cleanup_revpi(self):
         """Cleanup function to leave the RevPi in a defined state."""
@@ -136,13 +82,6 @@ class ProcessActuator():
         self.reset_station_states()
     
     def reset_station_states(self):
-        # Prod positioning variables
-        self.prod_on_oven_carrier = False
-        self.prod_on_vacuum_carrier = False
-        self.prod_on_oven_carrier = False
-        self.prod_on_turntable = False
-        self.prod_on_conveyor = False
-        
         # Support time sensors
         self.time_sens_saw_count = 0
         self.time_sens_oven_count = 0
@@ -150,13 +89,6 @@ class ProcessActuator():
         self.time_sens_delivery_count = 0 
         self.time_sens_turntable_pusher_count = 0
         self.counter = 0
-
-        # Processes completed bool sensors
-        self.bool_oven_proc_completed = False
-        self.bool_vacuum_carrier_proc_completed = False
-        self.bool_turntable_proc_completed = False
-        self.bool_saw_proc_completed = False
-        self.bool_conveyor_proc_completed = False
 
     def start(self):
         """Start event system and own cyclic loop."""
@@ -182,7 +114,6 @@ class ProcessActuator():
             # Follows the process description ###############################
             # If the oven-light sensor is False, that is there is the product
             # So, set the self.prod_on_oven_carrier to True
-            #if (self.oven_barrier.getState() == False):
             if (self.oven.get_light_barrier_state() == False):
                 self.oven.prod_on_carrier = True
             
@@ -191,15 +122,9 @@ class ProcessActuator():
             if (self.oven.process_completed == False and 
                 self.oven.prod_on_carrier == True):
                 # Move the carrier towards the oven
-                #if (self.vacuum_carrier_towards_oven_switch.getState() == False):
                 if (self.vacuum_gripper_carrier.get_carrier_position() != 'oven'):
                     # Activate it towards the oven
-                    #self.vacuum_carrier.move_towards_A()
                     self.vacuum_gripper_carrier.move_carrier_towards_oven()
-                #else:
-                    # Deactivate it towards the oven
-                    #self.vacuum_carrier.turn_off()
-                    #self.vacuum_gripper_carrier.stop_carrier()
                     
             # If the oven is not ready and the vacuum carrier grip is at the 
             # oven and the product is on the oven carrier: 
@@ -207,32 +132,17 @@ class ProcessActuator():
                 self.oven.prod_on_carrier == True and 
                 self.vacuum_gripper_carrier.get_carrier_position() == 'oven'):
                 # Move inside the oven the oven carrier
-                #if (self.inside_oven_switch.getState() == False):
                 if (self.oven.get_carrier_position() == 'outside'):
                     # TODO: FROM HERE WRAP INTO A SINGLE FUNCTION
-                    """
-                    # Open the door
-                    self.oven_door_opening.turn_on()
-                    # Move the feeder in the oven
-                    self.oven_carrier.move_towards_A()
-                # If the oven feeder is inside the oven
-                else:
-                    # Deactivate the inward oven
-                    self.oven_carrier.turn_off()
-                    # Close the door
-                    self.oven_door_opening.turn_off()
-                    """
                     self.oven.move_carrier_inward()
                 else:
                     # TODO: modify so that the light flashes only AFTER the door is completely closed
                     #haha, flashing lights go brrrr - For light flashing
                     if (self.time_sens_oven_count % 2 == 1):
                         # Activate the process light
-                        #self.oven_proc_light.turn_on()
                         self.oven.activate_process_light()
                     else:
                         # Deactivate the process light
-                        #self.oven_proc_light.turn_off()
                         self.oven.deactivate_process_light()
                     # Time counter
                     self.time_sens_oven_count += 1            
@@ -245,24 +155,14 @@ class ProcessActuator():
                     self.oven.process_completed = True
                     # Set the oven counter to 0
                     self.time_sens_oven_count = 0
+
             # If the oven is ready
             elif (self.oven.process_completed == True and 
                   self.oven.prod_on_carrier == True):
                 # If oven_feeder_out sensor is False = the carrier is not 
                 # out
-                """
-                if (self.outside_oven_switch.getState() == False):
-                    # Open the door
-                    self.oven_door_opening.turn_on()
-                    # Move the oven outside
-                    self.oven_carrier.move_towards_B()
-                else:
-                    # Stop moving the oven carrier
-                    self.oven_door_opening.turn_off()
-                    # Close the door
-                    self.oven_carrier.turn_off()
-                """
                 self.oven.move_carrier_outward()        
+
             # Take the product with the carrier grip
             # Lower the vacuum gripper
             # If oven feeder sensor is True and oven ready is True and the
@@ -278,7 +178,6 @@ class ProcessActuator():
                 and self.oven.prod_on_carrier == True):
                 if (self.time_sens_vacuum_count < 10):
                     # Lower the carrier vacuum gripper
-                    #self.vacuum_grip_lowering.turn_on()
                     self.vacuum_gripper_carrier.lower_vac_gripper()
                     # Add 1 to the vacuum counter
                     self.time_sens_vacuum_count += 1
@@ -288,7 +187,6 @@ class ProcessActuator():
                 if (self.time_sens_vacuum_count >= 10 and 
                     self.time_sens_vacuum_count < 15):
                     # Activate the carrier vacuum gripper
-                    #self.vacuum_valve_grip.turn_on()
                     self.vacuum_gripper_carrier.grip_object()
                     # Add 1 to the vacuum count
                     self.time_sens_vacuum_count += 1
@@ -298,7 +196,6 @@ class ProcessActuator():
                 if (self.time_sens_vacuum_count >= 15 and 
                         self.time_sens_vacuum_count < 35):
                     # Upper the carrier vacuum gripper
-                    #self.vacuum_grip_lowering.turn_off()
                     self.vacuum_gripper_carrier.raise_vac_gripper()
                     # Add 1 to the vacuum counter
                     self.time_sens_vacuum_count += 1
@@ -323,7 +220,6 @@ class ProcessActuator():
                 and self.vacuum_gripper_carrier.prod_on_carrier == True
                 and self.vacuum_gripper_carrier.get_gripper_state() == 'activated'
                 and self.time_sens_vacuum_count < 15):
-                    #self.vacuum_grip_lowering.turn_on()
                     self.vacuum_gripper_carrier.lower_vac_gripper()
                     self.time_sens_vacuum_count += 1
                     
