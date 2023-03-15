@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+# TODO: wrap the different class into a coherent subfolder structure
 """
 process_actuator.py: ProcessActuator class
 
