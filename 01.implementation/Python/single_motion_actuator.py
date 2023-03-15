@@ -12,7 +12,7 @@ O_10: compressor.
 
 
 class SingleMotionActuator(object):
-    """SingleMotionActuator class for single motion actuated objects."""
+    """Single Motion Actuator class for single motion actuated objects."""
     def __init__(self, rpi, name: str, pin: int):
         # Instantiate RevPiModIO controlling library
         self.rpi = rpi

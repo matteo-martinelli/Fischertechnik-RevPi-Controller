@@ -14,7 +14,7 @@ O_8: vacuum carrier towards turntable
 
 
 class DoubleMotionActuator(object):
-    """DoubleActivationMotor class for double motor actuated objects."""
+    """Double Activation Motor class for double motor actuated objects."""
     def __init__(self, rpi, name: str, pin_A: int, pin_B: int):
         # Instantiate RevPiModIO controlling library
         self.rpi = rpi

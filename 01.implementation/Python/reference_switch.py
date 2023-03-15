@@ -15,7 +15,7 @@ I_8: Vacuum carrier aligned to oven;
 
 
 class ReferenceSwitch(object):
-    """ReferenceSwitch class for reference switch objects."""
+    """Reference Switch class for reference switch objects."""
     def __init__(self, rpi, name: str, pin: int):
         # Instantiate RevPiModIO controlling library
         self.rpi = rpi

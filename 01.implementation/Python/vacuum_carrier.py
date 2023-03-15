@@ -34,21 +34,27 @@ class VacuumCarrier(object):
         self.at_oven = \
             ReferenceSwitch(self.rpi, 'towards oven ref switch', 8)
         # Class virtual sensors
+        self.prod_on_carrier = False
+        self.process_completed = False
 
 
     def get_carrier_position(self) -> str: 
         if (self.at_turntable.getState() == True):
             return 'turntable'
-        elif (self.at_oven == True):
+        elif (self.at_oven.getState() == True):
             return 'oven'
         else:
             return 'position error'
 
     def move_carrier_towards_oven(self) -> None:
-        self.motor.move_towards_A()
+        while (self.at_oven.getState() == False):
+            self.motor.move_towards_A()
+        self.motor.turn_off()
 
     def move_carrier_towards_turntable(self) -> None:
-        self.motor.move_towards_B()
+        while (self.at_turntable.getState() == False):
+            self.motor.move_towards_B()
+        self.motor.turn_off()
 
     def stop_carrier(self) -> None:
         self.motor.turn_off()

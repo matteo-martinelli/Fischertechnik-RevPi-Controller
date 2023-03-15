@@ -10,7 +10,7 @@ I_3: Conveyor.
 
 
 class LightBarrier(object):
-    """LightBarrier class for light barrier objects."""
+    """Light Barrier class for light barrier objects."""
     def __init__(self, rpi, name: str, pin: int):
         # Instantiate RevPiModIO controlling library
         self.rpi = rpi
