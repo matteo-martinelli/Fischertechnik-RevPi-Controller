@@ -19,8 +19,6 @@ from components.vacuum_actuator import VacuumActuator
 class TurntableCarrier(object):
     """Turntable Carrier class for turntable objects."""
     def __init__(self, rpi):
-        # Instantiate RevPiModIO controlling library
-        #self.rpi = rpi
         # Class actuators
         self.motor = \
             DoubleMotionActuator(rpi, 'Vacuum carrier motor', 1, 2)

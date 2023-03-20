@@ -15,8 +15,7 @@ blocking, with a personalised while loop next to the event system.
 
 import revpimodio2
 
-from components.compressor import Compressor # TODO: evaluate class changing
-
+from machines.compressor import Compressor
 from machines.oven_station import OvenStation
 from machines.vacuum_carrier import VacuumCarrier
 from machines.turntable_carrier import TurntableCarrier

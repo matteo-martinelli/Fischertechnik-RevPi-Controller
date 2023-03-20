@@ -22,8 +22,6 @@ from components.vacuum_actuator import VacuumActuator
 class OvenStation(object):
     """Oven class for oven objects."""
     def __init__(self, rpi):
-        # Instantiate RevPiModIO controlling library
-        #self.rpi = rpi
         # Class actuators
         self.oven_carrier = \
             DoubleMotionActuator(rpi, 'Oven carrier act', 5, 6)

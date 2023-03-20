@@ -13,8 +13,6 @@ from components.single_motion_actuator import SingleMotionActuator
 class Saw(object):
     """Saw class for saw objects."""
     def __init__(self, rpi):
-        # Instantiate RevPiModIO controlling library
-        #self.rpi = rpi
         # Class actuators
         self.motor = \
             SingleMotionActuator(rpi, 'conveyor motor', 4)

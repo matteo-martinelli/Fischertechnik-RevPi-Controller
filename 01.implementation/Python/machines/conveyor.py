@@ -15,8 +15,6 @@ from components.light_barrier import LightBarrier
 class Conveyor(object):
     """Conveyor Carrier class for conveyor objects."""
     def __init__(self, rpi):
-        # Instantiate RevPiModIO controlling library
-        #self.rpi = rpi
         # Class actuators
         self.motor = \
             SingleMotionActuator(rpi, 'conveyor motor', 3)
