@@ -20,19 +20,19 @@ class TurntableCarrier(object):
     """Turntable Carrier class for turntable objects."""
     def __init__(self, rpi):
         # Instantiate RevPiModIO controlling library
-        self.rpi = rpi
+        #self.rpi = rpi
         # Class actuators
         self.motor = \
-            DoubleMotionActuator(self.rpi, 'Vacuum carrier motor', 1, 2)
+            DoubleMotionActuator(rpi, 'Vacuum carrier motor', 1, 2)
         self.pusher_activation = \
-            VacuumActuator(self.rpi, 'vacuum gripper', 14)
+            VacuumActuator(rpi, 'vacuum gripper', 14)
         # Class sensors
         self.at_vacuum_carrier = \
-            ReferenceSwitch(self.rpi, 'towards turntable ref switch', 1)
+            ReferenceSwitch(rpi, 'towards turntable ref switch', 1)
         self.at_conveyor = \
-            ReferenceSwitch(self.rpi, 'towards oven ref switch', 2)
+            ReferenceSwitch(rpi, 'towards oven ref switch', 2)
         self.at_saw = \
-            ReferenceSwitch(self.rpi, 'towards oven ref switch', 4)
+            ReferenceSwitch(rpi, 'towards oven ref switch', 4)
         # Class virtual sensors
         self.prod_on_carrier = False
         self.process_completed = False

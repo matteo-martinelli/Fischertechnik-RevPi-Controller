@@ -14,10 +14,10 @@ class Saw(object):
     """Saw class for saw objects."""
     def __init__(self, rpi):
         # Instantiate RevPiModIO controlling library
-        self.rpi = rpi
+        #self.rpi = rpi
         # Class actuators
         self.motor = \
-            SingleMotionActuator(self.rpi, 'conveyor motor', 4)
+            SingleMotionActuator(rpi, 'conveyor motor', 4)
         self.prod_under_saw = False
         self.process_completed = False
 

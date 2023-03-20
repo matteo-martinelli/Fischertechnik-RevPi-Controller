@@ -20,19 +20,19 @@ class VacuumCarrier(object):
     """Vacuum Carrier class for oven objects."""
     def __init__(self, rpi):
         # Instantiate RevPiModIO controlling library
-        self.rpi = rpi
+        #self.rpi = rpi
         # Class actuators
         self.motor = \
-            DoubleMotionActuator(self.rpi, 'Vacuum carrier motor', 7, 8)
+            DoubleMotionActuator(rpi, 'Vacuum carrier motor', 7, 8)
         self.gripper_activation = \
-            VacuumActuator(self.rpi, 'vacuum gripper', 11)
+            VacuumActuator(rpi, 'vacuum gripper', 11)
         self.gripper_lowering = \
-            VacuumActuator(self.rpi, 'vacuum gripper lowering', 12)
+            VacuumActuator(rpi, 'vacuum gripper lowering', 12)
         # Class sensors
         self.at_turntable = \
-            ReferenceSwitch(self.rpi, 'towards turntable ref switch', 5)
+            ReferenceSwitch(rpi, 'towards turntable ref switch', 5)
         self.at_oven = \
-            ReferenceSwitch(self.rpi, 'towards oven ref switch', 8)
+            ReferenceSwitch(rpi, 'towards oven ref switch', 8)
         # Class virtual sensors
         self.prod_on_carrier = False
         self.process_completed = False

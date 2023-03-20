@@ -23,21 +23,21 @@ class OvenStation(object):
     """Oven class for oven objects."""
     def __init__(self, rpi):
         # Instantiate RevPiModIO controlling library
-        self.rpi = rpi
+        #self.rpi = rpi
         # Class actuators
         self.oven_carrier = \
-            DoubleMotionActuator(self.rpi, 'Oven carrier act', 5, 6)
+            DoubleMotionActuator(rpi, 'Oven carrier act', 5, 6)
         self.oven_proc_light = \
-            SingleMotionActuator(self.rpi, 'Oven proc light act', 9)
+            SingleMotionActuator(rpi, 'Oven proc light act', 9)
         self.oven_door_opening = \
-            VacuumActuator(self.rpi, 'Oven door opening act', 13)
+            VacuumActuator(rpi, 'Oven door opening act', 13)
         # Class sensors
         self.inside_oven_switch = \
-            ReferenceSwitch(self.rpi, 'inside oven switch', 6)
+            ReferenceSwitch(rpi, 'inside oven switch', 6)
         self.outside_oven_switch = \
-            ReferenceSwitch(self.rpi, 'outside oven switch', 7)
+            ReferenceSwitch(rpi, 'outside oven switch', 7)
         self.light_barrier = \
-            LightBarrier(self.rpi, 'oven barrier', 9)
+            LightBarrier(rpi, 'oven barrier', 9)
         # Class virtual sensors
         self.prod_on_carrier = False
         self.process_completed = False

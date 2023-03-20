@@ -16,13 +16,13 @@ class Conveyor(object):
     """Conveyor Carrier class for conveyor objects."""
     def __init__(self, rpi):
         # Instantiate RevPiModIO controlling library
-        self.rpi = rpi
+        #self.rpi = rpi
         # Class actuators
         self.motor = \
-            SingleMotionActuator(self.rpi, 'conveyor motor', 3)
+            SingleMotionActuator(rpi, 'conveyor motor', 3)
         # Class sensors
         self.light_barrier = \
-            LightBarrier(self.rpi, 'conveyor light barrier', 3)
+            LightBarrier(rpi, 'conveyor light barrier', 3)
         # Class virtual sensors
         self.prod_on_conveyor = False
         self.process_completed = False
