@@ -24,4 +24,4 @@ class Compressor(object):
         self.motor.turn_on()
         
     def turn_off(self) -> None:
-        self.motor.turn_on()
+        self.motor.turn_off()

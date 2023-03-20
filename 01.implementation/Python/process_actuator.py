@@ -197,16 +197,16 @@ class ProcessActuator():
                     self.vacuum_gripper_carrier.raise_vac_gripper()
                     # Add 1 to the vacuum counter
                     self.time_sens_vacuum_count += 1
-            
+
                 if(self.vacuum_gripper_carrier.get_carrier_position() == 'oven'
                     and self.vacuum_gripper_carrier.get_vac_position() == 'high'
                     and self.vacuum_gripper_carrier.get_gripper_state() == 'activated'
-                    and self.time_sens_vacuum_count >= 25):
+                    and self.time_sens_vacuum_count >= 35):
                     self.time_sens_vacuum_count = 0
                     self.oven.prod_on_carrier = False
                     self.vacuum_gripper_carrier.prod_on_carrier = True
-            
-            # Move the carrier to the turnta#ble
+                
+            # Move the carrier to the turntable
             if (self.vacuum_gripper_carrier.prod_on_carrier == True and
                 self.vacuum_gripper_carrier.get_carrier_position() != 'turntable'):
                 # Bring the carrier vacuum gripper to the turn-table

@@ -13,27 +13,15 @@ I_7: Oven carrier outside the oven;
 I_8: Vacuum carrier aligned to oven; 
 """
 
+from components.generic_sensor import GenericSensor
 
-class ReferenceSwitch(object):
+
+class ReferenceSwitch(GenericSensor):
     """Reference Switch class for reference switch objects."""
     def __init__(self, rpi, name: str, pin: int):
-        # Instantiate RevPiModIO controlling library
-        self.rpi = rpi
+        super().__init__(rpi, pin)
         self.name = name
-        self.pin = pin
-        self.state = False
-        
-        self.getState()     # First reading of the actual state
 
+    
     def getName(self) -> str:
         return self.name
-    
-    def getState(self) -> bool:
-        state = self.rpi.io['I_' + str(self.pin)].value
-        if state == True:
-            self.state = True
-        else: 
-            self.state = False
-        
-        # print('pin ' + str(self.pin) + ' ' + str(self.state))
-        return state
