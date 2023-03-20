@@ -8,8 +8,8 @@ This class is composed by the following objects:
     2. light barrier sensor I_3;
 """
 
-from single_motion_actuator import SingleMotionActuator
-from light_barrier import LightBarrier
+from components.single_motion_actuator import SingleMotionActuator
+from components.light_barrier import LightBarrier
 
 
 class Conveyor(object):

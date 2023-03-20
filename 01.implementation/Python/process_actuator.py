@@ -15,13 +15,13 @@ blocking, with a personalised while loop next to the event system.
 
 import revpimodio2
 
-from compressor import Compressor # TODO: evaluate class changing
+from components.compressor import Compressor # TODO: evaluate class changing
 
-from oven_station import OvenStation
-from vacuum_carrier import VacuumCarrier
-from turntable_carrier import TurntableCarrier
-from saw import Saw
-from conveyor import Conveyor
+from machines.oven_station import OvenStation
+from machines.vacuum_carrier import VacuumCarrier
+from machines.turntable_carrier import TurntableCarrier
+from machines.saw import Saw
+from machines.conveyor import Conveyor
 
 class ProcessActuator():
     """Entry point for Fischertechnik Multiprocess Station with Oven control 
@@ -102,7 +102,6 @@ class ProcessActuator():
         self.rpi.core.a1green.value = not self.rpi.core.a1green.value
         
         # Activating the process services - i.e. the compressor
-        #self.act_compressor = True
         self.compressor.turn_on()
         
         # My own loop to do some work next to the event system. We will stay
@@ -282,13 +281,21 @@ class ProcessActuator():
                     self.time_sens_turntable_pusher_count = 0
             
             # Activate the conveyor
-            if (self.conveyor_carrier.prod_on_conveyor == True):
+            if (self.conveyor_carrier.prod_on_conveyor == True
+                and self.conveyor_carrier.process_completed == False):
                 if (self.conveyor_carrier.get_ligth_barrier_state() == 'free'):
                     self.conveyor_carrier.move_to_the_exit()
+                if (self.conveyor_carrier.get_ligth_barrier_state() == 'occupied'):
+                    self.conveyor_carrier.process_completed = True
 
             #################################################################
             # Otherwise, if there is the product in front of the light sensor
-            if(self.conveyor_carrier.get_ligth_barrier_state() == False):
+            if(self.conveyor_carrier.get_ligth_barrier_state() == 'occupied' 
+               and self.conveyor_carrier.process_completed == True 
+               and self.turntable_carrier.process_completed == True 
+               and self.saw_actuator.process_completed == True 
+               and self.vacuum_gripper_carrier.process_completed == True 
+               and self.oven.process_completed == True):
                 # Turn off the services
                 self.compressor.turn_off()
                 

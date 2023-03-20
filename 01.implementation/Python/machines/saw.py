@@ -7,7 +7,7 @@ This class is composed by the following objects:
     1. single activation motor O_4; 
 """
 
-from single_motion_actuator import SingleMotionActuator
+from components.single_motion_actuator import SingleMotionActuator
 
 
 class Saw(object):

@@ -11,9 +11,9 @@ This class is composed by the following objects:
     5. vacuum actuated pusher O_14;
 """
 
-from reference_switch import ReferenceSwitch
-from double_motion_actuator import DoubleMotionActuator
-from vacuum_actuator import VacuumActuator
+from components.reference_switch import ReferenceSwitch
+from components.double_motion_actuator import DoubleMotionActuator
+from components.vacuum_actuator import VacuumActuator
 
 
 class TurntableCarrier(object):

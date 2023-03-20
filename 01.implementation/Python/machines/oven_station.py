@@ -12,11 +12,11 @@ This class is composed by the following objects:
     6. process light O_9. 
 """
 
-from light_barrier import LightBarrier
-from double_motion_actuator import DoubleMotionActuator
-from reference_switch import ReferenceSwitch
-from single_motion_actuator import SingleMotionActuator
-from vacuum_actuator import VacuumActuator
+from components.light_barrier import LightBarrier
+from components.double_motion_actuator import DoubleMotionActuator
+from components.reference_switch import ReferenceSwitch
+from components.single_motion_actuator import SingleMotionActuator
+from components.vacuum_actuator import VacuumActuator
 
 
 class OvenStation(object):

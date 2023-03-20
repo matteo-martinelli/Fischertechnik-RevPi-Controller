@@ -7,6 +7,7 @@ For following pins:
 O_10: compressor.
 """
 
+# TODO: import single motion actuator?
 
 class Compressor(object):
     """Compressor class for compressor objects."""
@@ -32,8 +33,8 @@ class Compressor(object):
     
     def turn_on(self) -> None:
         self.state = 'On'
-        self.rpi.io['O_' + str(self.pin)].value = self.state
+        self.rpi.io['O_' + str(self.pin)].value = True
 
     def turn_off(self) -> None:
         self.state = 'Off'
-        self.rpi.io['O_' + str(self.pin)].value = self.state
+        self.rpi.io['O_' + str(self.pin)].value = False
