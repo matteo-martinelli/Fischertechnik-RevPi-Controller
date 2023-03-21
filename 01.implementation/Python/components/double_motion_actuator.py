@@ -12,7 +12,7 @@ O_7: vacuum carrier towards oven
 O_8: vacuum carrier towards turntable
 """
 
-from components.generic_actuator import GenericActuator
+from basic_components.generic_actuator import GenericActuator
 
 class DoubleMotionActuator(GenericActuator):
     """Double Activation Motor class for double motor actuated objects."""

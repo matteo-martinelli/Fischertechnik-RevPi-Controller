@@ -7,8 +7,6 @@ This is the root class for every sensor used in the simulation.
 It collects all the common fields and methods of any simulation sensor.  
 """
 
-# NOTE: This class already has all the necessary fields and methods for any 
-# generic sensor
 
 class GenericSensor(object):
     """Reference Switch class for reference switch objects."""

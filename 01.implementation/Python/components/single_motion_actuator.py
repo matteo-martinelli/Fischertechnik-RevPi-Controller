@@ -10,7 +10,7 @@ O_9: processing light;
 O_10: compressor.
 """
 
-from components.generic_actuator import GenericActuator
+from basic_components.generic_actuator import GenericActuator
 
 
 class SingleMotionActuator(GenericActuator):

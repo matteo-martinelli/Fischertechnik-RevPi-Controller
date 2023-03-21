@@ -13,7 +13,7 @@ I_7: Oven carrier outside the oven;
 I_8: Vacuum carrier aligned to oven; 
 """
 
-from components.generic_sensor import GenericSensor
+from basic_components.generic_sensor import GenericSensor
 
 
 class ReferenceSwitch(GenericSensor):

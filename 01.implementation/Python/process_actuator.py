@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # TODO: wrap the different class into a coherent subfolder structure
+# TODO: convert all the class functions from camel to snake case
 """
 process_actuator.py: ProcessActuator class
 
