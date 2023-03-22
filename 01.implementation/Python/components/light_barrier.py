@@ -8,7 +8,7 @@ I_9: Oven;
 I_3: Conveyor.
 """
 
-from basic_components.generic_sensor import GenericSensor
+from components.basic_components.generic_sensor import GenericSensor
 
 
 class LightBarrier(GenericSensor):
@@ -18,5 +18,5 @@ class LightBarrier(GenericSensor):
         self.name = name
         
 
-    def getName(self) -> str:
+    def get_name(self) -> str:
         return self.name

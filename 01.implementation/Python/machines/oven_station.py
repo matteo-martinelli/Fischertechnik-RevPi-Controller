@@ -39,34 +39,43 @@ class OvenStation(object):
         # Class virtual sensors
         self.prod_on_carrier = False
         self.process_completed = False
+
     
+    """
     def get_light_barrier_state(self) -> bool: 
         return self.light_barrier.getState()
-
+    """
+    # TODO: add carrier pos field?
     def get_carrier_position(self) -> str: 
-        if self.inside_oven_switch.getState() == True: 
+        if (self.inside_oven_switch.get_state() == True): 
             return 'inside'
-        elif self.outside_oven_switch.getState() == True:
+        if (self.outside_oven_switch.get_state() == True):
             return 'outside'
-        else:
+        if (self.inside_oven_switch.get_state() == False and 
+            self.outside_oven_switch.get_state() == False):
+            return 'moving'
+        if (self.inside_oven_switch.get_state() == True and 
+            self.outside_oven_switch.get_state() == True):
             return 'carrier position error'
 
     def move_carrier_inward(self) -> None:
         self.oven_door_opening.turn_on()
-        while (self.inside_oven_switch.getState() == False):
-            self.oven_carrier.move_towards_A()
+        while (self.inside_oven_switch.get_state() == False):
+            self.oven_carrier.turn_on(self.oven_carrier.pin_tuple[0])
         self.oven_carrier.turn_off()
         self.oven_door_opening.turn_off()
 
     def move_carrier_outward(self) -> None:
         self.oven_door_opening.turn_on()
-        while (self.outside_oven_switch.getState() == False):
-            self.oven_carrier.move_towards_B()
+        while (self.outside_oven_switch.get_state() == False):
+            self.oven_carrier.turn_on(self.oven_carrier.pin_tuple[1])
         self.oven_carrier.turn_off()
         self.oven_door_opening.turn_off()
-
+    
+    """
     def activate_process_light(self) -> None:
         self.oven_proc_light.turn_on()
     
     def deactivate_process_light(self) -> None:
         self.oven_proc_light.turn_off()
+    """

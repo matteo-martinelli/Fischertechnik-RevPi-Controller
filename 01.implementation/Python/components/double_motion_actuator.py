@@ -12,27 +12,27 @@ O_7: vacuum carrier towards oven
 O_8: vacuum carrier towards turntable
 """
 
-from basic_components.generic_actuator import GenericActuator
+from components.basic_components.generic_actuator import GenericActuator
 
 class DoubleMotionActuator(GenericActuator):
     """Double Activation Motor class for double motor actuated objects."""
-    def __init__(self, rpi, pin_A: int, pin_B: int):
+    def __init__(self, rpi, name: str, pin_A: int, pin_B: int):
         super().__init__(rpi)
         #self.name = name
         self.pin_tuple = (pin_A, pin_B)
         # Instantiate RevPiModIO controlling library
         #self.rpi = rpi
-        #self.name = name
+        self.name = name
         #self.pin_dir_A = pin_A
         #self.pin_dir_B = pin_B
         self.state = False
         # TODO change the first pin reading cause is wrong.
-        self.getState()     # First reading of the actual state
+        self.get_state()     # First reading of the actual state
 
     #def getName(self) -> str:
     #    return self.names
 
-    def getState(self) -> None:
+    def get_state(self) -> None:
         state_A = self.rpi.io['O_' + str(self.pin_tuple[0])].value
         state_B = self.rpi.io['O_' + str(self.pin_tuple[1])].value
         if (state_A == True and state_B == False):
@@ -40,13 +40,13 @@ class DoubleMotionActuator(GenericActuator):
         elif (state_A == False and state_B == True): 
             self.state = 'Towards B'
         elif (state_A == False and state_B == False):
-            self.state = False
+            self.state = False  # tODO: better False or 'off'??
         else: 
             self.state = 'Error'    # TODO: put a RaiseErrorException()
         return self.state
     
-    def move_towards_A(self) -> None:
-        """
+    """
+    def move_towards_A(self) -> None: # TODO: implement in child classes
         Following actions: 
         O_1: turntable clockwise
         O_5: oven carrier inside
@@ -55,11 +55,11 @@ class DoubleMotionActuator(GenericActuator):
         self.state = 'Towards A'
         self.rpi.io['O_' + str(self.pin_dir_A)].value = True
         self.rpi.io['O_' + str(self.pin_dir_B)].value = False
-        """
+        
         self.turn_on(self.pin_tuple[0])
-
+    """
+    """
     def move_towards_B(self) -> None:
-        """
         Following actions: 
         O_2: turntable counter-clockwise
         O_6: oven carrier outside
@@ -67,8 +67,9 @@ class DoubleMotionActuator(GenericActuator):
         self.state = 'Towards B'
         self.rpi.io['O_' + str(self.pin_dir_A)].value = False
         self.rpi.io['O_' + str(self.pin_dir_B)].value = True
-        """
+       
         self.turn_on(self.pin_tuple[1])
+    """
 
     def turn_on(self, activation_pin: int):
         for i in range(len(self.pin_tuple)):

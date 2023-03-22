@@ -19,7 +19,7 @@ class Saw(object):
         self.prod_under_saw = False
         self.process_completed = False
 
-
+"""
     def activate_saw(self) -> None:
         self.motor.turn_on()
         
@@ -27,7 +27,8 @@ class Saw(object):
         self.motor.turn_off()
     
     def get_saw_state(self) -> str: 
-        if (self.motor.getState() == True):
+        if (self.motor.get_state() == True):
             return 'on'
         else: 
             return 'off'
+"""

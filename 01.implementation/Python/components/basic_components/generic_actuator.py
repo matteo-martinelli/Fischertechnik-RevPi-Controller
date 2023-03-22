@@ -14,16 +14,18 @@ class GenericActuator(object):
         # Instantiate RevPiModIO controlling library
         self.rpi = rpi
         #self.pin = pin
+        # TODO: eventually assign directly here the pin from revpimodio
         self.pin_tuple = tuple() # add this thing to the subclass  
         # TODO: put pin feasibility check
-        self.state = False
+        self.state = False  # TODO: eventually assign directly here the state from revpimodio
         # TODO change the first pin reading cause is wrong.
         #self.getState()     # First reading of the actual state
     
-    def getPin(self, pos) -> tuple: 
-        return self.pin_tuple
+    def get_pin(self) -> tuple: 
+        #return self.pin_tuple[pos]
+        pass
 
-    def getState(self) -> bool:
+    def get_state(self) -> bool:
         #state = self.rpi.io['I_' + str(self.pin)].value
         #self.state = state
 

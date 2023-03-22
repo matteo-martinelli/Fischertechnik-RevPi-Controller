@@ -10,15 +10,24 @@ O_13: vacuum activated oven doors opening;
 O_14: turntable vacuum pusher activation.
 """
 
-from components.single_motion_actuator import SingleMotionActuator
+from components.basic_components.generic_actuator import GenericActuator
 
 
-class VacuumActuator(SingleMotionActuator):
+class VacuumActuator(GenericActuator):
     """Vacuum Actuator class for vacuum activated objects."""
     def __init__(self, rpi, name: str, pin: int):
-        super().__init__(rpi, pin)
+        super().__init__(rpi)
         self.name = name
+        self.pin_tuple = (pin,)
 
 
-    def getName(self) -> str:
+    def get_name(self) -> str:
         return self.name
+
+    def get_state(self) -> bool: 
+        self.state = self.rpi.io['O_'+ str(self.pin_tuple[0])].value
+        return self.state
+    
+    def turn_on(self) -> None: 
+        self.state = True
+        self.rpi.io['O_'+ str(self.pin_tuple[0])].value = self.state

@@ -35,25 +35,31 @@ class VacuumCarrier(object):
         self.prod_on_carrier = False
         self.process_completed = False
 
-
+    # TODO: add carrier pos field?
     def get_carrier_position(self) -> str: 
-        if (self.at_turntable.getState() == True):
+        if (self.at_turntable.get_state() == True and
+            self.at_oven.get_state() == False):
             return 'turntable'
-        elif (self.at_oven.getState() == True):
+        elif (self.at_turntable.get_state() == False and
+            self.at_oven.get_state() == True):
             return 'oven'
+        elif(self.at_turntable.get_state() == False and
+            self.at_oven.get_state() == False):
+            return 'moving'
         else:
             return 'position error'
 
     def move_carrier_towards_oven(self) -> None:
-        while (self.at_oven.getState() == False):
-            self.motor.move_towards_A()
+        while (self.at_oven.get_state() == False):
+            self.motor.turn_on(self.motor.pin_tuple[0])
         self.motor.turn_off()
 
     def move_carrier_towards_turntable(self) -> None:
-        while (self.at_turntable.getState() == False):
-            self.motor.move_towards_B()
+        while (self.at_turntable.get_state() == False):
+            self.motor.turn_on(self.motor.pin_tuple[1])
         self.motor.turn_off()
-
+        
+"""
     def stop_carrier(self) -> None:
         self.motor.turn_off()
     
@@ -64,7 +70,7 @@ class VacuumCarrier(object):
         self.gripper_lowering.turn_off()
 
     def get_vac_position(self) -> str: 
-        if (self.gripper_lowering.getState() == True):
+        if (self.gripper_lowering.get_state() == True):
             return 'low'
         else: 
             return 'high'
@@ -76,7 +82,8 @@ class VacuumCarrier(object):
         self.gripper_activation.turn_off()
     
     def get_gripper_state(self) -> str: 
-        if (self.gripper_activation.getState() == True):
+        if (self.gripper_activation.get_state() == True):
             return 'activated'
         else: 
             return 'deactivated'
+"""

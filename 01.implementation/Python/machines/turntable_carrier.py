@@ -37,33 +37,38 @@ class TurntableCarrier(object):
 
 
     def rotate_towards_saw(self) -> None:
-        while (self.at_saw.getState() == False):
-            if (self.at_vacuum_carrier.getState() == True):
-                self.motor.move_towards_A() # Clockwise
-            elif (self.at_conveyor.getState() == True):
-                self.motor.move_towards_B() # Counter-clockwise
+        while (self.at_saw.get_state() == False):
+            if (self.at_vacuum_carrier.get_state() == True):
+                self.motor.turn_on(self.motor.pin_tuple[0]) # Clockwise
+            elif (self.at_conveyor.get_state() == True):
+                self.motor.turn_on(self.motor.pin_tuple[1]) # Counter-clockwise
         self.motor.turn_off()
 
     def rotate_towards_conveyor(self) -> None:
-        while (self.at_conveyor.getState() == False):
-            self.motor.move_towards_A() # Clockwise
+        while (self.at_conveyor.get_state() == False):
+            self.motor.turn_on(self.motor.pin_tuple[0]) # Clockwise
         self.motor.turn_off()
 
     def rotate_towards_vacuum_carrier(self) -> None:
-        while (self.at_vacuum_carrier.getState() == False):
-            self.motor.move_towards_B() # Clockwise
+        while (self.at_vacuum_carrier.get_state() == False):
+            self.motor.turn_on(self.motor.pin_tuple[0]) # Counterclockwise
         self.motor.turn_off()
 
     def get_carrier_position(self) -> str: 
-        if (self.at_vacuum_carrier.getState() == True):
+        if (self.at_vacuum_carrier.get_state() == True):
             return 'vacuum carrier'
-        elif (self.at_saw.getState() == True): 
+        elif (self.at_saw.get_state() == True): 
             return 'saw'
-        elif (self.at_conveyor.getState() == True): 
+        elif (self.at_conveyor.get_state() == True): 
             return 'conveyor'
+        elif (self.at_vacuum_carrier.get_state() == False and 
+              self.at_saw.get_state() == False and 
+              self.at_conveyor.get_state() == False): 
+            return 'moving'
         else: 
             return 'position error'
 
+"""
     def stop_carrier(self) -> None:
         self.motor.turn_off()
     
@@ -74,7 +79,8 @@ class TurntableCarrier(object):
         self.pusher_activation.turn_off()
     
     def get_pusher_state(self) -> str: 
-        if (self.pusher_activation.getState() == True):
+        if (self.pusher_activation.get_state() == True):
             return 'activated'
         else: 
             return 'deactivated'
+"""
