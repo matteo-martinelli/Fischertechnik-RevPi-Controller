@@ -51,7 +51,7 @@ class TurntableCarrier(object):
 
     def rotate_towards_vacuum_carrier(self) -> None:
         while (self.at_vacuum_carrier.get_state() == False):
-            self.motor.turn_on(self.motor.pin_tuple[0]) # Counterclockwise
+            self.motor.turn_on(self.motor.pin_tuple[1]) # Counterclockwise
         self.motor.turn_off()
 
     def get_carrier_position(self) -> str: 

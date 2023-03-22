@@ -212,9 +212,6 @@ class ProcessActuator():
                 # Bring the carrier vacuum gripper to the turn-table
                 self.vacuum_gripper_carrier.move_carrier_towards_turntable()
 
-            print(self.vacuum_gripper_carrier.get_carrier_position())
-            print(self.vacuum_gripper_carrier.gripper_activation.get_state())
-            print(self.time_sens_vacuum_count)
             # Release the product
             # Lower the carrier vacuum gripper
             if (self.vacuum_gripper_carrier.get_carrier_position() == 'turntable'
@@ -222,7 +219,6 @@ class ProcessActuator():
                 and self.vacuum_gripper_carrier.gripper_activation.get_state() == True
                 and self.time_sens_vacuum_count < 15):
                     self.vacuum_gripper_carrier.gripper_lowering.turn_on()
-                    print('here')
                     self.time_sens_vacuum_count += 1
                     
             # Release the product on the turntable
