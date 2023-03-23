@@ -28,6 +28,7 @@ class SingleMotionActuator(GenericActuator):
         self.state = self.rpi.io['O_'+ str(self.pin_tuple[0])].value
         return self.state
     
-    def turn_on(self) -> None: 
+    def turn_on(self) -> None:
+        # TODO: deve chiamare turn_on() del pin della classe padre 
         self.state = True
         self.rpi.io['O_'+ str(self.pin_tuple[0])].value = self.state
