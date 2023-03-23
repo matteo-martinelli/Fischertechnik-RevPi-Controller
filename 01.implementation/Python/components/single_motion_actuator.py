@@ -19,6 +19,7 @@ class SingleMotionActuator(GenericActuator):
         super().__init__(rpi)
         self.name = name
         self.pin_tuple = (pin,)
+        self.get_state()
 
 
     def get_name(self) -> str:

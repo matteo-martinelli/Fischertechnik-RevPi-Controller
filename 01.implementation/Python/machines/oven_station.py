@@ -40,12 +40,7 @@ class OvenStation(object):
         self.prod_on_carrier = False
         self.process_completed = False
 
-    
-    """
-    def get_light_barrier_state(self) -> bool: 
-        return self.light_barrier.getState()
-    """
-    # TODO: add carrier pos field?
+
     def get_carrier_position(self) -> str: 
         if (self.inside_oven_switch.get_state() == True): 
             return 'inside'
@@ -71,11 +66,3 @@ class OvenStation(object):
             self.oven_carrier.turn_on(self.oven_carrier.pin_tuple[1])
         self.oven_carrier.turn_off()
         self.oven_door_opening.turn_off()
-    
-    """
-    def activate_process_light(self) -> None:
-        self.oven_proc_light.turn_on()
-    
-    def deactivate_process_light(self) -> None:
-        self.oven_proc_light.turn_off()
-    """

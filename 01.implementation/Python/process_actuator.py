@@ -22,6 +22,7 @@ from machines.turntable_carrier import TurntableCarrier
 from machines.saw import Saw
 from machines.conveyor import Conveyor
 
+
 class ProcessManager():
     """Entry point for Fischertechnik Multiprocess Station with Oven control 
     over RevPi."""
