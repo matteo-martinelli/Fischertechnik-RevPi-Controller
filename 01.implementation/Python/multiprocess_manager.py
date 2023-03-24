@@ -23,7 +23,7 @@ from machines.saw import Saw
 from machines.conveyor import Conveyor
 
 
-class ProcessManager():
+class MultiprocessManager():
     """Entry point for Fischertechnik Multiprocess Station with Oven control 
     over RevPi."""
     def __init__(self):
@@ -319,6 +319,6 @@ class ProcessManager():
                     
 if __name__ == "__main__":
     # Instantiating the controlling class
-    root = ProcessManager()
+    root = MultiprocessManager()
     # Launch the start function of the RevPi event control system
     root.start()
