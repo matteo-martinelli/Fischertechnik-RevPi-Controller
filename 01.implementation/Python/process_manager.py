@@ -76,6 +76,7 @@ class ProcessManager():
         self.rpi.io['O_12'].value = False
         self.rpi.io['O_13'].value = False
         self.rpi.io['O_14'].value = False"""
+        self.compressor.motor.turn_off()
         self.oven.oven_carrier.turn_off()
         self.turntable_carrier.motor.turn_off()
         self.saw_actuator.motor.turn_off()
