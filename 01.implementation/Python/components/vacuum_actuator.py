@@ -18,16 +18,21 @@ class VacuumActuator(GenericActuator):
     def __init__(self, rpi, name: str, pin: int):
         super().__init__(rpi)
         self.name = name
-        self.pin_tuple = (pin,)
+        self.pin = pin
+        # self.compressor = ... TODO: add compressor check
 
 
     def get_name(self) -> str:
         return self.name
 
     def get_state(self) -> bool: 
-        self.state = self.rpi.io['O_'+ str(self.pin_tuple[0])].value
+        self.state = self.rpi.io['O_'+ str(self.pin)].value
         return self.state
     
     def turn_on(self) -> None: 
         self.state = True
-        self.rpi.io['O_'+ str(self.pin_tuple[0])].value = self.state
+        self.rpi.io['O_'+ str(self.pin)].value = self.state
+
+    def turn_off(self) -> None:
+        self.state = False
+        self.rpi.io['O_'+ str(self.pin)].value = self.state

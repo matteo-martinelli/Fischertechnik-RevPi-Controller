@@ -27,6 +27,9 @@ class DoubleMotionActuator(GenericActuator):
     def get_state(self) -> None:
         state_A = self.rpi.io['O_' + str(self.pin_tuple[0])].value
         state_B = self.rpi.io['O_' + str(self.pin_tuple[1])].value
+        self.state = (state_A, state_B)
+        return self. state
+        """
         if (state_A == True and state_B == False):
             self.state = 'Pin 0 True'
         elif (state_A == False and state_B == True): 
@@ -36,6 +39,7 @@ class DoubleMotionActuator(GenericActuator):
         else: 
             self.state = 'Error'    # TODO: put a RaiseErrorException()
         return self.state
+        """
 
     def turn_on(self, activation_pin: int):
         for i in range(len(self.pin_tuple)):
@@ -44,3 +48,8 @@ class DoubleMotionActuator(GenericActuator):
                 self.state = True
             else: 
                 self.rpi.io['O_' + str(self.pin_tuple[i])].value = False
+    
+    def turn_off(self) -> None:
+        self.state = False
+        for i in range(len(self.pin_tuple)):
+            self.rpi.io['O_' + str(self.pin_tuple[i])].value = self.state
