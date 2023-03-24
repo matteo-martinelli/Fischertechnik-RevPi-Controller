@@ -58,32 +58,3 @@ class VacuumCarrier(object):
         while (self.at_turntable.get_state() == False):
             self.motor.turn_on(self.motor.pin_tuple[1])
         self.motor.turn_off()
-        
-"""
-    def stop_carrier(self) -> None:
-        self.motor.turn_off()
-    
-    def lower_vac_gripper(self) -> None:
-        self.gripper_lowering.turn_on()
-    
-    def raise_vac_gripper(self) -> None:
-        self.gripper_lowering.turn_off()
-
-    def get_vac_position(self) -> str: 
-        if (self.gripper_lowering.get_state() == True):
-            return 'low'
-        else: 
-            return 'high'
-
-    def grip_object(self) -> None: 
-        self.gripper_activation.turn_on()
-    
-    def release_object(self) -> None: 
-        self.gripper_activation.turn_off()
-    
-    def get_gripper_state(self) -> str: 
-        if (self.gripper_activation.get_state() == True):
-            return 'activated'
-        else: 
-            return 'deactivated'
-"""

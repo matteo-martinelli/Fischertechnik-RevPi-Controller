@@ -29,17 +29,6 @@ class RevPiDoubleMotionActuator(GenericRevPiActuator):
         state_B = self.rpi.io['O_' + str(self.pin_tuple[1])].value
         self.state = (state_A, state_B)
         return self. state
-        """
-        if (state_A == True and state_B == False):
-            self.state = 'Pin 0 True'
-        elif (state_A == False and state_B == True): 
-            self.state = 'Pin 1 True'
-        elif (state_A == False and state_B == False):
-            self.state = False      # TODO: better False or 'off'??
-        else: 
-            self.state = 'Error'    # TODO: put a RaiseErrorException()
-        return self.state
-        """
 
     def turn_on(self, activation_pin: int):
         for i in range(len(self.pin_tuple)):

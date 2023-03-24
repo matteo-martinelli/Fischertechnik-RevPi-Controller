@@ -60,22 +60,8 @@ class ProcessManager():
         # Switch of LED and outputs before exit program
         print('Cleaning the system state')
         self.rpi.core.a1green.value = False
-
-        # TODO: implement pin reset from within the sensor/actuator class
-        """self.rpi.io['O_1'].value = False
-        self.rpi.io['O_2'].value = False
-        self.rpi.io['O_3'].value = False
-        self.rpi.io['O_4'].value = False
-        self.rpi.io['O_5'].value = False
-        self.rpi.io['O_6'].value = False
-        self.rpi.io['O_7'].value = False
-        self.rpi.io['O_8'].value = False
-        self.rpi.io['O_9'].value = False
-        self.rpi.io['O_10'].value = False
-        self.rpi.io['O_11'].value = False
-        self.rpi.io['O_12'].value = False
-        self.rpi.io['O_13'].value = False
-        self.rpi.io['O_14'].value = False"""
+        
+        # Turning off all the system actuators
         self.compressor.motor.turn_off()
         self.oven.oven_carrier.turn_off()
         self.turntable_carrier.motor.turn_off()

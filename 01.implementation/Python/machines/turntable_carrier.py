@@ -67,20 +67,3 @@ class TurntableCarrier(object):
             return 'moving'
         else: 
             return 'position error'
-
-"""
-    def stop_carrier(self) -> None:
-        self.motor.turn_off()
-    
-    def activate_pusher(self) -> None: 
-        self.pusher_activation.turn_on()
-
-    def deactivate_pusher(self) -> None: 
-        self.pusher_activation.turn_off()
-    
-    def get_pusher_state(self) -> str: 
-        if (self.pusher_activation.get_state() == True):
-            return 'activated'
-        else: 
-            return 'deactivated'
-"""

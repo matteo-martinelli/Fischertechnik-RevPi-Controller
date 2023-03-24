@@ -30,17 +30,3 @@ class Conveyor(object):
         while (self.light_barrier.get_state() != False):
             self.motor.turn_on()
         self.motor.turn_off()
-
-    """
-    def activate_carrier(self) -> None:
-        self.motor.turn_on()
-
-    def deactivate_carrier(self) -> None:
-        self.motor.turn_off()
-    
-    def get_ligth_barrier_state(self) -> str: 
-        if (self.light_barrier.getState() == True):
-            return 'free'
-        else: 
-            return 'occupied'
-    """
