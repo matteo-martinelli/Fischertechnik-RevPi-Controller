@@ -13,7 +13,7 @@ O_10: compressor.
 from components.basic_components.generic_revpi_actuator import GenericRevPiActuator
 
 
-class RevPiSingleMotionActuator(GenericRevPiActuatorActuator):
+class RevPiSingleMotionActuator(GenericRevPiActuator):
     """Single Motion Actuator class for single motion actuated objects."""
     def __init__(self, rpi, name: str, pin: int):
         super().__init__(rpi)
