@@ -62,7 +62,7 @@ class ProcessManager():
         self.rpi.core.a1green.value = False
 
         # TODO: implement pin reset from within the sensor/actuator class
-        self.rpi.io['O_1'].value = False
+        """self.rpi.io['O_1'].value = False
         self.rpi.io['O_2'].value = False
         self.rpi.io['O_3'].value = False
         self.rpi.io['O_4'].value = False
@@ -75,7 +75,12 @@ class ProcessManager():
         self.rpi.io['O_11'].value = False
         self.rpi.io['O_12'].value = False
         self.rpi.io['O_13'].value = False
-        self.rpi.io['O_14'].value = False
+        self.rpi.io['O_14'].value = False"""
+        self.oven.oven_carrier.turn_off()
+        self.turntable_carrier.motor.turn_off()
+        self.saw_actuator.motor.turn_off()
+        self.conveyor_carrier.motor.turn_off()
+
         # Cleaning the object support states
         self.reset_station_states()
     
