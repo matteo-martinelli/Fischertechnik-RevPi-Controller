@@ -10,7 +10,7 @@ It collects all the common fields and methods of any simulation actuator.
 from typing import Union
 
 
-class GenericActuator(object):
+class GenericRevPiActuator(object):
     """Reference Switch class for reference switch objects."""
     def __init__(self, rpi):
         # Instantiate RevPiModIO controlling library

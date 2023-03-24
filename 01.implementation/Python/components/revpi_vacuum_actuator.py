@@ -10,10 +10,10 @@ O_13: vacuum activated oven doors opening;
 O_14: turntable vacuum pusher activation.
 """
 
-from components.basic_components.generic_actuator import GenericActuator
+from components.basic_components.generic_revpi_actuator import GenericActuator
 
 
-class VacuumActuator(GenericActuator):
+class RevPiVacuumActuator(GenericActuator):
     """Vacuum Actuator class for vacuum activated objects."""
     def __init__(self, rpi, name: str, pin: int):
         super().__init__(rpi)

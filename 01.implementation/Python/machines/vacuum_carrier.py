@@ -11,9 +11,9 @@ This class is composed by the following objects:
     5. vacuum gripper O_11; 
 """
 
-from components.reference_switch import ReferenceSwitch
-from components.double_motion_actuator import DoubleMotionActuator
-from components.vacuum_actuator import VacuumActuator
+from components.revpi_reference_switch import RevPiReferenceSwitch
+from components.revpi_double_motion_actuator import RevPiDoubleMotionActuator
+from components.revpi_vacuum_actuator import RevPiVacuumActuator
 
 
 class VacuumCarrier(object):
@@ -21,16 +21,16 @@ class VacuumCarrier(object):
     def __init__(self, rpi):
         # Class actuators
         self.motor = \
-            DoubleMotionActuator(rpi, 'Vacuum carrier motor', 7, 8)
+            RevPiDoubleMotionActuator(rpi, 'Vacuum carrier motor', 7, 8)
         self.gripper_activation = \
-            VacuumActuator(rpi, 'vacuum gripper', 11)
+            RevPiVacuumActuator(rpi, 'vacuum gripper', 11)
         self.gripper_lowering = \
-            VacuumActuator(rpi, 'vacuum gripper lowering', 12)
+            RevPiVacuumActuator(rpi, 'vacuum gripper lowering', 12)
         # Class sensors
         self.at_turntable = \
-            ReferenceSwitch(rpi, 'towards turntable ref switch', 5)
+            RevPiReferenceSwitch(rpi, 'towards turntable ref switch', 5)
         self.at_oven = \
-            ReferenceSwitch(rpi, 'towards oven ref switch', 8)
+            RevPiReferenceSwitch(rpi, 'towards oven ref switch', 8)
         # Class virtual sensors
         self.prod_on_carrier = False
         self.process_completed = False

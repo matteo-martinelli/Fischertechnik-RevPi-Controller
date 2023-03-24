@@ -12,11 +12,11 @@ This class is composed by the following objects:
     6. process light O_9. 
 """
 
-from components.light_barrier import LightBarrier
-from components.double_motion_actuator import DoubleMotionActuator
-from components.reference_switch import ReferenceSwitch
-from components.single_motion_actuator import SingleMotionActuator
-from components.vacuum_actuator import VacuumActuator
+from components.revpi_light_barrier import RevPiLightBarrier
+from components.revpi_double_motion_actuator import RevPiDoubleMotionActuator
+from components.revpi_reference_switch import RevPiReferenceSwitch
+from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
+from components.revpi_vacuum_actuator import RevPiVacuumActuator
 
 
 class OvenStation(object):
@@ -24,18 +24,18 @@ class OvenStation(object):
     def __init__(self, rpi):
         # Class actuators
         self.oven_carrier = \
-            DoubleMotionActuator(rpi, 'Oven carrier act', 5, 6)
+            RevPiDoubleMotionActuator(rpi, 'Oven carrier act', 5, 6)
         self.oven_proc_light = \
-            SingleMotionActuator(rpi, 'Oven proc light act', 9)
+            RevPiSingleMotionActuator(rpi, 'Oven proc light act', 9)
         self.oven_door_opening = \
-            VacuumActuator(rpi, 'Oven door opening act', 13)
+            RevPiVacuumActuator(rpi, 'Oven door opening act', 13)
         # Class sensors
         self.inside_oven_switch = \
-            ReferenceSwitch(rpi, 'inside oven switch', 6)
+            RevPiReferenceSwitch(rpi, 'inside oven switch', 6)
         self.outside_oven_switch = \
-            ReferenceSwitch(rpi, 'outside oven switch', 7)
+            RevPiReferenceSwitch(rpi, 'outside oven switch', 7)
         self.light_barrier = \
-            LightBarrier(rpi, 'oven barrier', 9)
+            RevPiLightBarrier(rpi, 'oven barrier', 9)
         # Class virtual sensors
         self.prod_on_carrier = False
         self.process_completed = False

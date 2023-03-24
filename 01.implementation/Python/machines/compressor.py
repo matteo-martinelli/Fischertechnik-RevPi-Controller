@@ -7,14 +7,14 @@ For following pins:
 O_10: compressor.
 """
 
-from components.single_motion_actuator import SingleMotionActuator
+from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
 
 
 class Compressor(object):
     """Compressor class for compressor objects."""
     def __init__(self, rpi, pin: int):
         self.motor = \
-            SingleMotionActuator(rpi, 'compressor motor', pin)
+            RevPiSingleMotionActuator(rpi, 'compressor motor', pin)
 
 
 """

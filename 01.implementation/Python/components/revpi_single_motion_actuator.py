@@ -10,10 +10,10 @@ O_9: processing light;
 O_10: compressor.
 """
 
-from components.basic_components.generic_actuator import GenericActuator
+from components.basic_components.generic_revpi_actuator import GenericActuator
 
 
-class SingleMotionActuator(GenericActuator):
+class RevPiSingleMotionActuator(GenericActuator):
     """Single Motion Actuator class for single motion actuated objects."""
     def __init__(self, rpi, name: str, pin: int):
         super().__init__(rpi)

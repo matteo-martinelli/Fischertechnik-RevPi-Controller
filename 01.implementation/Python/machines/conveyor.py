@@ -8,8 +8,8 @@ This class is composed by the following objects:
     2. light barrier sensor I_3;
 """
 
-from components.single_motion_actuator import SingleMotionActuator
-from components.light_barrier import LightBarrier
+from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
+from components.revpi_light_barrier import RevPiLightBarrier
 
 
 class Conveyor(object):
@@ -17,10 +17,10 @@ class Conveyor(object):
     def __init__(self, rpi):
         # Class actuators
         self.motor = \
-            SingleMotionActuator(rpi, 'conveyor motor', 3)
+            RevPiSingleMotionActuator(rpi, 'conveyor motor', 3)
         # Class sensors
         self.light_barrier = \
-            LightBarrier(rpi, 'conveyor light barrier', 3)
+            RevPiLightBarrier(rpi, 'conveyor light barrier', 3)
         # Class virtual sensors
         self.prod_on_conveyor = False
         self.process_completed = False

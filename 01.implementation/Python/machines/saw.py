@@ -7,7 +7,7 @@ This class is composed by the following objects:
     1. single activation motor O_4; 
 """
 
-from components.single_motion_actuator import SingleMotionActuator
+from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
 
 
 class Saw(object):
@@ -15,7 +15,7 @@ class Saw(object):
     def __init__(self, rpi):
         # Class actuators
         self.motor = \
-            SingleMotionActuator(rpi, 'conveyor motor', 4)
+            RevPiSingleMotionActuator(rpi, 'conveyor motor', 4)
         self.prod_under_saw = False
         self.process_completed = False
 
