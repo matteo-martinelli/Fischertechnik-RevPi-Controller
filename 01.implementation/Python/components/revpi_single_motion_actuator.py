@@ -11,6 +11,7 @@ O_10: compressor.
 """
 
 from components.basic_components.generic_revpi_actuator import GenericRevPiActuator
+import json
 
 
 class RevPiSingleMotionActuator(GenericRevPiActuator):
@@ -36,3 +37,15 @@ class RevPiSingleMotionActuator(GenericRevPiActuator):
     def turn_off(self) -> None:
         self.state = False
         self.rpi.io['O_'+ str(self.pin)].value = self.state
+
+    def to_dto(self):
+        dto_dict = {
+            'name': self.name,
+            'pin': self.pin,
+            'state': self.state
+        }
+        return dto_dict
+
+    def to_json(self):
+        return json.dumps(self.to_dto())
+    

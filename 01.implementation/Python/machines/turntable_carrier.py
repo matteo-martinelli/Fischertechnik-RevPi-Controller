@@ -67,3 +67,6 @@ class TurntableCarrier(object):
             return 'moving'
         else: 
             return 'position error'
+    
+    def to_json ( self ):
+        return json.dumps (self , default = lambda o: o. __dict__ )

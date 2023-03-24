@@ -8,6 +8,7 @@ O_10: compressor.
 """
 
 from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
+import json
 
 
 class Compressor(object):
@@ -15,3 +16,9 @@ class Compressor(object):
     def __init__(self, rpi, pin: int):
         self.motor = \
             RevPiSingleMotionActuator(rpi, 'compressor motor', pin)
+        #self.name = pin 
+
+
+    def activate(self):
+        self.motor.turn_on()
+        print(self.motor.to_json())

@@ -98,8 +98,9 @@ class MultiprocessManager():
         self.rpi.core.a1green.value = not self.rpi.core.a1green.value
         
         # Activating the process services - i.e. the compressor
-        self.compressor.motor.turn_on()
-        
+        #self.compressor.motor.turn_on()
+        self.compressor.activate()
+
         # My own loop to do some work next to the event system. We will stay
         # here till self.rpi.exitsignal.wait returns True after SIGINT/SIGTERM
         # The loop does 2 things, continuously: 
