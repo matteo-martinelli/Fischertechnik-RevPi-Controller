@@ -12,10 +12,10 @@ O_7: vacuum carrier towards oven
 O_8: vacuum carrier towards turntable
 """
 
-from components.basic_components.generic_revpi_actuator import GenericActuator
+from components.basic_components.generic_revpi_actuator import GenericRevPiActuator
 
 
-class RevPiDoubleMotionActuator(GenericActuator):
+class RevPiDoubleMotionActuator(GenericRevPiActuator):
     """Double Activation Motor class for double motor actuated objects."""
     def __init__(self, rpi, name: str, pin_A: int, pin_B: int):
         super().__init__(rpi)

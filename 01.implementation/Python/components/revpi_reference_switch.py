@@ -13,10 +13,10 @@ I_7: Oven carrier outside the oven;
 I_8: Vacuum carrier aligned to oven; 
 """
 
-from components.basic_components.generic_revpi_sensor import GenericSensor
+from components.basic_components.generic_revpi_sensor import GenericRevPiSensor
 
 
-class RevPiReferenceSwitch(GenericSensor):
+class RevPiReferenceSwitch(GenericRevPiSensor):
     """Reference Switch class for reference switch objects."""
     def __init__(self, rpi, name: str, pin: int):
         super().__init__(rpi, pin)
