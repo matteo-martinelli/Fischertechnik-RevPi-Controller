@@ -9,7 +9,8 @@ O_4: saw;
 O_9: processing light;
 O_10: compressor.
 """
-
+import paho.mqtt.client as mqtt
+from conf.mqtt_conf_parameters import MqttConfiguratorParameter
 from components.basic_components.generic_revpi_actuator import GenericRevPiActuator
 import json
 
@@ -38,6 +39,8 @@ class RevPiSingleMotionActuator(GenericRevPiActuator):
         self.state = False
         self.rpi.io['O_'+ str(self.pin)].value = self.state
 
+    # MQTT 
+    """
     def to_dto(self):
         dto_dict = {
             'name': self.name,
@@ -48,4 +51,4 @@ class RevPiSingleMotionActuator(GenericRevPiActuator):
 
     def to_json(self):
         return json.dumps(self.to_dto())
-    
+    """
