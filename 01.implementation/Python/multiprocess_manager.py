@@ -15,6 +15,8 @@ blocking, with a personalised while loop next to the event system.
 
 import revpimodio2
 
+from mqtt_publisher import MqttPublisher
+
 from machines.compressor import Compressor
 from machines.oven_station import OvenStation
 from machines.vacuum_carrier import VacuumCarrier
@@ -31,6 +33,9 @@ class MultiprocessManager():
         self.rpi = revpimodio2.RevPiModIO(autorefresh=True)
         # Handle SIGINT / SIGTERM to exit program cleanly
         self.rpi.handlesignalend(self.cleanup_revpi)
+
+        # Instantiating the MQTT publisher
+        self.mqtt_publisher = MqttPublisher()
         
         # My aggregated objects
         self.oven = OvenStation(self.rpi)
@@ -57,10 +62,14 @@ class MultiprocessManager():
 
     def cleanup_revpi(self):
         """Cleanup function to leave the RevPi in a defined state."""
-        # Switch of LED and outputs before exit program
         print('Cleaning the system state')
+
+        # Switch of LED and outputs before exit program
         self.rpi.core.a1green.value = False
         
+        # Closing the MQTT connection
+        self.mqtt_publisher.close_connection()
+
         # Turning off all the system actuators
         self.compressor.motor.turn_off()
         self.oven.oven_carrier.turn_off()
@@ -96,6 +105,9 @@ class MultiprocessManager():
         # Sets the Rpi a1 light: switch on / off green part of LED A1 | or 
         # do other things
         self.rpi.core.a1green.value = not self.rpi.core.a1green.value
+
+        # Connecting to the MQTT broker
+        self.mqtt_publisher.open_connection()
         
         # Activating the process services - i.e. the compressor
         #self.compressor.motor.turn_on()
