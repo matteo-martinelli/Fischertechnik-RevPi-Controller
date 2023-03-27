@@ -21,4 +21,4 @@ class Compressor(object):
 
     def activate(self):
         self.motor.turn_on()
-        print(self.motor.to_json())
+        #print(self.motor.to_json())
