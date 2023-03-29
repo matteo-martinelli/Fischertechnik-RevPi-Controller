@@ -23,6 +23,7 @@ from machines.turntable_carrier import TurntableCarrier
 from machines.saw_station import SawStation
 from machines.conveyor_carrier import ConveyorCarrier
 
+# TODO: change pin assignment, from machine classes to MultiprocessManager class
 # TODO: expose all the machine components subclassses into the machine class itself. 
 # The MultiprocessManager class should talk only with the machine stations layer
 
@@ -30,7 +31,7 @@ from machines.conveyor_carrier import ConveyorCarrier
 class MultiprocessManager():
     """Entry point for Fischertechnik Multiprocess Station with Oven control 
     over RevPi."""
-    def __init__(self):
+    def __init__(self, dept_name: str):
         # Instantiate RevPiModIO controlling library
         self.rpi = revpimodio2.RevPiModIO(autorefresh=True)
         # Handle SIGINT / SIGTERM to exit program cleanly
@@ -38,18 +39,23 @@ class MultiprocessManager():
 
         # Instantiating the MQTT publisher
         self.mqtt_publisher = MqttPublisher()
-        self.dept_topic = 'dept_topic/' # TODO: set as a mqtt pub field
+        self.dept_name = dept_name  # Dept mqtt root topic
+                                    # TODO: set as a mqtt pub field
         
         # My aggregated objects
-        self.oven = OvenStation(self.rpi, 5, 6, 9, 13, 6, 7, 9)
-        self.vacuum_gripper_carrier = VacuumCarrier(self.rpi, 7, 8, 11, 12,
-                                                     5, 8)
-        self.turntable_carrier = TurntableCarrier(self.rpi, 1, 2, 14, 1, 2, 4)
-        self.saw_actuator = SawStation(self.rpi, 4)
-        self.conveyor_carrier = ConveyorCarrier(self.rpi, 3, 3, 
-                                                self.mqtt_publisher)
+        self.oven = \
+            OvenStation(self.rpi, 5, 6, 9, 13, 6, 7, 9)
+        self.vacuum_gripper_carrier = \
+            VacuumCarrier(self.rpi, 7, 8, 11, 12, 5, 8)
+        self.turntable_carrier = \
+            TurntableCarrier(self.rpi, 1, 2, 14, 1, 2, 4)
+        self.saw_actuator = \
+            SawStation(self.rpi, 4)
+        self.conveyor_carrier = \
+            ConveyorCarrier(self.rpi, 3, 3, self.mqtt_publisher)
 
-        self.compressor = CompressorService(self.rpi, 10, self.mqtt_publisher)   # TODO: evaluate class changing
+        self.compressor = \
+            CompressorService(self.rpi, 10, self.mqtt_publisher) # TODO: evaluate class changing
         
         # Support time sensors 
         # TODO: evaluate if is worth to use all those vars or only one is enough
@@ -346,6 +352,6 @@ class MultiprocessManager():
                     
 if __name__ == "__main__":
     # Instantiating the controlling class
-    root = MultiprocessManager()
+    root = MultiprocessManager('Multiproc_dept')
     # Launch the start function of the RevPi event control system
     root.start()

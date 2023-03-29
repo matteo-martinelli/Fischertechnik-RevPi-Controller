@@ -15,8 +15,12 @@ import datetime
 
 class ConveyorCarrier(object):
     """Conveyor Carrier class for conveyor objects."""
-    def __init__(self, rpi, motor_act_pin: int, barrier_sens_pin: int, 
-                 mqtt_publisher):
+    def __init__(self, rpi, dept: str, station: str, motor_act_pin: int, 
+                 barrier_sens_pin: int, mqtt_publisher):
+        # Class descriptive fields
+        self.dept = dept
+        self.station = station
+        self.state = self.motor.get_state()
         # Class actuators
         self.motor = \
             RevPiSingleMotionActuator(rpi, 'conveyor-motor', motor_act_pin) # 3
@@ -26,13 +30,35 @@ class ConveyorCarrier(object):
         # Class virtual sensors
         self.prod_on_conveyor = False
         self.process_completed = False
-        # MQTT 
-        #self.name = pass
-        #self.dept = pass # TODO: will represent the main topic
+        # MQTT
         self.mqtt_publisher = mqtt_publisher
-        self.topic = 'services/compressor/telemetry'
+        self.topic = 'services/compressor/telemetry'   # TODO: still necessary?
 
 
+    # Setters
+    def set_prod_on_conveyor(self, value: bool) -> None: 
+        self.prod_on_conveyor = value
+
+    def set_process_completed(self, value: bool) -> None: 
+        self.process_completed = value
+    
+    # Getters
+    def get_dept(self) -> str: 
+        return self.dept
+    
+    def get_station(self) -> str: 
+        return self.station
+    
+    def get_state(self) -> bool: 
+        return self.state
+
+    def get_prod_on_conveyor(self) -> bool: 
+        return self.prod_on_conveyor
+
+    def get_process_completed(self) -> bool: 
+        return self.process_completed
+
+    # Class Methods
     def move_to_the_exit(self) -> None:
         while (self.light_barrier.get_state() != False):
             self.motor.turn_on()
@@ -42,9 +68,12 @@ class ConveyorCarrier(object):
         current_moment = datetime.now().strftime("%d.%m.%Y - %H:%M:%S")
 
         dto_dict = {
-            'name': self.name,
-            'pin': self.pin,
-            'state': self.state,
+            'dept': self.dept,
+            'station': self.station,
+            'state': self.get_state(),
+            'prod_on_conv:': self.get_prod_on_conveyor(),
+            'process_complete:': self.get_process_completed(),
+            
             'timestamp': current_moment 
         }
         return dto_dict
