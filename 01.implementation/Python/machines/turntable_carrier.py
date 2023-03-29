@@ -11,7 +11,7 @@ This class is composed by the following objects:
     5. vacuum actuated pusher O_14;
 """
 
-from components.revpi_reference_switch import RevPiReferenceSwitch
+from components.revpi_reference_sensor import RevPiReferenceSensor
 from components.revpi_double_motion_actuator import RevPiDoubleMotionActuator
 from components.revpi_vacuum_actuator import RevPiVacuumActuator
 
@@ -26,11 +26,11 @@ class TurntableCarrier(object):
             RevPiVacuumActuator(rpi, 'vacuum gripper', 14)
         # Class sensors
         self.at_vacuum_carrier = \
-            RevPiReferenceSwitch(rpi, 'towards turntable ref switch', 1)
+            RevPiReferenceSensor(rpi, 'towards turntable ref switch', 1)
         self.at_conveyor = \
-            RevPiReferenceSwitch(rpi, 'towards oven ref switch', 2)
+            RevPiReferenceSensor(rpi, 'towards oven ref switch', 2)
         self.at_saw = \
-            RevPiReferenceSwitch(rpi, 'towards oven ref switch', 4)
+            RevPiReferenceSensor(rpi, 'towards oven ref switch', 4)
         # Class virtual sensors
         self.prod_on_carrier = False
         self.process_completed = False
@@ -67,6 +67,3 @@ class TurntableCarrier(object):
             return 'moving'
         else: 
             return 'position error'
-    
-    def to_json ( self ):
-        return json.dumps (self , default = lambda o: o. __dict__ )

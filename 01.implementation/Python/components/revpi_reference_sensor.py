@@ -16,7 +16,7 @@ I_8: Vacuum carrier aligned to oven;
 from components.basic_components.generic_revpi_sensor import GenericRevPiSensor
 
 
-class RevPiReferenceSwitch(GenericRevPiSensor):
+class RevPiReferenceSensor(GenericRevPiSensor):
     """Reference Switch class for reference switch objects."""
     def __init__(self, rpi, name: str, pin: int):
         super().__init__(rpi, pin)

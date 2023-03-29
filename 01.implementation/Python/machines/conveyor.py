@@ -9,7 +9,7 @@ This class is composed by the following objects:
 """
 
 from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
-from components.revpi_light_barrier import RevPiLightBarrier
+from components.revpi_light_barrier_sensor import RevPiLightBarrierSensor
 import datetime
 
 
@@ -21,7 +21,7 @@ class Conveyor(object):
             RevPiSingleMotionActuator(rpi, 'conveyor-motor', 3)
         # Class sensors
         self.light_barrier = \
-            RevPiLightBarrier(rpi, 'conveyor-light-barrier', 3)
+            RevPiLightBarrierSensor(rpi, 'conveyor-light-barrier', 3)
         # Class virtual sensors
         self.prod_on_conveyor = False
         self.process_completed = False

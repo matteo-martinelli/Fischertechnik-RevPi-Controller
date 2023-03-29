@@ -12,9 +12,9 @@ This class is composed by the following objects:
     6. process light O_9. 
 """
 
-from components.revpi_light_barrier import RevPiLightBarrier
+from components.revpi_light_barrier_sensor import RevPiLightBarrierSensor
 from components.revpi_double_motion_actuator import RevPiDoubleMotionActuator
-from components.revpi_reference_switch import RevPiReferenceSwitch
+from components.revpi_reference_sensor import RevPiReferenceSensor
 from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
 from components.revpi_vacuum_actuator import RevPiVacuumActuator
 
@@ -31,11 +31,11 @@ class OvenStation(object):
             RevPiVacuumActuator(rpi, 'Oven door opening act', 13)
         # Class sensors
         self.inside_oven_switch = \
-            RevPiReferenceSwitch(rpi, 'inside oven switch', 6)
+            RevPiReferenceSensor(rpi, 'inside oven switch', 6)
         self.outside_oven_switch = \
-            RevPiReferenceSwitch(rpi, 'outside oven switch', 7)
+            RevPiReferenceSensor(rpi, 'outside oven switch', 7)
         self.light_barrier = \
-            RevPiLightBarrier(rpi, 'oven barrier', 9)
+            RevPiLightBarrierSensor(rpi, 'oven barrier', 9)
         # Class virtual sensors
         self.prod_on_carrier = False
         self.process_completed = False

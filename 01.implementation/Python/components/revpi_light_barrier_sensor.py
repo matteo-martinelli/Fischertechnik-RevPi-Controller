@@ -12,7 +12,7 @@ from components.basic_components.generic_revpi_sensor import GenericRevPiSensor
 import json
 import datetime
 
-class RevPiLightBarrier(GenericRevPiSensor):
+class RevPiLightBarrierSensor(GenericRevPiSensor):
     """Light Barrier class for light barrier objects."""
     def __init__(self, rpi, name: str, pin: int):
         super().__init__(rpi, pin)
