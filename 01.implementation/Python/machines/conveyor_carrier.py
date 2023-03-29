@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-conveyor_carrier.py: Conveyor class
+conveyor_carrier.py: ConveyorCarrier class
 
 This class is composed by the following objects: 
     1. single activation motor O_3; 
@@ -13,15 +13,15 @@ from components.revpi_light_barrier_sensor import RevPiLightBarrierSensor
 import datetime
 
 
-class Conveyor(object):
+class ConveyorCarrier(object):
     """Conveyor Carrier class for conveyor objects."""
-    def __init__(self, rpi, mqtt_publisher):
+    def __init__(self, rpi, motor_pin: int, barrier_pin: int, mqtt_publisher):
         # Class actuators
         self.motor = \
-            RevPiSingleMotionActuator(rpi, 'conveyor-motor', 3)
+            RevPiSingleMotionActuator(rpi, 'conveyor-motor', motor_pin) #3
         # Class sensors
         self.light_barrier = \
-            RevPiLightBarrierSensor(rpi, 'conveyor-light-barrier', 3)
+            RevPiLightBarrierSensor(rpi, 'conveyor-light-barrier', barrier_pin) #3
         # Class virtual sensors
         self.prod_on_conveyor = False
         self.process_completed = False

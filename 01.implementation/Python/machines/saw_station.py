@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-saw.py: Saw class
+saw_station.py: SawStation class
 
 This class is composed by the following objects: 
     1. single activation motor O_4; 
@@ -10,7 +10,7 @@ This class is composed by the following objects:
 from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
 
 
-class Saw(object):
+class SawStation(object):
     """Saw class for saw objects."""
     def __init__(self, rpi):
         # Class actuators

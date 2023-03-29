@@ -16,12 +16,12 @@ import revpimodio2
 
 from mqtt_publisher import MqttPublisher
 
-from machines.compressor import Compressor
+from machines.compressor_service import CompressorService
 from machines.oven_station import OvenStation
 from machines.vacuum_carrier import VacuumCarrier
 from machines.turntable_carrier import TurntableCarrier
-from machines.saw import Saw
-from machines.conveyor import Conveyor
+from machines.saw_station import SawStation
+from machines.conveyor_carrier import ConveyorCarrier
 
 # TODO: change pin assignment, from machine classes to MultiprocessManager class
 # TODO: expose all the machine components subclassses into the machine class itself. 
@@ -45,10 +45,10 @@ class MultiprocessManager():
         self.oven = OvenStation(self.rpi)
         self.vacuum_gripper_carrier = VacuumCarrier(self.rpi)
         self.turntable_carrier = TurntableCarrier(self.rpi)
-        self.saw_actuator = Saw(self.rpi)
-        self.conveyor_carrier = Conveyor(self.rpi, self.mqtt_publisher)
+        self.saw_actuator = SawStation(self.rpi)
+        self.conveyor_carrier = ConveyorCarrier(self.rpi, self.mqtt_publisher)
 
-        self.compressor = Compressor(self.rpi, 10, self.mqtt_publisher)   # TODO: evaluate class changing
+        self.compressor = CompressorService(self.rpi, 10, self.mqtt_publisher)   # TODO: evaluate class changing
         
         # Support time sensors 
         # TODO: evaluate if is worth to use all those vars or only one is enough

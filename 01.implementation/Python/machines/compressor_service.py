@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-compressor.py: Compressor class
+compressor_service.py: CompressorService class
 
 For following pins: 
 O_10: compressor.
@@ -11,7 +11,7 @@ from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
 import json
 
 
-class Compressor(object):
+class CompressorService(object):
     """Compressor class for compressor objects."""
     def __init__(self, rpi, pin: int, mqtt_pub):
         self.motor = \
