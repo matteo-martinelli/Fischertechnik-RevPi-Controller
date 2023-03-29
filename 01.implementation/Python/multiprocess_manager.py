@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
-# TODO: convert all the class functions from camel to snake case
 """
-process_actuator.py: ProcessManager class
+multiprocess_manager.py: MultiprocessManager class
 
 This class is aimed at controlling the whole Fischertechnik loop process.
 It contains the RevPi mainloop, and every class used should be attached to this 
