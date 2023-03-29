@@ -13,9 +13,9 @@ import json
 
 class CompressorService(object):
     """Compressor class for compressor objects."""
-    def __init__(self, rpi, pin: int, mqtt_pub):
+    def __init__(self, rpi, motor_act_pin: int, mqtt_pub):
         self.motor = \
-            RevPiSingleMotionActuator(rpi, 'compressor-motor', pin)
+            RevPiSingleMotionActuator(rpi, 'compressor-motor', motor_act_pin)
         #self.name = pass
         #self.dept = pass # TODO: will represent the main topic
 

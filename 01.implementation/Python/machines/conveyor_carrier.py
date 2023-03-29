@@ -15,13 +15,14 @@ import datetime
 
 class ConveyorCarrier(object):
     """Conveyor Carrier class for conveyor objects."""
-    def __init__(self, rpi, motor_pin: int, barrier_pin: int, mqtt_publisher):
+    def __init__(self, rpi, motor_act_pin: int, barrier_sens_pin: int, 
+                 mqtt_publisher):
         # Class actuators
         self.motor = \
-            RevPiSingleMotionActuator(rpi, 'conveyor-motor', motor_pin) #3
-        # Class sensors
+            RevPiSingleMotionActuator(rpi, 'conveyor-motor', motor_act_pin) # 3
         self.light_barrier = \
-            RevPiLightBarrierSensor(rpi, 'conveyor-light-barrier', barrier_pin) #3
+            RevPiLightBarrierSensor(rpi, 'conveyor-light-barrier', 
+                                    barrier_sens_pin)                       # 3
         # Class virtual sensors
         self.prod_on_conveyor = False
         self.process_completed = False

@@ -42,11 +42,12 @@ class MultiprocessManager():
         self.dept_topic = 'dept_topic/' # TODO: set as a mqtt pub field
         
         # My aggregated objects
-        self.oven = OvenStation(self.rpi)
-        self.vacuum_gripper_carrier = VacuumCarrier(self.rpi)
-        self.turntable_carrier = TurntableCarrier(self.rpi)
-        self.saw_actuator = SawStation(self.rpi)
-        self.conveyor_carrier = ConveyorCarrier(self.rpi, self.mqtt_publisher)
+        self.oven = OvenStation(self.rpi, 5, 6, 9, 13, 6, 7, 9)
+        self.vacuum_gripper_carrier = VacuumCarrier(self.rpi, 7, 8, 11, 12,
+                                                     5, 8)
+        self.turntable_carrier = TurntableCarrier(self.rpi, 1, 2, 14, 1, 2, 4)
+        self.saw_actuator = SawStation(self.rpi, 4)
+        self.conveyor_carrier = ConveyorCarrier(self.rpi, 3, 3, self.mqtt_publisher)
 
         self.compressor = CompressorService(self.rpi, 10, self.mqtt_publisher)   # TODO: evaluate class changing
         

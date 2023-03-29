@@ -18,19 +18,27 @@ from components.revpi_vacuum_actuator import RevPiVacuumActuator
 
 class VacuumCarrier(object):
     """Vacuum Carrier class for oven objects."""
-    def __init__(self, rpi):
+    def __init__(self, rpi, at_turntable_act_pin: int,
+                 at_oven_act_pin: int, grip_act_pin: int, 
+                 grip_lower_act_pin: int, at_turntable_sens_pin: int, 
+                 at_oven_sens_pin: int):
         # Class actuators
         self.motor = \
-            RevPiDoubleMotionActuator(rpi, 'Vacuum carrier motor', 7, 8)
+            RevPiDoubleMotionActuator(rpi, 'Vacuum carrier motor', 
+                                      at_turntable_act_pin, 
+                                      at_oven_act_pin)                  # 7, 8
         self.gripper_activation = \
-            RevPiVacuumActuator(rpi, 'vacuum gripper', 11)
+            RevPiVacuumActuator(rpi, 'vacuum gripper', grip_act_pin)    # 11
         self.gripper_lowering = \
-            RevPiVacuumActuator(rpi, 'vacuum gripper lowering', 12)
+            RevPiVacuumActuator(rpi, 'vacuum gripper lowering', 
+                                grip_lower_act_pin)                     # 12
         # Class sensors
         self.at_turntable = \
-            RevPiReferenceSensor(rpi, 'towards turntable ref switch', 5)
+            RevPiReferenceSensor(rpi, 'towards turntable ref switch', 
+                                 at_turntable_sens_pin)                 # 5
         self.at_oven = \
-            RevPiReferenceSensor(rpi, 'towards oven ref switch', 8)
+            RevPiReferenceSensor(rpi, 'towards oven ref switch', 
+                                 at_oven_sens_pin)                      # 8
         # Class virtual sensors
         self.prod_on_carrier = False
         self.process_completed = False

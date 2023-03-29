@@ -18,19 +18,27 @@ from components.revpi_vacuum_actuator import RevPiVacuumActuator
 
 class TurntableCarrier(object):
     """Turntable Carrier class for turntable objects."""
-    def __init__(self, rpi):
+    def __init__(self, rpi, turntable_clock_act_pin: int, 
+                 turntable_counterclock_act_pin: int, pusher_act_pin: int, 
+                 at_vacuum_carrier_sens_pin: int, at_conveyor_carrier_sens_pin: int, 
+                 at_saw_sens_pin: int):
         # Class actuators
         self.motor = \
-            RevPiDoubleMotionActuator(rpi, 'Vacuum carrier motor', 1, 2)
+            RevPiDoubleMotionActuator(rpi, 'Vacuum carrier motor', 
+                                      turntable_clock_act_pin, 
+                                      turntable_counterclock_act_pin)   # 1, 2
         self.pusher_activation = \
-            RevPiVacuumActuator(rpi, 'vacuum gripper', 14)
+            RevPiVacuumActuator(rpi, 'vacuum gripper', pusher_act_pin)  # 14
         # Class sensors
         self.at_vacuum_carrier = \
-            RevPiReferenceSensor(rpi, 'towards turntable ref switch', 1)
+            RevPiReferenceSensor(rpi, 'towards turntable ref switch', 
+                                 at_vacuum_carrier_sens_pin)            # 1
         self.at_conveyor = \
-            RevPiReferenceSensor(rpi, 'towards oven ref switch', 2)
+            RevPiReferenceSensor(rpi, 'towards oven ref switch', 
+                                 at_conveyor_carrier_sens_pin)          # 2
         self.at_saw = \
-            RevPiReferenceSensor(rpi, 'towards oven ref switch', 4)
+            RevPiReferenceSensor(rpi, 'towards oven ref switch', 
+                                 at_saw_sens_pin)                       # 4
         # Class virtual sensors
         self.prod_on_carrier = False
         self.process_completed = False
