@@ -12,6 +12,7 @@ O_10: compressor.
 import paho.mqtt.client as mqtt
 from conf.mqtt_conf_parameters import MqttConfiguratorParameter
 from components.basic_components.generic_revpi_actuator import GenericRevPiActuator
+from datetime import datetime
 import json
 
 
@@ -40,15 +41,17 @@ class RevPiSingleMotionActuator(GenericRevPiActuator):
         self.rpi.io['O_'+ str(self.pin)].value = self.state
 
     # MQTT 
-    """
     def to_dto(self):
+        current_moment = datetime.now().strftime("%d.%m.%Y - %H:%M:%S")
+
         dto_dict = {
             'name': self.name,
             'pin': self.pin,
-            'state': self.state
+            'state': self.state,
+            'timestamp': current_moment 
         }
         return dto_dict
 
     def to_json(self):
         return json.dumps(self.to_dto())
-    """
+

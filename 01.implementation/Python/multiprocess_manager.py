@@ -24,6 +24,10 @@ from machines.turntable_carrier import TurntableCarrier
 from machines.saw import Saw
 from machines.conveyor import Conveyor
 
+# TODO: change pin assignment, from machine classes to MultiprocessManager class
+# TODO: expose all the machine components subclassses into the machine class itself. 
+# The MultiprocessManager class should talk only with the machine stations layer
+
 
 class MultiprocessManager():
     """Entry point for Fischertechnik Multiprocess Station with Oven control 
@@ -36,15 +40,16 @@ class MultiprocessManager():
 
         # Instantiating the MQTT publisher
         self.mqtt_publisher = MqttPublisher()
+        self.dept_topic = 'dept_topic/' # TODO: set as a mqtt pub field
         
         # My aggregated objects
         self.oven = OvenStation(self.rpi)
         self.vacuum_gripper_carrier = VacuumCarrier(self.rpi)
         self.turntable_carrier = TurntableCarrier(self.rpi)
         self.saw_actuator = Saw(self.rpi)
-        self.conveyor_carrier = Conveyor(self.rpi)
+        self.conveyor_carrier = Conveyor(self.rpi, self.mqtt_publisher)
 
-        self.compressor = Compressor(self.rpi, 10)   # TODO: evaluate class changing
+        self.compressor = Compressor(self.rpi, 10, self.mqtt_publisher)   # TODO: evaluate class changing
         
         # Support time sensors 
         # TODO: evaluate if is worth to use all those vars or only one is enough
@@ -71,7 +76,10 @@ class MultiprocessManager():
         self.mqtt_publisher.close_connection()
 
         # Turning off all the system actuators
-        self.compressor.motor.turn_off()
+        self.compressor.deactivate()
+        #self.mqtt_publisher.publish_telemetry_data(
+        #    'proc_dept/services/compressor/telemetry', 
+        #    self.compressor.motor.to_json())
         self.oven.oven_carrier.turn_off()
         self.turntable_carrier.motor.turn_off()
         self.saw_actuator.motor.turn_off()
@@ -112,6 +120,9 @@ class MultiprocessManager():
         # Activating the process services - i.e. the compressor
         #self.compressor.motor.turn_on()
         self.compressor.activate()
+        #self.mqtt_publisher.publish_telemetry_data(
+        #    'proc_dept/services/compressor/telemetry', 
+        #    self.compressor.motor.to_json())
 
         # My own loop to do some work next to the event system. We will stay
         # here till self.rpi.exitsignal.wait returns True after SIGINT/SIGTERM
@@ -299,6 +310,9 @@ class MultiprocessManager():
                 and self.conveyor_carrier.process_completed == False):
                 if (self.conveyor_carrier.light_barrier.get_state() == True):
                     self.conveyor_carrier.move_to_the_exit()
+                    self.mqtt_publisher.publish_telemetry_data(
+                        'proc_dept/conveyor/telemetry', 
+                        self.conveyor_carrier.motor.to_json())
                 if (self.conveyor_carrier.light_barrier.get_state() == False):
                     self.conveyor_carrier.process_completed = True
 
