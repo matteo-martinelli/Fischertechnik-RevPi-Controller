@@ -23,7 +23,6 @@ from machines.turntable_carrier import TurntableCarrier
 from machines.saw_station import SawStation
 from machines.conveyor_carrier import ConveyorCarrier
 
-# TODO: change pin assignment, from machine classes to MultiprocessManager class
 # TODO: expose all the machine components subclassses into the machine class itself. 
 # The MultiprocessManager class should talk only with the machine stations layer
 
@@ -47,7 +46,8 @@ class MultiprocessManager():
                                                      5, 8)
         self.turntable_carrier = TurntableCarrier(self.rpi, 1, 2, 14, 1, 2, 4)
         self.saw_actuator = SawStation(self.rpi, 4)
-        self.conveyor_carrier = ConveyorCarrier(self.rpi, 3, 3, self.mqtt_publisher)
+        self.conveyor_carrier = ConveyorCarrier(self.rpi, 3, 3, 
+                                                self.mqtt_publisher)
 
         self.compressor = CompressorService(self.rpi, 10, self.mqtt_publisher)   # TODO: evaluate class changing
         
