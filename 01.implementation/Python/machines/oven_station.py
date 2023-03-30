@@ -18,6 +18,9 @@ from components.revpi_reference_sensor import RevPiReferenceSensor
 from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
 from components.revpi_vacuum_actuator import RevPiVacuumActuator
 
+from datetime import datetime 
+import json
+
 
 class OvenStation(object):
     """Oven class for oven objects."""
@@ -29,7 +32,7 @@ class OvenStation(object):
         # Class descriptive fields
         self.dept = dept
         self.station = station
-        self.state = False
+        #self.state = False     # Helpful to track the 'idle' or 'working'state of a machine?
         self.carrier_pos = self.get_carrier_position()  
         self.door_pos = self.get_door_pos()
         # Class actuators
@@ -37,12 +40,12 @@ class OvenStation(object):
             RevPiDoubleMotionActuator(rpi, 'Oven carrier act', 
                                       carrier_in_act_pin, 
                                       carrier_out_act_pin)          # 5, 6
-        self.oven_proc_light = \
-            RevPiSingleMotionActuator(rpi, 'Oven proc light act', 
-                                      proc_light_act_pin)           # 9
         self.oven_door_opening = \
             RevPiVacuumActuator(rpi, 'Oven door opening act', 
                                 vacuum_door_act_pin)                # 13    
+        self.oven_proc_light = \
+            RevPiSingleMotionActuator(rpi, 'Oven proc light act', 
+                                      proc_light_act_pin)           # 9
         # Class sensors
         self.inside_oven_switch = \
             RevPiReferenceSensor(rpi, 'inside oven switch', 
@@ -62,8 +65,8 @@ class OvenStation(object):
 
 
     # Setters
-    def set_state(self, value: bool) ->None: 
-        self.state = value
+    #def set_state(self, value: bool) ->None: 
+    #    self.state = value
 
     def set_prod_on_carrier(self, value: bool) -> None: 
         self.prod_on_carrier = value
@@ -78,8 +81,8 @@ class OvenStation(object):
     def get_station(self) -> str: 
         return self.station
     
-    def get_state(self) -> bool: 
-        return self.state
+    #def get_state(self) -> bool: 
+    #    return self.state
 
     def get_prod_on_carrier(self) -> bool: 
         return self.prod_on_carrier
@@ -116,3 +119,26 @@ class OvenStation(object):
             self.oven_carrier.turn_on(self.oven_carrier.pin_tuple[1])
         self.oven_carrier.turn_off()
         self.oven_door_opening.turn_off()
+
+    # MQTT 
+    def to_dto(self):
+        current_moment = datetime.now().strftime("%d.%m.%Y - %H:%M:%S")
+
+        dto_dict = {
+            'dept': self.dept,
+            'station': self.station,
+            'carrier-pos': self.carrier_pos,
+            'door-pos': self.door_pos, 
+            'oven-carrier': self.get_carrier_position(),
+            'oven-door': self.get_door_pos(),
+            #'proc-light': self.oven_proc_light.get_state() # TODO: adapt, since flashes
+            'light-barrier': self.light_barrier.get_state(),
+            'prod-on-carrier': self.get_prod_on_carrier(),
+            'proc-completed': self.get_process_completed(),
+            
+            'timestamp': current_moment
+        }
+        return dto_dict
+
+    def to_json(self):
+        return json.dumps(self.to_dto())

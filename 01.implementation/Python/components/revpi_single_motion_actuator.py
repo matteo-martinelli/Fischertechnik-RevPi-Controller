@@ -25,13 +25,14 @@ class RevPiSingleMotionActuator(GenericRevPiActuator):
         self.get_state()
 
 
+    # Getters
     def get_name(self) -> str:
         return self.name
 
     def get_state(self) -> bool: 
         self.state = self.rpi.io['O_'+ str(self.pin)].value
         return self.state
-    
+    # Class Methods
     def turn_on(self) -> None:
         self.state = True
         self.rpi.io['O_'+ str(self.pin)].value = self.state

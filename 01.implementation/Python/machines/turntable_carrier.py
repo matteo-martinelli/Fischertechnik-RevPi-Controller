@@ -14,6 +14,8 @@ This class is composed by the following objects:
 from components.revpi_reference_sensor import RevPiReferenceSensor
 from components.revpi_double_motion_actuator import RevPiDoubleMotionActuator
 from components.revpi_vacuum_actuator import RevPiVacuumActuator
+from datetime import datetime
+import json
 
 
 class TurntableCarrier(object):
@@ -52,7 +54,6 @@ class TurntableCarrier(object):
         # MQTT
         self.mqtt_publisher = mqtt_publisher
         self.topic = 'put/some/topic'   # TODO: eventually change it
-
 
 
     # Setters
@@ -95,11 +96,9 @@ class TurntableCarrier(object):
     # Class Methods
     def activate_pusher(self) -> None: 
         self.pusher_activation.turn_on()
-        #self.pusher_state = True
     
     def deactivate_pusher(self) -> None: 
         self.pusher_activation.turn_off()
-        #self.pusher_state = False
     
     def rotate_towards_saw(self) -> None:
         while (self.at_saw.get_state() == False):
@@ -111,10 +110,29 @@ class TurntableCarrier(object):
 
     def rotate_towards_conveyor(self) -> None:
         while (self.at_conveyor.get_state() == False):
-            self.motor.turn_on(self.motor.pin_tuple[0]) # Clockwise
+            self.motor.turn_on(self.motor.pin_tuple[0])     # Clockwise
         self.motor.turn_off()
 
     def rotate_towards_vacuum_carrier(self) -> None:
         while (self.at_vacuum_carrier.get_state() == False):
-            self.motor.turn_on(self.motor.pin_tuple[1]) # Counterclockwise
+            self.motor.turn_on(self.motor.pin_tuple[1])     # Counter-clockwise
         self.motor.turn_off()
+
+    # MQTT 
+    def to_dto(self):
+        current_moment = datetime.now().strftime("%d.%m.%Y - %H:%M:%S")
+
+        dto_dict = {
+            'dept': self.dept,
+            'station': self.station,
+            'turntable-pos': self.turntable_pos,
+            'pusher-state': self.pusher_state,
+            'prod-on-carrier': self.get_prod_on_conveyor(),
+            'proc-completed': self.get_process_completed(),
+            
+            'timestamp': current_moment
+        }
+        return dto_dict
+
+    def to_json(self):
+        return json.dumps(self.to_dto())

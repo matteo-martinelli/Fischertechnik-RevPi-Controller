@@ -10,7 +10,8 @@ This class is composed by the following objects:
 
 from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
 from components.revpi_light_barrier_sensor import RevPiLightBarrierSensor
-import datetime
+from datetime import datetime
+import json
 
 
 class ConveyorCarrier(object):
@@ -20,7 +21,7 @@ class ConveyorCarrier(object):
         # Class descriptive fields
         self.dept = dept
         self.station = station
-        self.state = self.motor.get_state()
+        #self.state = self.motor.get_state()    # Helpful to track the 'idle' or 'working'state of a machine?
         # Class actuators
         self.motor = \
             RevPiSingleMotionActuator(rpi, 'conveyor-motor', motor_act_pin) # 3
@@ -32,7 +33,7 @@ class ConveyorCarrier(object):
         self.process_completed = False
         # MQTT
         self.mqtt_publisher = mqtt_publisher
-        self.topic = 'services/compressor/telemetry'   # TODO: still necessary?
+        self.topic = 'services/compressor/telemetry'    # TODO: eventually change it
 
 
     # Setters
@@ -70,7 +71,8 @@ class ConveyorCarrier(object):
         dto_dict = {
             'dept': self.dept,
             'station': self.station,
-            'state': self.get_state(),
+            'conveyor_motor': self.motor.get_state(),
+            'light-barrier': self.light_barrier.get_state(),
             'prod_on_conv:': self.get_prod_on_conveyor(),
             'process_complete:': self.get_process_completed(),
             

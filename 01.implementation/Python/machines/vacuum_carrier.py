@@ -14,6 +14,8 @@ This class is composed by the following objects:
 from components.revpi_reference_sensor import RevPiReferenceSensor
 from components.revpi_double_motion_actuator import RevPiDoubleMotionActuator
 from components.revpi_vacuum_actuator import RevPiVacuumActuator
+from datetime import datetime
+import json
 
 
 class VacuumCarrier(object):
@@ -53,7 +55,6 @@ class VacuumCarrier(object):
         self.topic = 'put/some/topic'   # TODO: eventually change it
 
 
-    
     # Setters
     def set_prod_on_conveyor(self, value: bool) -> None: 
         self.prod_on_carrier = value
@@ -62,6 +63,18 @@ class VacuumCarrier(object):
         self.process_completed = value
 
     # Getters
+    def get_dept(self) -> str: 
+        return self.dept
+    
+    def get_station(self) -> str: 
+        return self.station
+
+    def get_prod_on_carrier(self) -> bool: 
+        return self.prod_on_carrier
+    
+    def get_process_completed(self) -> bool: 
+        return self.process_completed
+
     def get_carrier_position(self) -> str: 
         if (self.at_turntable.get_state() == True and
             self.at_oven.get_state() == False):
@@ -78,19 +91,15 @@ class VacuumCarrier(object):
     # Class Methods
     def activate_gripper(self) -> None: 
         self.gripper_activation.turn_on()
-        #self.gripper_state = True           # TODO: Maybe better with setters?
 
     def deactivate_gripper(self) -> None: 
         self.gripper_activation.turn_off()
-        #self.gripper_state = False          # TODO: Maybe better with setters?
 
     def lower_gripper(self) -> None: 
         self.gripper_lowering.turn_on()
-        #self.gripper_lowering_state = True  # TODO: Maybe better with setters?
 
     def higher_gripper(self) -> None: 
         self.gripper_lowering.turn_off()
-        #self.gripper_lowering_state = False # TODO: Maybe better with setters?
 
     def move_carrier_towards_oven(self) -> None:
         while (self.at_oven.get_state() == False):
@@ -101,3 +110,24 @@ class VacuumCarrier(object):
         while (self.at_turntable.get_state() == False):
             self.motor.turn_on(self.motor.pin_tuple[1])
         self.motor.turn_off()
+
+    # MQTT 
+    def to_dto(self):
+        current_moment = datetime.now().strftime("%d.%m.%Y - %H:%M:%S")
+
+        dto_dict = {
+            'dept': self.dept,
+            'station': self.station,
+            'carrier-pos': self.carrier_pos,
+            'grip-low-state': self.gripper_lowering_state, 
+            'grip-state': self.gripper_state,
+            'motor': self.motor.get_state(),
+            'prod-on-carrier': self.get_prod_on_carrier(),
+            'proc-completed': self.get_process_completed(),
+            
+            'timestamp': current_moment
+        }
+        return dto_dict
+
+    def to_json(self):
+        return json.dumps(self.to_dto())

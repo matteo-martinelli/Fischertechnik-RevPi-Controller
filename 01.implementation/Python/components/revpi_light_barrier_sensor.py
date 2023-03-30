@@ -19,6 +19,7 @@ class RevPiLightBarrierSensor(GenericRevPiSensor):
         self.name = name
         
 
+    # Getters
     def get_name(self) -> str:
         return self.name
     

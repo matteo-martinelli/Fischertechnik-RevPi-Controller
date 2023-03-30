@@ -13,6 +13,8 @@ O_8: vacuum carrier towards turntable
 """
 
 from components.basic_components.generic_revpi_actuator import GenericRevPiActuator
+from datetime import datetime
+import json
 
 
 class RevPiDoubleMotionActuator(GenericRevPiActuator):
@@ -24,12 +26,13 @@ class RevPiDoubleMotionActuator(GenericRevPiActuator):
         self.get_state()     # First reading of the actual state
 
 
+    # Getters
     def get_state(self) -> None:
         state_A = self.rpi.io['O_' + str(self.pin_tuple[0])].value
         state_B = self.rpi.io['O_' + str(self.pin_tuple[1])].value
         self.state = (state_A, state_B)
         return self. state
-
+    # Class Methods
     def turn_on(self, activation_pin: int):
         for i in range(len(self.pin_tuple)):
             if self.pin_tuple[i] == activation_pin: 
@@ -42,3 +45,18 @@ class RevPiDoubleMotionActuator(GenericRevPiActuator):
         self.state = False
         for i in range(len(self.pin_tuple)):
             self.rpi.io['O_' + str(self.pin_tuple[i])].value = self.state
+
+    # MQTT 
+    def to_dto(self):
+        current_moment = datetime.now().strftime("%d.%m.%Y - %H:%M:%S")
+
+        dto_dict = {
+            'name': self.name,
+            'pins': self.pin_tuple,
+            'state': self.state,
+            'timestamp': current_moment 
+        }
+        return dto_dict
+
+    def to_json(self):
+        return json.dumps(self.to_dto())

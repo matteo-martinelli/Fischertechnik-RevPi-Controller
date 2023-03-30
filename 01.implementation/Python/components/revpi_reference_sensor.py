@@ -14,7 +14,8 @@ I_8: Vacuum carrier aligned to oven;
 """
 
 from components.basic_components.generic_revpi_sensor import GenericRevPiSensor
-
+from datetime import datetime
+import json
 
 class RevPiReferenceSensor(GenericRevPiSensor):
     """Reference Switch class for reference switch objects."""
@@ -23,5 +24,21 @@ class RevPiReferenceSensor(GenericRevPiSensor):
         self.name = name
 
     
+    # Getters
     def get_name(self) -> str:
         return self.name
+    
+    # MQTT 
+    def to_dto(self):
+        current_moment = datetime.now().strftime("%d.%m.%Y - %H:%M:%S")
+
+        dto_dict = {
+            'name': self.name,
+            'pin': self.pin,
+            'state': self.state,
+            'timestamp': current_moment 
+        }
+        return dto_dict
+
+    def to_json(self):
+        return json.dumps(self.to_dto())
