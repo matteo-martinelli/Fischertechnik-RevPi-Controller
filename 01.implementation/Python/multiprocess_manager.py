@@ -23,7 +23,6 @@ from machines.turntable_carrier import TurntableCarrier
 from machines.saw_station import SawStation
 from machines.conveyor_carrier import ConveyorCarrier
 
-# TODO: change pin assignment, from machine classes to MultiprocessManager class
 # TODO: expose all the machine components subclassses into the machine class itself. 
 # The MultiprocessManager class should talk only with the machine stations layer
 
@@ -43,17 +42,20 @@ class MultiprocessManager():
                                     # TODO: set as a mqtt pub field
         
         # My aggregated objects
+        # TODO: reformat in oven_station
         self.oven = \
             OvenStation(self.rpi, 5, 6, 9, 13, 6, 7, 9)
         self.vacuum_gripper_carrier = \
             VacuumCarrier(self.rpi, 7, 8, 11, 12, 5, 8)
         self.turntable_carrier = \
             TurntableCarrier(self.rpi, 1, 2, 14, 1, 2, 4)
+        # TODO: reformat in saw_station
         self.saw_actuator = \
             SawStation(self.rpi, 4)
         self.conveyor_carrier = \
             ConveyorCarrier(self.rpi, 3, 3, self.mqtt_publisher)
 
+        # TODO: reformat in compressor_station
         self.compressor = \
             CompressorService(self.rpi, 10, self.mqtt_publisher) # TODO: evaluate class changing
         
@@ -82,14 +84,15 @@ class MultiprocessManager():
         self.mqtt_publisher.close_connection()
 
         # Turning off all the system actuators
-        self.compressor.deactivate()
+        self.compressor.deactivate_service()
         #self.mqtt_publisher.publish_telemetry_data(
         #    'proc_dept/services/compressor/telemetry', 
         #    self.compressor.motor.to_json())
-        self.oven.oven_carrier.turn_off()
-        self.turntable_carrier.motor.turn_off()
-        self.saw_actuator.motor.turn_off()
-        self.conveyor_carrier.motor.turn_off()
+        self.oven.deactivate_station()
+        self.vacuum_gripper_carrier.deactivate_carrier()
+        self.turntable_carrier.deactivate_carrier()
+        self.saw_actuator.deactivate_station()
+        self.conveyor_carrier.deactivate_carrier()
 
         # Cleaning the object support states
         self.reset_station_states()
@@ -103,11 +106,11 @@ class MultiprocessManager():
         self.time_sens_turntable_pusher_count = 0
         self.counter = 0
         # Objects process completed flags
-        self.oven.process_completed = False
-        self.conveyor_carrier.process_completed = False
-        self.turntable_carrier.process_completed = False
-        self.saw_actuator.process_completed = False
-        self.conveyor_carrier.process_completed = False
+        #self.oven.process_completed = False
+        #self.conveyor_carrier.process_completed = False
+        #self.turntable_carrier.process_completed = False
+        #self.saw_actuator.process_completed = False
+        #self.conveyor_carrier.process_completed = False
 
     def start(self):
         """Start event system and own cyclic loop."""
@@ -125,7 +128,7 @@ class MultiprocessManager():
         
         # Activating the process services - i.e. the compressor
         #self.compressor.motor.turn_on()
-        self.compressor.activate()
+        self.compressor.activate_service()
         #self.mqtt_publisher.publish_telemetry_data(
         #    'proc_dept/services/compressor/telemetry', 
         #    self.compressor.motor.to_json())

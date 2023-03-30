@@ -28,12 +28,12 @@ class CompressorService(object):
         self.topic = 'proc_dept/services/compressor/telemetry' # TODO: eventually change it 
 
 
-    def activate(self):
+    def activate_service(self):
         self.motor.turn_on()
         self.mqtt_pub.publish_telemetry_data(self.topic, self.motor.to_json())
         # TODO: Add print if the publishing worked out
 
-    def deactivate(self):
+    def deactivate_service(self):
         self.motor.turn_off()
         self.mqtt_pub.publish_telemetry_data(self.topic, self.motor.to_json())
         # TODO: Add print if the publishing worked out

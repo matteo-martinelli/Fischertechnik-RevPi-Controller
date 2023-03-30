@@ -64,6 +64,11 @@ class SawStation(object):
     def deactivate(self) -> None: 
         self.motor.turn_off()
 
+    def deactivate_station(self) -> None: 
+        self.motor.turn_off()
+        self.set_prod_under_saw(False)
+        self.set_process_completed(False)
+
     # MQTT 
     def to_dto(self):
         current_moment = datetime.now().strftime("%d.%m.%Y - %H:%M:%S")

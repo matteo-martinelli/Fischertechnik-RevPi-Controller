@@ -111,6 +111,13 @@ class VacuumCarrier(object):
             self.motor.turn_on(self.motor.pin_tuple[1])
         self.motor.turn_off()
 
+    def deactivate_carrier(self) -> None: 
+        self.motor.turn_off()
+        self.gripper_activation.turn_off()
+        self.gripper_lowering.turn_off()
+        self.set_prod_on_conveyor(False)
+        self.set_process_completed(False)
+    
     # MQTT 
     def to_dto(self):
         current_moment = datetime.now().strftime("%d.%m.%Y - %H:%M:%S")

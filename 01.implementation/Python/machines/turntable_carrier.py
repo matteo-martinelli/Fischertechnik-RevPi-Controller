@@ -118,6 +118,12 @@ class TurntableCarrier(object):
             self.motor.turn_on(self.motor.pin_tuple[1])     # Counter-clockwise
         self.motor.turn_off()
 
+    def deactivate_carrier(self) -> None: 
+        self.motor.turn_off()
+        self.pusher_activation.turn_off()
+        self.set_prod_on_carrier(False)
+        self.set_process_completed(False)
+
     # MQTT 
     def to_dto(self):
         current_moment = datetime.now().strftime("%d.%m.%Y - %H:%M:%S")

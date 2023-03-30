@@ -120,6 +120,13 @@ class OvenStation(object):
         self.oven_carrier.turn_off()
         self.oven_door_opening.turn_off()
 
+    def deactivate_station(self) -> None: 
+        self.oven_carrier.turn_off()
+        self.oven_proc_light.turn_off()
+        self.oven_door_opening.turn_off()
+        self.set_process_completed(False)
+        self.set_prod_on_carrier(False)
+
     # MQTT 
     def to_dto(self):
         current_moment = datetime.now().strftime("%d.%m.%Y - %H:%M:%S")

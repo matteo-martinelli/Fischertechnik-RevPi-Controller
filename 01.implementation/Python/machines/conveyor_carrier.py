@@ -65,6 +65,11 @@ class ConveyorCarrier(object):
             self.motor.turn_on()
         self.motor.turn_off()
 
+    def deactivate_carrier(self) -> None: 
+        self.motor.turn_off()
+        self.set_prod_on_conveyor(False)
+        self.set_process_completed(False)
+
     def to_dto(self):
         current_moment = datetime.now().strftime("%d.%m.%Y - %H:%M:%S")
 
@@ -79,3 +84,6 @@ class ConveyorCarrier(object):
             'timestamp': current_moment 
         }
         return dto_dict
+
+    def to_json(self):
+        return json.dumps(self.to_dto())
