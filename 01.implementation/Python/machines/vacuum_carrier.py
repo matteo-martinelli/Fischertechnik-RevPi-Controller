@@ -56,7 +56,7 @@ class VacuumCarrier(object):
 
 
     # Setters
-    def set_prod_on_conveyor(self, value: bool) -> None: 
+    def set_prod_on_carrier(self, value: bool) -> None: 
         self.prod_on_carrier = value
 
     def set_process_completed(self, value: bool) -> None: 
@@ -74,6 +74,12 @@ class VacuumCarrier(object):
     
     def get_process_completed(self) -> bool: 
         return self.process_completed
+        
+    def get_gripper_lowering_state(self) -> bool: 
+        return self.gripper_lowering.get_state()
+
+    def get_gripper_activation_state(self) -> bool: 
+        return self.gripper_activation.get_state()
 
     def get_carrier_position(self) -> str: 
         if (self.at_turntable.get_state() == True and

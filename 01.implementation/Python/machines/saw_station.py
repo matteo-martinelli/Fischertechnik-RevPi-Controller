@@ -58,10 +58,10 @@ class SawStation(object):
         return self.process_completed
 
     # Class Methods
-    def activate(self) -> None: 
+    def activate_saw(self) -> None: 
         self.motor.turn_on()
 
-    def deactivate(self) -> None: 
+    def deactivate_saw(self) -> None: 
         self.motor.turn_off()
 
     def deactivate_station(self) -> None: 

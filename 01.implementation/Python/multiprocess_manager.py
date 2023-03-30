@@ -143,13 +143,13 @@ class MultiprocessManager():
             # Follows the process description ###############################
             # If the oven-light sensor is False, that is there is the product
             # So, set the self.prod_on_oven_carrier to True
-            if (self.oven.light_barrier.get_state() == False):
-                self.oven.prod_on_carrier = True
+            if (self.oven.get_light_barrier_state() == False):
+                self.oven.set_prod_on_carrier(True)
 
             # If there is the product on the oven carrier, move the vacuum 
             # carrier towards the oven
-            if (self.oven.process_completed == False and 
-                self.oven.prod_on_carrier == True):
+            if (self.oven.get_process_completed() == False and 
+                self.oven.get_prod_on_carrier() == True):
                 # Move the carrier towards the oven
                 if (self.vacuum_gripper_carrier.get_carrier_position() != 'oven'):
                     # Activate it towards the oven
@@ -157,8 +157,8 @@ class MultiprocessManager():
                     
             # If the oven is not ready and the vacuum carrier grip is at the 
             # oven and the product is on the oven carrier: 
-            if (self.oven.process_completed == False and
-                self.oven.prod_on_carrier == True and 
+            if (self.oven.get_process_completed() == False and
+                self.oven.get_prod_on_carrier() == True and 
                 self.vacuum_gripper_carrier.get_carrier_position() == 'oven'):
                 # Move inside the oven the oven carrier
                 if (self.oven.get_carrier_position() == 'outside'):
@@ -166,28 +166,23 @@ class MultiprocessManager():
                 
                 # When the carrier is inside the oven
                 if (self.oven.get_carrier_position() == 'inside'):
-                    #haha, flashing lights go brrrr - For light flashing
-                    if (self.time_sens_oven_count % 2 == 1):
-                        # Activate the process light
-                        self.oven.oven_proc_light.turn_on()
-                    else:
-                        # Deactivate the process light
-                        self.oven.oven_proc_light.turn_off()
+                    # Turn on the oven light
+                    self.oven.activate_proc_light()
                     # Time counter
                     self.time_sens_oven_count += 1            
 
                 # When the counter reaches 30, stop the oven process
                 if (self.time_sens_oven_count >= 30):       
                     # Deactivate the light
-                    self.oven.oven_proc_light.turn_off()
+                    self.oven.deactivate_proc_light()
                     # Set the oven process var to True
-                    self.oven.process_completed = True
+                    self.oven.set_process_completed(True)
                     # Set the oven counter to 0
                     self.time_sens_oven_count = 0
 
                 # When the oven process is completed
-                if (self.oven.process_completed == True and 
-                    self.oven.prod_on_carrier == True):
+                if (self.oven.get_process_completed() == True and 
+                    self.oven.get_prod_on_carrier() == True):
                     # If oven_feeder_out sensor is False = the carrier is not out
                     self.oven.move_carrier_outward()        
 
@@ -200,15 +195,15 @@ class MultiprocessManager():
             # is at the oven and the vacuum counter is less than 10
             # The counter is needed in order to wait for the vacuum gripper
             # to be completely lowered  
-            if (self.oven.get_carrier_position() == 'outside' 
-                and self.oven.process_completed == True
-                and self.vacuum_gripper_carrier.get_carrier_position() == 'oven' 
-                and self.oven.prod_on_carrier == True):
+            if (self.oven.get_carrier_position() == 'outside' and 
+                self.oven.get_process_completed() == True and
+                self.oven.get_prod_on_carrier() == True and
+                self.vacuum_gripper_carrier.get_carrier_position() == 'oven'):
                 
                 # Lower the vacuum gripper
                 if (self.time_sens_vacuum_count < 10):
                     # Lower the carrier vacuum gripper
-                    self.vacuum_gripper_carrier.gripper_lowering.turn_on()
+                    self.vacuum_gripper_carrier.lower_gripper()
                     # Add 1 to the vacuum counter
                     self.time_sens_vacuum_count += 1
             
@@ -217,7 +212,7 @@ class MultiprocessManager():
                 if (self.time_sens_vacuum_count >= 10 and 
                     self.time_sens_vacuum_count < 15):
                     # Activate the carrier vacuum gripper
-                    self.vacuum_gripper_carrier.gripper_activation.turn_on()
+                    self.vacuum_gripper_carrier.activate_gripper()
                     # Add 1 to the vacuum count
                     self.time_sens_vacuum_count += 1
 
@@ -226,21 +221,21 @@ class MultiprocessManager():
                 if (self.time_sens_vacuum_count >= 15 and 
                         self.time_sens_vacuum_count < 35):
                     # Upper the carrier vacuum gripper
-                    self.vacuum_gripper_carrier.gripper_lowering.turn_off()
+                    self.vacuum_gripper_carrier.higher_gripper()
                     # Add 1 to the vacuum counter
                     self.time_sens_vacuum_count += 1
 
                 # Set the gripping process as completed
                 if(self.vacuum_gripper_carrier.get_carrier_position() == 'oven'
-                    and self.vacuum_gripper_carrier.gripper_lowering.get_state() == False
-                    and self.vacuum_gripper_carrier.gripper_activation.get_state() == True
+                    and self.vacuum_gripper_carrier.get_gripper_lowering_state() == False
+                    and self.vacuum_gripper_carrier.get_gripper_activation_state() == True
                     and self.time_sens_vacuum_count >= 35):
                     self.time_sens_vacuum_count = 0
-                    self.oven.prod_on_carrier = False
-                    self.vacuum_gripper_carrier.prod_on_carrier = True
+                    self.oven.set_prod_on_carrier(False)
+                    self.vacuum_gripper_carrier.set_prod_on_carrier(True)
                 
             # Move the carrier to the turntable
-            if (self.vacuum_gripper_carrier.prod_on_carrier == True and
+            if (self.vacuum_gripper_carrier.get_prod_on_carrier() == True and
                 self.vacuum_gripper_carrier.get_carrier_position() != 'turntable'):
                 # Bring the carrier vacuum gripper to the turn-table
                 self.vacuum_gripper_carrier.move_carrier_towards_turntable()
@@ -248,109 +243,112 @@ class MultiprocessManager():
             # Release the product
             # Lower the carrier vacuum gripper
             if (self.vacuum_gripper_carrier.get_carrier_position() == 'turntable'
-                and self.vacuum_gripper_carrier.prod_on_carrier == True
-                and self.vacuum_gripper_carrier.gripper_activation.get_state() == True
+                and self.vacuum_gripper_carrier.get_prod_on_carrier() == True
+                and self.vacuum_gripper_carrier.get_gripper_activation_state() == True
                 and self.time_sens_vacuum_count < 15):
-                    self.vacuum_gripper_carrier.gripper_lowering.turn_on()
+                    self.vacuum_gripper_carrier.lower_gripper()
                     self.time_sens_vacuum_count += 1
                     
             # Release the product on the turntable
             elif (self.vacuum_gripper_carrier.get_carrier_position() == 'turntable'
-                  and self.vacuum_gripper_carrier.gripper_lowering.get_state() == True
+                  and self.vacuum_gripper_carrier.get_gripper_lowering_state() == True
                   and self.time_sens_vacuum_count >= 15 
                   and self.time_sens_vacuum_count < 30):
-                    self.vacuum_gripper_carrier.gripper_activation.turn_off()
+                    self.vacuum_gripper_carrier.deactivate_gripper()
                     self.time_sens_vacuum_count += 1
 
             # Raise the carrier vacuum gripper
             elif (self.vacuum_gripper_carrier.get_carrier_position() == 'turntable'
-                  and self.vacuum_gripper_carrier.gripper_lowering.get_state() == True 
-                  and self.vacuum_gripper_carrier.gripper_activation.get_state() == False
+                  and self.vacuum_gripper_carrier.get_gripper_lowering_state() == True 
+                  and self.vacuum_gripper_carrier.get_gripper_activation_state() == False
                   and self.time_sens_vacuum_count >= 30):
                     self.time_sens_vacuum_count = 0
-                    self.vacuum_gripper_carrier.gripper_lowering.turn_off()
-                    self.vacuum_gripper_carrier.prod_on_carrier = False
-                    self.vacuum_gripper_carrier.process_completed = True
-                    self.turntable_carrier.prod_on_carrier = True
+                    self.vacuum_gripper_carrier.higher_gripper()
+                    self.vacuum_gripper_carrier.set_prod_on_carrier(False)
+                    self.vacuum_gripper_carrier.set_process_completed(True)
+                    self.turntable_carrier.set_prod_on_carrier(True)
 
             # Turn the turntable towards the saw
-            if (self.turntable_carrier.prod_on_carrier == True and
-                self.turntable_carrier.process_completed == False):
+            if (self.turntable_carrier.get_prod_on_carrier() == True and
+                self.turntable_carrier.get_process_completed() == False):
                 # Activate the turntable until it reaches the saw
                 if (self.turntable_carrier.get_carrier_position() != 'saw' and
-                    self.saw_actuator.process_completed == False):
+                    self.saw_actuator.get_process_completed() == False):
                     self.turntable_carrier.rotate_towards_saw()
 
                 # Activate the saw for the design processing time
                 if (self.turntable_carrier.get_carrier_position() == 'saw' 
-                    and self.saw_actuator.process_completed == False and
+                    and self.saw_actuator.get_process_completed() == False and
                     self.time_sens_saw_count < 40):
-                    self.saw_actuator.motor.turn_on()
+                    self.saw_actuator.activate_saw()
                     self.time_sens_saw_count += 1
                 elif (self.turntable_carrier.get_carrier_position() == 'saw' 
-                      and self.saw_actuator.process_completed == False and
+                      and self.saw_actuator.get_process_completed() == False and
                     self.time_sens_saw_count >= 40): 
-                    self.saw_actuator.motor.turn_off()
-                    self.saw_actuator.process_completed = True
+                    self.saw_actuator.deactivate_saw()
+                    self.saw_actuator.set_process_completed(True)
                     self.time_sens_saw_count = 0
             
                 # Activate the turntable until it reaches the conveyor                
-                if (self.saw_actuator.process_completed == True and
+                if (self.saw_actuator.get_process_completed() == True and
                     self.turntable_carrier.get_carrier_position() != 'conveyor'):                    
                     self.turntable_carrier.rotate_towards_conveyor()
             
                 # Activate the pusher
                 if (self.turntable_carrier.get_carrier_position() == 'conveyor' and
                     self.time_sens_turntable_pusher_count < 20):
-                    self.turntable_carrier.pusher_activation.turn_on()
+                    self.turntable_carrier.activate_pusher()
                     self.time_sens_turntable_pusher_count += 1
                 # Deactivate the pusher and rotate the turntable to the 
                 # conveyor
                 elif(self.turntable_carrier.get_carrier_position() == 'conveyor' and
                     self.time_sens_turntable_pusher_count >= 20):
-                    self.turntable_carrier.pusher_activation.turn_off()
-                    self.turntable_carrier.prod_on_carrier = False
-                    self.turntable_carrier.process_completed = True
-                    self.conveyor_carrier.prod_on_conveyor = True
+                    self.turntable_carrier.deactivate_pusher()
+                    self.turntable_carrier.set_prod_on_carrier(False)
+                    self.turntable_carrier.set_process_completed(True)
+                    self.conveyor_carrier.set_prod_on_conveyor(True)
                     self.time_sens_turntable_pusher_count = 0
             
             # Activate the conveyor
-            if (self.conveyor_carrier.prod_on_conveyor == True
-                and self.conveyor_carrier.process_completed == False):
-                if (self.conveyor_carrier.light_barrier.get_state() == True):
+            if (self.conveyor_carrier.get_prod_on_conveyor() == True
+                and self.conveyor_carrier.get_process_completed() == False):
+                if (self.conveyor_carrier.get_light_barrier_state() == True):
                     self.conveyor_carrier.move_to_the_exit()
+
+                    # TODO: move from here inside the class
                     self.mqtt_publisher.publish_telemetry_data(
                         'proc_dept/conveyor/telemetry', 
                         self.conveyor_carrier.motor.to_json())
-                if (self.conveyor_carrier.light_barrier.get_state() == False):
-                    self.conveyor_carrier.process_completed = True
+                    
+                if (self.conveyor_carrier.get_light_barrier_state() == False):
+                    self.conveyor_carrier.set_process_completed(True)
 
             #################################################################
             # If there is the product in front of the light sensor
-            if(self.conveyor_carrier.light_barrier.get_state() == False 
-               and self.conveyor_carrier.process_completed == True 
-               and self.turntable_carrier.process_completed == True 
-               and self.saw_actuator.process_completed == True 
-               and self.vacuum_gripper_carrier.process_completed == True 
-               and self.oven.process_completed == True):
+            if(self.conveyor_carrier.get_light_barrier_state() == False 
+               and self.conveyor_carrier.get_process_completed() == True 
+               and self.turntable_carrier.get_process_completed() == True 
+               and self.saw_actuator.get_process_completed() == True 
+               and self.vacuum_gripper_carrier.get_process_completed() == True 
+               and self.oven.get_process_completed() == True):
                 
                 # Turn off the valve feeder
-                self.turntable_carrier.pusher_activation.turn_off()
+                self.turntable_carrier.deactivate_pusher()
                 # Turn off the conveyor belt
-                self.conveyor_carrier.motor.turn_off()
+                self.conveyor_carrier.deactivate_carrier()
                 # Turn the turn-table towards the carrier
                 self.turntable_carrier.rotate_towards_vacuum_carrier()
                 
             #################################################################
             # If the product is in moved from the conveyor light barrier, reset
             # everything
-            if(self.conveyor_carrier.light_barrier.get_state() == True 
-               and self.conveyor_carrier.process_completed == True 
-               and self.turntable_carrier.process_completed == True 
-               and self.saw_actuator.process_completed == True 
-               and self.vacuum_gripper_carrier.process_completed == True 
-               and self.oven.process_completed == True):
-                self.conveyor_carrier.prod_on_conveyor = False
+            if(self.conveyor_carrier.get_light_barrier_state() == True 
+               and self.conveyor_carrier.get_process_completed() == True 
+               and self.turntable_carrier.get_process_completed() == True 
+               and self.saw_actuator.get_process_completed() == True 
+               and self.vacuum_gripper_carrier.get_process_completed() == True 
+               and self.oven.get_process_completed() == True):
+                self.conveyor_carrier.set_prod_on_conveyor(False)
                 self.reset_station_states()
                     
 if __name__ == "__main__":

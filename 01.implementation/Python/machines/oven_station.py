@@ -19,6 +19,7 @@ from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
 from components.revpi_vacuum_actuator import RevPiVacuumActuator
 
 from datetime import datetime 
+import time
 import json
 
 
@@ -89,6 +90,12 @@ class OvenStation(object):
 
     def get_process_completed(self) -> bool: 
         return self.process_completed
+    
+    def get_light_barrier_state(self) -> bool: 
+        return self.light_barrier.get_state()
+    
+    def get_proc_light_state(self) -> bool: 
+        return self.oven_proc_light.get_state()
 
     def get_carrier_position(self) -> str: 
         if (self.inside_oven_switch.get_state() == True): 
@@ -120,6 +127,18 @@ class OvenStation(object):
         self.oven_carrier.turn_off()
         self.oven_door_opening.turn_off()
 
+    def activate_proc_light(self) -> None:
+        self.oven_proc_light.turn_on()
+    
+    def deactivate_proc_light(self) -> None:
+        self.oven_proc_light.turn_off()
+    
+    # TODO: test this function if works
+    def oven_process_start(self) -> None:
+        self.oven_proc_light.turn_on()
+        time.sleep(3)
+        self.oven_proc_light.turn_off()
+
     def deactivate_station(self) -> None: 
         self.oven_carrier.turn_off()
         self.oven_proc_light.turn_off()
@@ -139,7 +158,7 @@ class OvenStation(object):
             'oven-carrier': self.get_carrier_position(),
             'oven-door': self.get_door_pos(),
             #'proc-light': self.oven_proc_light.get_state() # TODO: adapt, since flashes
-            'light-barrier': self.light_barrier.get_state(),
+            'light-barrier': self.get_light_barrier_state(),
             'prod-on-carrier': self.get_prod_on_carrier(),
             'proc-completed': self.get_process_completed(),
             

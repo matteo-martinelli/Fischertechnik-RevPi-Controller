@@ -73,7 +73,7 @@ class TurntableCarrier(object):
     def get_pusher_state(self) -> bool: 
         return self.pusher_state
 
-    def get_prod_on_conveyor(self) -> bool: 
+    def get_prod_on_carrier(self) -> bool: 
         return self.prod_on_carrier
 
     def get_process_completed(self) -> bool: 

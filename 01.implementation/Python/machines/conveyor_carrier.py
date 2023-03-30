@@ -50,8 +50,11 @@ class ConveyorCarrier(object):
     def get_station(self) -> str: 
         return self.station
     
-    def get_state(self) -> bool: 
-        return self.state
+    #def get_state(self) -> bool: 
+    #    return self.state
+
+    def get_light_barrier_state(self) -> bool: 
+        return self.light_barrier.get_state()
 
     def get_prod_on_conveyor(self) -> bool: 
         return self.prod_on_conveyor
