@@ -62,7 +62,7 @@ class OvenStation(object):
         self.process_completed = False
         # MQTT
         self.mqtt_publisher = mqtt_publisher
-        self.topic = 'some/topic/here'  # TODO: Change eventually the topic
+        self.topic = self.dept + '/' + self.station
 
 
     # Setters
@@ -71,9 +71,11 @@ class OvenStation(object):
 
     def set_prod_on_carrier(self, value: bool) -> None: 
         self.prod_on_carrier = value
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def set_process_completed(self, value: bool) -> None: 
         self.process_completed = value
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
     
     # Getters
     def get_dept(self) -> str: 
@@ -114,30 +116,50 @@ class OvenStation(object):
         
     # Class Methods
     def move_carrier_inward(self) -> None:
+        counter = 0
         self.oven_door_opening.turn_on()
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+
         while (self.inside_oven_switch.get_state() == False):
             self.oven_carrier.turn_on(self.oven_carrier.pin_tuple[0])
+            if (counter == 0):
+                counter += 1
+                self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                           self.to_json())
         self.oven_carrier.turn_off()
         self.oven_door_opening.turn_off()
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def move_carrier_outward(self) -> None:
+        counter = 0
         self.oven_door_opening.turn_on()
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+
         while (self.outside_oven_switch.get_state() == False):
             self.oven_carrier.turn_on(self.oven_carrier.pin_tuple[1])
+            if(counter == 0): 
+                counter += 1 
+                self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                           self.to_json())
         self.oven_carrier.turn_off()
         self.oven_door_opening.turn_off()
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def activate_proc_light(self) -> None:
         self.oven_proc_light.turn_on()
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
     
     def deactivate_proc_light(self) -> None:
         self.oven_proc_light.turn_off()
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
     
     # TODO: test this function if works
-    def oven_process_start(self) -> None:
+    def oven_process_start(self, proc_time: int) -> None:
         self.oven_proc_light.turn_on()
-        time.sleep(3)
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        time.sleep(proc_time)
         self.oven_proc_light.turn_off()
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def deactivate_station(self) -> None: 
         self.oven_carrier.turn_off()
@@ -145,6 +167,7 @@ class OvenStation(object):
         self.oven_door_opening.turn_off()
         self.set_process_completed(False)
         self.set_prod_on_carrier(False)
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     # MQTT 
     def to_dto(self):

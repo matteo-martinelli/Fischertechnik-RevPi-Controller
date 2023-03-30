@@ -22,22 +22,19 @@ class CompressorService(object):
         # Class actuators
         self.motor = \
             RevPiSingleMotionActuator(rpi, 'compressor-motor', motor_act_pin)
-        # Class sensors
         # MQTT
         self.mqtt_pub = mqtt_pub
-        self.topic = 'proc_dept/services/compressor/telemetry' # TODO: eventually change it 
+        self.topic = self.dept + '/' + self.station 
 
 
     def activate_service(self):
         self.motor.turn_on()
-        self.mqtt_pub.publish_telemetry_data(self.topic, self.motor.to_json())
-        # TODO: Add print if the publishing worked out
-
+        self.mqtt_pub.publish_telemetry_data(self.topic, self.to_json())
+        
     def deactivate_service(self):
         self.motor.turn_off()
-        self.mqtt_pub.publish_telemetry_data(self.topic, self.motor.to_json())
-        # TODO: Add print if the publishing worked out
-
+        self.mqtt_pub.publish_telemetry_data(self.topic, self.to_json())
+        
     # MQTT 
     def to_dto(self):
         current_moment = datetime.now().strftime("%d.%m.%Y - %H:%M:%S")

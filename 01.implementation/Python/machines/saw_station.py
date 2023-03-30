@@ -28,7 +28,7 @@ class SawStation(object):
         self.process_completed = False
         # MQTT
         self.mqtt_publisher = mqtt_publisher
-        self.topic = 'put/some/topic'   # TODO: eventually change it
+        self.topic = self.dept + '/' + self.station
 
 
     # Setters
@@ -37,9 +37,11 @@ class SawStation(object):
     
     def set_prod_under_saw(self, value: bool) -> None: 
         self.prod_under_saw = value
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def set_process_completed(self, value: bool) -> None: 
         self.process_completed = value
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
     
     # Getters
     def get_dept(self) -> str: 
@@ -60,14 +62,17 @@ class SawStation(object):
     # Class Methods
     def activate_saw(self) -> None: 
         self.motor.turn_on()
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def deactivate_saw(self) -> None: 
         self.motor.turn_off()
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def deactivate_station(self) -> None: 
         self.motor.turn_off()
         self.set_prod_under_saw(False)
         self.set_process_completed(False)
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     # MQTT 
     def to_dto(self):

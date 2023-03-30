@@ -48,7 +48,8 @@ class MultiprocessManager():
         self.saw_station = \
             SawStation(self.rpi, 4)
         self.conveyor_carrier = \
-            ConveyorCarrier(self.rpi, 3, 3, self.mqtt_publisher)
+            ConveyorCarrier(self.rpi, self.dept_name, 'conveyor-carrier',
+                            3, 3, self.mqtt_publisher)
 
         self.compressor_service = \
             CompressorService(self.rpi, self.dept_name, 'compressor-service', 
@@ -348,6 +349,6 @@ class MultiprocessManager():
                     
 if __name__ == "__main__":
     # Instantiating the controlling class
-    root = MultiprocessManager('Multiproc_dept')
+    root = MultiprocessManager('multiproc_dept')
     # Launch the start function of the RevPi event control system
     root.start()

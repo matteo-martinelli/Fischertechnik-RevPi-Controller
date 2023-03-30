@@ -33,15 +33,17 @@ class ConveyorCarrier(object):
         self.process_completed = False
         # MQTT
         self.mqtt_publisher = mqtt_publisher
-        self.topic = 'services/compressor/telemetry'    # TODO: eventually change it
+        self.topic = self.dept + '/' + self.station    
 
 
     # Setters
     def set_prod_on_conveyor(self, value: bool) -> None: 
         self.prod_on_conveyor = value
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def set_process_completed(self, value: bool) -> None: 
         self.process_completed = value
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
     
     # Getters
     def get_dept(self) -> str: 
@@ -64,14 +66,25 @@ class ConveyorCarrier(object):
 
     # Class Methods
     def move_to_the_exit(self) -> None:
+        # Counter set to publish only 1 time through the cycle
+        counter = 0
         while (self.light_barrier.get_state() != False):
             self.motor.turn_on()
+            
+            if (counter == 0): 
+                self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                           self.to_json())
+                counter += 1
+        
         self.motor.turn_off()
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def deactivate_carrier(self) -> None: 
         self.motor.turn_off()
         self.set_prod_on_conveyor(False)
         self.set_process_completed(False)
+        # MQTT Publish
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def to_dto(self):
         current_moment = datetime.now().strftime("%d.%m.%Y - %H:%M:%S")

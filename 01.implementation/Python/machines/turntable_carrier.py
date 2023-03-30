@@ -53,15 +53,17 @@ class TurntableCarrier(object):
         self.process_completed = False
         # MQTT
         self.mqtt_publisher = mqtt_publisher
-        self.topic = 'put/some/topic'   # TODO: eventually change it
+        self.topic = self.dept + '/' + self.station
 
 
     # Setters
     def set_prod_on_carrier(self, value: bool) -> None: 
         self.prod_on_carrier = value
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def set_process_completed(self, value: bool) -> None: 
         self.process_completed = value
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
     
     # Getters
     def get_dept(self) -> str: 
@@ -96,33 +98,59 @@ class TurntableCarrier(object):
     # Class Methods
     def activate_pusher(self) -> None: 
         self.pusher_activation.turn_on()
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
     
     def deactivate_pusher(self) -> None: 
         self.pusher_activation.turn_off()
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
     
     def rotate_towards_saw(self) -> None:
+        counter = 0 
+
         while (self.at_saw.get_state() == False):
             if (self.at_vacuum_carrier.get_state() == True):
                 self.motor.turn_on(self.motor.pin_tuple[0]) # Clockwise
+                if (counter == 0):
+                    counter += 1 
+                    self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                               self.to_json())
             elif (self.at_conveyor.get_state() == True):
                 self.motor.turn_on(self.motor.pin_tuple[1]) # Counter-clockwise
+                if (counter == 1): 
+                    counter += 1
+                    self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                               self.to_json())
         self.motor.turn_off()
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def rotate_towards_conveyor(self) -> None:
+        counter = 0
         while (self.at_conveyor.get_state() == False):
             self.motor.turn_on(self.motor.pin_tuple[0])     # Clockwise
+            if (counter == 0): 
+                counter += 1
+                self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
         self.motor.turn_off()
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def rotate_towards_vacuum_carrier(self) -> None:
+        counter = 0
+
         while (self.at_vacuum_carrier.get_state() == False):
             self.motor.turn_on(self.motor.pin_tuple[1])     # Counter-clockwise
+            if (counter == 0):
+                counter += 1 
+                self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                           self.to_json())
         self.motor.turn_off()
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def deactivate_carrier(self) -> None: 
         self.motor.turn_off()
         self.pusher_activation.turn_off()
         self.set_prod_on_carrier(False)
         self.set_process_completed(False)
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     # MQTT 
     def to_dto(self):

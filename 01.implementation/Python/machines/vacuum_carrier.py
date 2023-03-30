@@ -52,15 +52,17 @@ class VacuumCarrier(object):
         self.process_completed = False
         # MQTT
         self.mqtt_publisher = mqtt_publisher
-        self.topic = 'put/some/topic'   # TODO: eventually change it
+        self.topic = self.dept + '/' + self.station
 
 
     # Setters
     def set_prod_on_carrier(self, value: bool) -> None: 
         self.prod_on_carrier = value
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def set_process_completed(self, value: bool) -> None: 
         self.process_completed = value
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     # Getters
     def get_dept(self) -> str: 
@@ -97,32 +99,51 @@ class VacuumCarrier(object):
     # Class Methods
     def activate_gripper(self) -> None: 
         self.gripper_activation.turn_on()
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def deactivate_gripper(self) -> None: 
         self.gripper_activation.turn_off()
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def lower_gripper(self) -> None: 
         self.gripper_lowering.turn_on()
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def higher_gripper(self) -> None: 
         self.gripper_lowering.turn_off()
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def move_carrier_towards_oven(self) -> None:
+        counter = 0
+
         while (self.at_oven.get_state() == False):
             self.motor.turn_on(self.motor.pin_tuple[0])
+            if (counter == 0): 
+                counter += 1
+                self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                           self.to_json())
         self.motor.turn_off()
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def move_carrier_towards_turntable(self) -> None:
+        counter = 0
+
         while (self.at_turntable.get_state() == False):
             self.motor.turn_on(self.motor.pin_tuple[1])
+            if (counter == 0): 
+                counter += 1
+                self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                           self.to_json())
         self.motor.turn_off()
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def deactivate_carrier(self) -> None: 
         self.motor.turn_off()
         self.gripper_activation.turn_off()
         self.gripper_lowering.turn_off()
-        self.set_prod_on_conveyor(False)
+        self.set_prod_on_carrier(False)
         self.set_process_completed(False)
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
     
     # MQTT 
     def to_dto(self):
