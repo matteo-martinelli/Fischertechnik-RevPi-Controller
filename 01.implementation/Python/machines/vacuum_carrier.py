@@ -156,6 +156,8 @@ class VacuumCarrier(object):
         dto_dict = {
             'dept': self.dept,
             'station': self.station,
+            'type': self.__class__.__name__,
+            'layer': 'machine',
             'carrier-pos': self.carrier_pos,
             'grip-low-state': self.gripper_lowering_state, 
             'grip-state': self.gripper_state,

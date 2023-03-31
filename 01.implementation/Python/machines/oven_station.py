@@ -36,6 +36,9 @@ class OvenStation(object):
         #self.state = False     # Helpful to track the 'idle' or 'working'state of a machine?
         self.carrier_pos = 'None'  
         self.door_pos = False
+        # MQTT
+        self.mqtt_publisher = mqtt_publisher
+        self.topic = self.dept + '/' + self.station
         # Class actuators
         self.oven_carrier = \
             RevPiDoubleMotionActuator(rpi, 'Oven carrier act', 
@@ -46,7 +49,7 @@ class OvenStation(object):
                                 vacuum_door_act_pin)                # 13    
         self.oven_proc_light = \
             RevPiSingleMotionActuator(rpi, 'Oven proc light act', 
-                                      proc_light_act_pin)           # 9
+                                      proc_light_act_pin, self.topic, mqtt_publisher)           # 9
         # Class sensors
         self.inside_oven_switch = \
             RevPiReferenceSensor(rpi, 'inside oven switch', 
@@ -63,9 +66,6 @@ class OvenStation(object):
         # Class virtual sensors
         self.prod_on_carrier = False
         self.process_completed = False
-        # MQTT
-        self.mqtt_publisher = mqtt_publisher
-        self.topic = self.dept + '/' + self.station
 
 
     # Setters
@@ -179,6 +179,8 @@ class OvenStation(object):
         dto_dict = {
             'dept': self.dept,
             'station': self.station,
+            'type': self.__class__.__name__,
+            'layer': 'machine',
             'carrier-pos': self.carrier_pos,
             'door-pos': self.door_pos, 
             'oven-carrier': self.get_carrier_position(),

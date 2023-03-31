@@ -162,6 +162,8 @@ class TurntableCarrier(object):
         dto_dict = {
             'dept': self.dept,
             'station': self.station,
+            'type': self.__class__.__name__,
+            'layer': 'machine',
             'turntable-pos': self.turntable_pos,
             'pusher-state': self.pusher_state,
             'prod-on-carrier': self.get_prod_on_carrier(),

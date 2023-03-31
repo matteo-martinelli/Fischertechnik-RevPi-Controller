@@ -19,16 +19,17 @@ class SawStation(object):
         self.dept = dept
         self.station = station
         #self.state = False     # Helpful to track the 'idle' or 'working'state of a machine?
-        # Class actuators
-        self.motor = \
-            RevPiSingleMotionActuator(rpi, 'conveyor motor', 
-                                      saw_motor_act_pin)        # 4
-        # Class virtual sensors
-        self.prod_under_saw = False
-        self.process_completed = False
         # MQTT
         self.mqtt_publisher = mqtt_publisher
         self.topic = self.dept + '/' + self.station
+        # Class actuators
+        self.motor = \
+            RevPiSingleMotionActuator(rpi, 'conveyor motor', 
+                                      saw_motor_act_pin, self.topic, 
+                                      mqtt_publisher)        # 4
+        # Class virtual sensors
+        self.prod_under_saw = False
+        self.process_completed = False
 
 
     # Setters
@@ -81,6 +82,8 @@ class SawStation(object):
         dto_dict = {
             'dept': self.dept,
             'station': self.station,
+            'type': self.__class__.__name__,
+            'layer': 'machine',
             'motor': self.motor.get_state(),
             'prod-on-carrier': self.get_prod_under_saw(),
             'proc-completed': self.get_process_completed(),

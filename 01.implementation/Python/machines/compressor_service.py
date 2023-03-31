@@ -19,12 +19,13 @@ class CompressorService(object):
         # Class descriptive fields
         self.dept = dept
         self.station = station
-        # Class actuators
-        self.motor = \
-            RevPiSingleMotionActuator(rpi, 'compressor-motor', motor_act_pin)
         # MQTT
         self.mqtt_pub = mqtt_pub
         self.topic = self.dept + '/' + self.station 
+        # Class actuators
+        self.motor = \
+            RevPiSingleMotionActuator(rpi, 'compressor-motor', motor_act_pin, 
+                                      self.topic, mqtt_pub)
 
 
     def activate_service(self):
@@ -42,6 +43,8 @@ class CompressorService(object):
         dto_dict = {
             'dept': self.dept,
             'station': self.station,
+            'type': self.__class__.__name__,
+            'layer': 'machine',
             'motor': self.motor.get_name(),
             
             'timestamp': current_moment 

@@ -22,18 +22,19 @@ class ConveyorCarrier(object):
         self.dept = dept
         self.station = station
         #self.state = self.motor.get_state()    # Helpful to track the 'idle' or 'working'state of a machine?
+        # MQTT
+        self.mqtt_publisher = mqtt_publisher
+        self.topic = self.dept + '/' + self.station
         # Class actuators
         self.motor = \
-            RevPiSingleMotionActuator(rpi, 'conveyor-motor', motor_act_pin) # 3
+            RevPiSingleMotionActuator(rpi, 'conveyor-motor', motor_act_pin, 
+                                      self.topic, mqtt_publisher) # 3
         self.light_barrier = \
             RevPiLightBarrierSensor(rpi, 'conveyor-light-barrier', 
                                     barrier_sens_pin)                       # 3
         # Class virtual sensors
         self.prod_on_conveyor = False
         self.process_completed = False
-        # MQTT
-        self.mqtt_publisher = mqtt_publisher
-        self.topic = self.dept + '/' + self.station    
 
 
     # Setters
@@ -92,6 +93,8 @@ class ConveyorCarrier(object):
         dto_dict = {
             'dept': self.dept,
             'station': self.station,
+            'type': self.__class__.__name__,
+            'layer': 'machine',
             'conveyor_motor': self.motor.get_state(),
             'light-barrier': self.light_barrier.get_state(),
             'prod_on_conv:': self.get_prod_on_conveyor(),
