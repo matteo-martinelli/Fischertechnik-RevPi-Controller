@@ -13,7 +13,7 @@ class MqttConfiguratorParameter(object):
     MQTT_PW = 'put here the pw'
     MQTT_BASIC_TOPIC = '/user_{0}'.format(MQTT_USER)    
 
-    ACTIVE_MQTT = False
+    ACTIVE_MQTT = True
     PRINT_PUBLISHED_DATA = True
     DEPT_TOPIC = 'multiproc_dept'
     OVEN_STATION_TOPIC = 'oven-station'
