@@ -27,7 +27,7 @@ from machines.conveyor_carrier import ConveyorCarrier
 class MultiprocessManager():
     """Entry point for Fischertechnik Multiprocess Station with Oven control 
     over RevPi."""
-    def __init__(self, dept_name: str):
+    def __init__(self, dept_name):
         # Instantiate RevPiModIO controlling library
         self.rpi = revpimodio2.RevPiModIO(autorefresh=True)
         # Handle SIGINT / SIGTERM to exit program cleanly
@@ -40,13 +40,17 @@ class MultiprocessManager():
         
         # My aggregated objects
         self.oven_station = \
-            OvenStation(self.rpi, 5, 6, 9, 13, 6, 7, 9)
+            OvenStation(self.rpi, self.dept_name, 'oven-station', 5, 6, 9, 13,
+                         6, 7, 9, self.mqtt_publisher)
         self.vacuum_gripper_carrier = \
-            VacuumCarrier(self.rpi, 7, 8, 11, 12, 5, 8)
+            VacuumCarrier(self.rpi, self.dept_name, 'vacuum-carrier', 7, 8, 11,
+                           12, 5, 8, self.mqtt_publisher)
         self.turntable_carrier = \
-            TurntableCarrier(self.rpi, 1, 2, 14, 1, 2, 4)
+            TurntableCarrier(self.rpi, self.dept_name, 'turntable-carrier', 1, 
+                             2, 14, 1, 2, 4, self.mqtt_publisher)
         self.saw_station = \
-            SawStation(self.rpi, 4)
+            SawStation(self.rpi, self.dept_name, 'saw-station', 4, 
+                       self.mqtt_publisher)
         self.conveyor_carrier = \
             ConveyorCarrier(self.rpi, self.dept_name, 'conveyor-carrier',
                             3, 3, self.mqtt_publisher)
@@ -79,11 +83,8 @@ class MultiprocessManager():
         # Closing the MQTT connection
         self.mqtt_publisher.close_connection()
 
-        # Turning off all the system actuators
+        # Turning off all the system actuators and resetting stations states
         self.compressor_service.deactivate_service()
-        #self.mqtt_publisher.publish_telemetry_data(
-        #    'proc_dept/services/compressor_service/telemetry', 
-        #    self.compressor_service.motor.to_json())
         self.oven_station.deactivate_station()
         self.vacuum_gripper_carrier.deactivate_carrier()
         self.turntable_carrier.deactivate_carrier()
@@ -91,9 +92,21 @@ class MultiprocessManager():
         self.conveyor_carrier.deactivate_carrier()
 
         # Cleaning the object support states
-        self.reset_station_states()
+        self.reset_station_states_and_stop()
     
-    def reset_station_states(self):
+    def reset_station_states_and_stop(self):
+        self.reset_station_states_and_restart
+        self.compressor_service.deactivate_service()
+    
+    def reset_station_states_and_restart(self):
+        # Turning off all the system actuators and resetting stations states
+        #self.compressor_service.deactivate_service()
+        self.oven_station.deactivate_station()
+        self.vacuum_gripper_carrier.deactivate_carrier()
+        self.turntable_carrier.deactivate_carrier()
+        self.saw_station.deactivate_station()
+        self.conveyor_carrier.deactivate_carrier()
+
         # Support time sensors
         self.time_sens_saw_timer = 0
         self.time_sens_oven_station_timer = 0
@@ -147,15 +160,14 @@ class MultiprocessManager():
             if (self.oven_station.get_process_completed() == False and 
                 self.oven_station.get_prod_on_carrier() == True):
                 # Move the carrier towards the oven_station
-                if (self.vacuum_gripper_carrier.get_carrier_position() != 'oven_station'):
+                if (self.vacuum_gripper_carrier.get_carrier_position() != 'oven'):
                     # Activate it towards the oven_station
-                    self.vacuum_gripper_carrier.move_carrier_towards_oven_station()
-                    
+                    self.vacuum_gripper_carrier.move_carrier_towards_oven()
             # If the oven_station is not ready and the vacuum carrier grip is at the 
             # oven_station and the product is on the oven_station carrier: 
             if (self.oven_station.get_process_completed() == False and
                 self.oven_station.get_prod_on_carrier() == True and 
-                self.vacuum_gripper_carrier.get_carrier_position() == 'oven_station'):
+                self.vacuum_gripper_carrier.get_carrier_position() == 'oven'):
                 # Move inside the oven_station the oven_station carrier
                 if (self.oven_station.get_carrier_position() == 'outside'):
                     self.oven_station.move_carrier_inward()
@@ -194,7 +206,7 @@ class MultiprocessManager():
             if (self.oven_station.get_carrier_position() == 'outside' and 
                 self.oven_station.get_process_completed() == True and
                 self.oven_station.get_prod_on_carrier() == True and
-                self.vacuum_gripper_carrier.get_carrier_position() == 'oven_station'):
+                self.vacuum_gripper_carrier.get_carrier_position() == 'oven'):
                 
                 # Lower the vacuum gripper
                 if (self.time_sens_vacuum_timer < 10):
@@ -222,7 +234,7 @@ class MultiprocessManager():
                     self.time_sens_vacuum_timer += 1
 
                 # Set the gripping process as completed
-                if(self.vacuum_gripper_carrier.get_carrier_position() == 'oven_station'
+                if(self.vacuum_gripper_carrier.get_carrier_position() == 'oven'
                     and self.vacuum_gripper_carrier.get_gripper_lowering_state() == False
                     and self.vacuum_gripper_carrier.get_gripper_activation_state() == True
                     and self.time_sens_vacuum_timer >= 35):
@@ -304,21 +316,18 @@ class MultiprocessManager():
                     self.turntable_carrier.set_process_completed(True)
                     self.conveyor_carrier.set_prod_on_conveyor(True)
                     self.time_sens_turntable_pusher_timer = 0
+                    self.turntable_carrier.rotate_towards_vacuum_carrier()
             
             # Activate the conveyor
             if (self.conveyor_carrier.get_prod_on_conveyor() == True
                 and self.conveyor_carrier.get_process_completed() == False):
+                # Move towards exit
                 if (self.conveyor_carrier.get_light_barrier_state() == True):
                     self.conveyor_carrier.move_to_the_exit()
-
-                    # TODO: move from here inside the class
-                    self.mqtt_publisher.publish_telemetry_data(
-                        'proc_dept/conveyor/telemetry', 
-                        self.conveyor_carrier.motor.to_json())
-                    
+                # Once at the exit, set the process as completed
                 if (self.conveyor_carrier.get_light_barrier_state() == False):
                     self.conveyor_carrier.set_process_completed(True)
-
+                    
             #################################################################
             # If there is the product in front of the light sensor
             if(self.conveyor_carrier.get_light_barrier_state() == False 
@@ -327,17 +336,12 @@ class MultiprocessManager():
                and self.saw_station.get_process_completed() == True 
                and self.vacuum_gripper_carrier.get_process_completed() == True 
                and self.oven_station.get_process_completed() == True):
-                
-                # Turn off the valve feeder
-                self.turntable_carrier.deactivate_pusher()
-                # Turn off the conveyor belt
-                self.conveyor_carrier.deactivate_carrier()
-                # Turn the turn-table towards the carrier
-                self.turntable_carrier.rotate_towards_vacuum_carrier()
-                
+                # Print the process completion message
+                print('process completed')
+
             #################################################################
             # If the product is in moved from the conveyor light barrier, reset
-            # everything
+            # everything, and set the dept as ready to restart
             if(self.conveyor_carrier.get_light_barrier_state() == True 
                and self.conveyor_carrier.get_process_completed() == True 
                and self.turntable_carrier.get_process_completed() == True 
@@ -345,8 +349,8 @@ class MultiprocessManager():
                and self.vacuum_gripper_carrier.get_process_completed() == True 
                and self.oven_station.get_process_completed() == True):
                 self.conveyor_carrier.set_prod_on_conveyor(False)
-                self.reset_station_states()
-                    
+                self.reset_station_states_and_restart()
+
 if __name__ == "__main__":
     # Instantiating the controlling class
     root = MultiprocessManager('multiproc_dept')
