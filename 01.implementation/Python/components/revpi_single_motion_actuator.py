@@ -18,10 +18,16 @@ import json
 
 class RevPiSingleMotionActuator(GenericRevPiActuator):
     """Single Motion Actuator class for single motion actuated objects."""
-    def __init__(self, rpi, name: str, pin: int):
+    def __init__(self, rpi, name: str, pin: int, parent_topic: str, 
+                 mqtt_publisher):
         super().__init__(rpi)
+        # MQTT
+        self.topic = parent_topic + '/' + name
+        self.mqtt_publisher = mqtt_publisher
+        # Class fields
         self.name = name
         self.pin = pin
+        # Fields init
         self.get_state()
 
 
@@ -31,15 +37,19 @@ class RevPiSingleMotionActuator(GenericRevPiActuator):
 
     def get_state(self) -> bool: 
         self.state = self.rpi.io['O_'+ str(self.pin)].value
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
         return self.state
+    
     # Class Methods
     def turn_on(self) -> None:
         self.state = True
         self.rpi.io['O_'+ str(self.pin)].value = self.state
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
     
     def turn_off(self) -> None:
         self.state = False
         self.rpi.io['O_'+ str(self.pin)].value = self.state
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     # MQTT 
     def to_dto(self):
@@ -49,10 +59,12 @@ class RevPiSingleMotionActuator(GenericRevPiActuator):
             'name': self.name,
             'pin': self.pin,
             'state': self.state,
+            'type': self.__class__.__name__,
+            'layer': 'sensor-actuator',
+
             'timestamp': current_moment 
         }
         return dto_dict
 
     def to_json(self):
         return json.dumps(self.to_dto())
-
