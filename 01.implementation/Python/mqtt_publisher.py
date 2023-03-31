@@ -34,8 +34,9 @@ class MqttPublisher(object):
         print('Mqtt Loop stopped')
 
     def publish_telemetry_data(self, topic: str, target_payload: json):
-        target_topic = 'user:{0}/{1}/'.format(MqttConfiguratorParameter.MQTT_USER, 
-                                         topic)
-        #target_payload = payload.to_json()
-        self.mqtt_client.publish(target_topic, target_payload, 0, True)
-        print(f"Info Published: Topic: {target_topic} Payload: {target_payload}")
+        if (MqttConfiguratorParameter.ACTIVE_MQTT == True):
+            target_topic = 'user:{0}/{1}/'.format(MqttConfiguratorParameter.MQTT_USER, 
+                                            topic)
+            #target_payload = payload.to_json()
+            self.mqtt_client.publish(target_topic, target_payload, 0, True)
+            print(f"Info Published: Topic: {target_topic} Payload: {target_payload}")
