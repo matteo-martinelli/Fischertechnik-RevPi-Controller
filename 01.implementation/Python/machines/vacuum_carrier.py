@@ -27,9 +27,9 @@ class VacuumCarrier(object):
         # Class descriptive fields
         self.dept = dept
         self.station = station
-        self.carrier_pos = self.get_carrier_position()
-        self.gripper_lowering_state = self.gripper_activation.get_state()
-        self.gripper_state = self.gripper_lowering.get_state()
+        self.carrier_pos = 'None'
+        self.gripper_lowering_state = False
+        self.gripper_state = False
         # Class actuators
         self.motor = \
             RevPiDoubleMotionActuator(rpi, 'Vacuum carrier motor', 
@@ -47,6 +47,10 @@ class VacuumCarrier(object):
         self.at_oven = \
             RevPiReferenceSensor(rpi, 'towards oven ref switch', 
                                  at_oven_sens_pin)                      # 8
+        # Initializing class fields
+        self.carrier_pos = self.get_carrier_position()
+        self.gripper_lowering_state = self.gripper_activation.get_state()
+        self.gripper_state = self.gripper_lowering.get_state()
         # Class virtual sensors
         self.prod_on_carrier = False
         self.process_completed = False

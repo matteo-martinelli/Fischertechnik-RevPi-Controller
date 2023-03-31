@@ -29,8 +29,8 @@ class TurntableCarrier(object):
         # Class descriptive fields
         self.dept = dept
         self.station = station
-        self.turntable_pos = self.get_carrier_position()
-        self.pusher_state = self.pusher_activation.get_state()
+        self.turntable_pos = 'None'
+        self.pusher_state = False
         # Class actuators
         self.motor = \
             RevPiDoubleMotionActuator(rpi, 'Vacuum carrier motor', 
@@ -48,6 +48,9 @@ class TurntableCarrier(object):
         self.at_saw = \
             RevPiReferenceSensor(rpi, 'towards oven ref switch', 
                                  at_saw_sens_pin)                       # 4
+        # Initializing class fields
+        self.turntable_pos = self.get_carrier_position()
+        self.pusher_state = self.pusher_activation.get_state()
         # Class virtual sensors
         self.prod_on_carrier = False
         self.process_completed = False
@@ -161,7 +164,7 @@ class TurntableCarrier(object):
             'station': self.station,
             'turntable-pos': self.turntable_pos,
             'pusher-state': self.pusher_state,
-            'prod-on-carrier': self.get_prod_on_conveyor(),
+            'prod-on-carrier': self.get_prod_on_carrier(),
             'proc-completed': self.get_process_completed(),
             
             'timestamp': current_moment

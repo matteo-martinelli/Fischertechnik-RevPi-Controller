@@ -34,8 +34,8 @@ class OvenStation(object):
         self.dept = dept
         self.station = station
         #self.state = False     # Helpful to track the 'idle' or 'working'state of a machine?
-        self.carrier_pos = self.get_carrier_position()  
-        self.door_pos = self.get_door_pos()
+        self.carrier_pos = 'None'  
+        self.door_pos = False
         # Class actuators
         self.oven_carrier = \
             RevPiDoubleMotionActuator(rpi, 'Oven carrier act', 
@@ -57,6 +57,9 @@ class OvenStation(object):
         self.light_barrier = \
             RevPiLightBarrierSensor(rpi, 'oven barrier', 
                                     light_barrier_sens_pin)         # 9
+        # Initializing class fields 
+        self.carrier_pos = self.get_carrier_position()  
+        self.door_pos = self.get_door_pos()
         # Class virtual sensors
         self.prod_on_carrier = False
         self.process_completed = False
