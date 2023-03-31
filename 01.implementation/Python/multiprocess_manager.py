@@ -31,7 +31,7 @@ class MultiprocessManager():
         # Instantiate RevPiModIO controlling library
         self.rpi = revpimodio2.RevPiModIO(autorefresh=True)
         # Handle SIGINT / SIGTERM to exit program cleanly
-        self.rpi.handlesignalend(self.cleanup_revpi)
+        self.rpi.handlesignalend(self.cleanup)
 
         # Instantiating the MQTT publisher
         self.mqtt_publisher = MqttPublisher()
@@ -59,6 +59,10 @@ class MultiprocessManager():
             CompressorService(self.rpi, self.dept_name, 'compressor-service', 
                               10, self.mqtt_publisher) # TODO: evaluate class changing
         
+        # Process fields
+        self.piece_counter = 0
+        self.process_completed = False
+        
         # Support time sensors 
         # TODO: evaluate if is worth to use all those vars or only one is enough
         # Saw process time timer
@@ -73,7 +77,7 @@ class MultiprocessManager():
         self.timer = 0
         
 
-    def cleanup_revpi(self):
+    def cleanup(self):
         """Cleanup function to leave the RevPi in a defined state."""
         print('Cleaning the system state')
 
@@ -335,19 +339,23 @@ class MultiprocessManager():
                and self.turntable_carrier.get_process_completed() == True 
                and self.saw_station.get_process_completed() == True 
                and self.vacuum_gripper_carrier.get_process_completed() == True 
-               and self.oven_station.get_process_completed() == True):
+               and self.oven_station.get_process_completed() == True
+               and self.process_completed == False):
                 # Print the process completion message
                 print('process completed')
+                # Add 1 to the piece counter
+                self.piece_counter += 1
+                # Setting the process as completed
+                self.process_completed = True
 
             #################################################################
             # If the product is in moved from the conveyor light barrier, reset
             # everything, and set the dept as ready to restart
             if(self.conveyor_carrier.get_light_barrier_state() == True 
-               and self.conveyor_carrier.get_process_completed() == True 
-               and self.turntable_carrier.get_process_completed() == True 
-               and self.saw_station.get_process_completed() == True 
-               and self.vacuum_gripper_carrier.get_process_completed() == True 
-               and self.oven_station.get_process_completed() == True):
+               and self.process_completed == True):
+                # Print the process completion message
+                print('resetting the dept')
+                # Reset the system
                 self.conveyor_carrier.set_prod_on_conveyor(False)
                 self.reset_station_states_and_restart()
 
