@@ -11,10 +11,16 @@ The loop is managed via the RevPi event manager, that is set for being not
 blocking, with a personalised while loop next to the event system. 
 """
 
+# TODO: timestamp da inviare come long in ms (python ms epoch time)
+# TODO: controlla bene pubblicazione di tutto lo strato degli attuatori
+# TODO: controlla consistenza pubblicazione dati
+# TODO: aggiungi pubblicazione dei sensori solo se è cambiato dall'ultimo valore.
 
 import revpimodio2
 
 from mqtt_publisher import MqttPublisher
+
+from datetime import datetime  
 
 from machines.compressor_service import CompressorService
 from machines.oven_station import OvenStation
@@ -151,6 +157,7 @@ class MultiprocessManager():
         # The loop does 2 things, continuously: 
         #   1. Sets the Rpi a1 light
         #   2. Follows the process description
+        # The cycle is set in ... .exitsignal.wait(0.05) every 0.05s
         while (self.rpi.exitsignal.wait(0.05) == False):
             # TODO: simplify the process loop
             # Follows the process description ###############################

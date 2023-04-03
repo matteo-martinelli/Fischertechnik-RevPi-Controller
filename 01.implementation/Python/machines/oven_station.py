@@ -34,8 +34,8 @@ class OvenStation(object):
         self.dept = dept
         self.station = station
         #self.state = False     # Helpful to track the 'idle' or 'working'state of a machine?
-        self.carrier_pos = 'None'  
-        self.door_pos = False
+        #self.carrier_pos = self.get_carrier_position()  
+        #self.door_pos = False
         # MQTT
         self.mqtt_publisher = mqtt_publisher
         self.topic = self.dept + '/' + self.station
@@ -61,8 +61,8 @@ class OvenStation(object):
             RevPiLightBarrierSensor(rpi, 'oven barrier', 
                                     light_barrier_sens_pin)         # 9
         # Initializing class fields 
-        self.carrier_pos = self.get_carrier_position()  
-        self.door_pos = self.get_door_pos()
+        #self.carrier_pos = self.get_carrier_position()  
+        #self.door_pos = self.get_door_pos()
         # Class virtual sensors
         self.prod_on_carrier = False
         self.process_completed = False
@@ -98,7 +98,8 @@ class OvenStation(object):
     
     def get_light_barrier_state(self) -> bool: 
         return self.light_barrier.get_state()
-    
+        # MQTT publish
+
     def get_proc_light_state(self) -> bool: 
         return self.oven_proc_light.get_state()
 
@@ -181,8 +182,8 @@ class OvenStation(object):
             'station': self.station,
             'type': self.__class__.__name__,
             'layer': 'machine',
-            'carrier-pos': self.carrier_pos,
-            'door-pos': self.door_pos, 
+            #'carrier-pos': self.carrier_pos,
+            #'door-pos': self.door_pos, 
             'oven-carrier': self.get_carrier_position(),
             'oven-door': self.get_door_pos(),
             #'proc-light': self.oven_proc_light.get_state() # TODO: adapt, since flashes
