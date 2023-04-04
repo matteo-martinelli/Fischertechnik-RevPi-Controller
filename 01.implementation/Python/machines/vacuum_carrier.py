@@ -33,20 +33,20 @@ class VacuumCarrier(object):
         self.gripper_state = False
         # Class actuators
         self.motor = \
-            RevPiDoubleMotionActuator(rpi, 'Vacuum carrier motor', 
+            RevPiDoubleMotionActuator(rpi, 'motor', 
                                       at_turntable_act_pin, 
                                       at_oven_act_pin)                  # 7, 8
         self.gripper_activation = \
-            RevPiVacuumActuator(rpi, 'vacuum gripper', grip_act_pin)    # 11
+            RevPiVacuumActuator(rpi, 'gripper', grip_act_pin)    # 11
         self.gripper_lowering = \
-            RevPiVacuumActuator(rpi, 'vacuum gripper lowering', 
+            RevPiVacuumActuator(rpi, 'gripper-lowering', 
                                 grip_lower_act_pin)                     # 12
         # Class sensors
         self.at_turntable = \
-            RevPiReferenceSensor(rpi, 'towards turntable ref switch', 
+            RevPiReferenceSensor(rpi, 'carrier-at-turntable', 
                                  at_turntable_sens_pin)                 # 5
         self.at_oven = \
-            RevPiReferenceSensor(rpi, 'towards oven ref switch', 
+            RevPiReferenceSensor(rpi, 'carrier-at-oven', 
                                  at_oven_sens_pin)                      # 8
         # Initializing class fields
         self.carrier_pos = self.get_carrier_position()

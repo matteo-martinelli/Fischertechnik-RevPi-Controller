@@ -25,7 +25,7 @@ class CompressorService(object):
         self.topic = self.dept + '/' + self.station 
         # Class actuators
         self.motor = \
-            RevPiSingleMotionActuator(rpi, 'compressor-motor', motor_act_pin, 
+            RevPiSingleMotionActuator(rpi, 'motor', motor_act_pin, 
                                       self.topic, mqtt_pub)
 
 

@@ -11,7 +11,6 @@ The loop is managed via the RevPi event manager, that is set for being not
 blocking, with a personalised while loop next to the event system. 
 """
 
-# TODO: timestamp da inviare come long in ms (python ms epoch time)
 # TODO: controlla bene pubblicazione di tutto lo strato degli attuatori
 # TODO: controlla consistenza pubblicazione dati
 # TODO: aggiungi pubblicazione dei sensori solo se è cambiato dall'ultimo valore.

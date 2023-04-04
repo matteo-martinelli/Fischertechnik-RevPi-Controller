@@ -28,10 +28,10 @@ class ConveyorCarrier(object):
         self.topic = self.dept + '/' + self.station
         # Class actuators
         self.motor = \
-            RevPiSingleMotionActuator(rpi, 'conveyor-motor', motor_act_pin, 
+            RevPiSingleMotionActuator(rpi, 'motor', motor_act_pin, 
                                       self.topic, mqtt_publisher) # 3
         self.light_barrier = \
-            RevPiLightBarrierSensor(rpi, 'conveyor-light-barrier', 
+            RevPiLightBarrierSensor(rpi, 'light-barrier', 
                                     barrier_sens_pin)                       # 3
         # Class virtual sensors
         self.prod_on_conveyor = False

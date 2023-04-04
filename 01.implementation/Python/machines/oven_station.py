@@ -41,24 +41,25 @@ class OvenStation(object):
         self.topic = self.dept + '/' + self.station
         # Class actuators
         self.oven_carrier = \
-            RevPiDoubleMotionActuator(rpi, 'Oven carrier act', 
+            RevPiDoubleMotionActuator(rpi, 'carrier-motor', 
                                       carrier_in_act_pin, 
                                       carrier_out_act_pin)          # 5, 6
         self.oven_door_opening = \
-            RevPiVacuumActuator(rpi, 'Oven door opening act', 
+            RevPiVacuumActuator(rpi, 'door-motor', 
                                 vacuum_door_act_pin)                # 13    
         self.oven_proc_light = \
-            RevPiSingleMotionActuator(rpi, 'Oven proc light act', 
-                                      proc_light_act_pin, self.topic, mqtt_publisher)           # 9
+            RevPiSingleMotionActuator(rpi, 'proc-light', 
+                                      proc_light_act_pin, self.topic, 
+                                      mqtt_publisher)           # 9
         # Class sensors
         self.inside_oven_switch = \
-            RevPiReferenceSensor(rpi, 'inside oven switch', 
+            RevPiReferenceSensor(rpi, 'carrier-inside', 
                                  in_oven_sens_pin)                  # 6
         self.outside_oven_switch = \
-            RevPiReferenceSensor(rpi, 'outside oven switch', 
+            RevPiReferenceSensor(rpi, 'carrier-outside', 
                                  out_oven_sens_pin)                 # 7
         self.light_barrier = \
-            RevPiLightBarrierSensor(rpi, 'oven barrier', 
+            RevPiLightBarrierSensor(rpi, 'oven-light-barrier', 
                                     light_barrier_sens_pin)         # 9
         # Initializing class fields 
         #self.carrier_pos = self.get_carrier_position()  

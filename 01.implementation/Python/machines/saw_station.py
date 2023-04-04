@@ -25,7 +25,7 @@ class SawStation(object):
         self.topic = self.dept + '/' + self.station
         # Class actuators
         self.motor = \
-            RevPiSingleMotionActuator(rpi, 'conveyor motor', 
+            RevPiSingleMotionActuator(rpi, 'motor', 
                                       saw_motor_act_pin, self.topic, 
                                       mqtt_publisher)        # 4
         # Class virtual sensors

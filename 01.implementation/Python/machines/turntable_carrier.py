@@ -34,20 +34,20 @@ class TurntableCarrier(object):
         self.pusher_state = False
         # Class actuators
         self.motor = \
-            RevPiDoubleMotionActuator(rpi, 'Vacuum carrier motor', 
+            RevPiDoubleMotionActuator(rpi, 'carrier-motor', 
                                       turntable_clock_act_pin, 
                                       turntable_counterclock_act_pin)   # 1, 2
         self.pusher_activation = \
-            RevPiVacuumActuator(rpi, 'vacuum gripper', pusher_act_pin)  # 14
+            RevPiVacuumActuator(rpi, 'pusher-act', pusher_act_pin)      # 14
         # Class sensors
         self.at_vacuum_carrier = \
-            RevPiReferenceSensor(rpi, 'towards turntable ref switch', 
+            RevPiReferenceSensor(rpi, 'carrier-at-vacuum', 
                                  at_vacuum_carrier_sens_pin)            # 1
         self.at_conveyor = \
-            RevPiReferenceSensor(rpi, 'towards oven ref switch', 
+            RevPiReferenceSensor(rpi, 'carrier-at-conveyor', 
                                  at_conveyor_carrier_sens_pin)          # 2
         self.at_saw = \
-            RevPiReferenceSensor(rpi, 'towards oven ref switch', 
+            RevPiReferenceSensor(rpi, 'carrier-at-saw', 
                                  at_saw_sens_pin)                       # 4
         # Initializing class fields
         self.turntable_pos = self.get_carrier_position()
