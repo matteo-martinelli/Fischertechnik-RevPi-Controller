@@ -23,7 +23,7 @@ class RevPiSingleMotionActuator(GenericRevPiActuator):
                  mqtt_publisher):
         super().__init__(rpi)
         # MQTT
-        self.topic = parent_topic + '/actuator/' + name
+        self.topic = parent_topic + '/actuators/' + name
         self.mqtt_publisher = mqtt_publisher
         # Class fields
         self.name = name

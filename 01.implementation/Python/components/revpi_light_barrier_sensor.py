@@ -15,11 +15,12 @@ import json
 
 class RevPiLightBarrierSensor(GenericRevPiSensor):
     """Light Barrier class for light barrier objects."""
-    def __init__(self, rpi, name: str, pin: int):
+    def __init__(self, rpi, name: str, pin: int, parent_topic: str, 
+                 mqtt_publisher):
         super().__init__(rpi, pin)
         # MQTT
-        #self.topic = parent_topic + '/' + name
-        #self.mqtt_publisher = mqtt_publisher
+        self.topic = parent_topic + '/sensors/' + name
+        self.mqtt_publisher = mqtt_publisher
         # Class fields
         self.name = name
         

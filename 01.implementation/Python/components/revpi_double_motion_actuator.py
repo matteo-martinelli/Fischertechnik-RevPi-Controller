@@ -20,8 +20,13 @@ import json
 
 class RevPiDoubleMotionActuator(GenericRevPiActuator):
     """Double Activation Motor class for double motor actuated objects."""
-    def __init__(self, rpi, name: str, pin_A: int, pin_B: int):
+    def __init__(self, rpi, name: str, pin_A: int, pin_B: 
+                 int, parent_topic: str, mqtt_publisher):
         super().__init__(rpi)
+        # MQTT
+        self.topic = parent_topic + '/actuators/' + name
+        self.mqtt_publisher = mqtt_publisher
+        # Class fields
         self.name = name
         self.pin_tuple = (pin_A, pin_B)
         self.get_state()     # First reading of the actual state

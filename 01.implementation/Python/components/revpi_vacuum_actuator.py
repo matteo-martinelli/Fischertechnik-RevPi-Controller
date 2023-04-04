@@ -17,11 +17,15 @@ import json
 
 class RevPiVacuumActuator(GenericRevPiActuator):
     """Vacuum Actuator class for vacuum activated objects."""
-    def __init__(self, rpi, name: str, pin: int):
+    def __init__(self, rpi, name: str, pin: int, parent_topic: str, 
+                 mqtt_publisher):
         super().__init__(rpi)
         self.name = name
         self.pin = pin
         # self.compressor = ... TODO: add compressor check
+        # MQTT
+        self.topic = parent_topic + '/actuators/' + name
+        self.mqtt_publisher = mqtt_publisher
 
 
     # Getters
