@@ -9,6 +9,7 @@ O_10: compressor.
 
 from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
 from datetime import datetime
+import time
 import json
 
 
@@ -38,7 +39,8 @@ class CompressorService(object):
         
     # MQTT 
     def to_dto(self):
-        current_moment = datetime.now().strftime("%d.%m.%Y - %H:%M:%S")
+        timestamp = time.time()
+        current_moment = datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
 
         dto_dict = {
             'dept': self.dept,
@@ -47,7 +49,8 @@ class CompressorService(object):
             'layer': 'machine',
             'motor': self.motor.get_name(),
             
-            'timestamp': current_moment 
+            'timestamp': timestamp,
+            'current-time': current_moment 
         }
         return dto_dict
 

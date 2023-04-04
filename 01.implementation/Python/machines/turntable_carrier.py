@@ -15,6 +15,7 @@ from components.revpi_reference_sensor import RevPiReferenceSensor
 from components.revpi_double_motion_actuator import RevPiDoubleMotionActuator
 from components.revpi_vacuum_actuator import RevPiVacuumActuator
 from datetime import datetime
+import time
 import json
 
 
@@ -157,7 +158,8 @@ class TurntableCarrier(object):
 
     # MQTT 
     def to_dto(self):
-        current_moment = datetime.now().strftime("%d.%m.%Y - %H:%M:%S")
+        timestamp = time.time()
+        current_moment = datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
 
         dto_dict = {
             'dept': self.dept,
@@ -169,7 +171,8 @@ class TurntableCarrier(object):
             'prod-on-carrier': self.get_prod_on_carrier(),
             'proc-completed': self.get_process_completed(),
             
-            'timestamp': current_moment
+            'timestamp': timestamp,
+            'current-time': current_moment
         }
         return dto_dict
 

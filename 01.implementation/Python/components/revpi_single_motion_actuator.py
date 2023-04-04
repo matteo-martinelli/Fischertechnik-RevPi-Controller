@@ -13,6 +13,7 @@ import paho.mqtt.client as mqtt
 from conf.mqtt_conf_parameters import MqttConfiguratorParameter
 from components.basic_components.generic_revpi_actuator import GenericRevPiActuator
 from datetime import datetime
+import time
 import json
 
 
@@ -53,7 +54,8 @@ class RevPiSingleMotionActuator(GenericRevPiActuator):
 
     # MQTT 
     def to_dto(self):
-        current_moment = datetime.now().strftime("%d.%m.%Y - %H:%M:%S")
+        timestamp = time.time()
+        current_moment = datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
 
         dto_dict = {
             'name': self.name,
@@ -62,7 +64,8 @@ class RevPiSingleMotionActuator(GenericRevPiActuator):
             'type': self.__class__.__name__,
             'layer': 'sensor-actuator',
 
-            'timestamp': current_moment 
+            'timestamp': timestamp, 
+            'current-time': current_moment 
         }
         return dto_dict
 

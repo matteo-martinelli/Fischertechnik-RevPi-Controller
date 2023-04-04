@@ -12,6 +12,7 @@ O_14: turntable vacuum pusher activation.
 
 from components.basic_components.generic_revpi_actuator import GenericRevPiActuator
 from datetime import datetime
+import time
 import json
 
 class RevPiVacuumActuator(GenericRevPiActuator):
@@ -41,7 +42,8 @@ class RevPiVacuumActuator(GenericRevPiActuator):
 
     # MQTT 
     def to_dto(self):
-        current_moment = datetime.now().strftime("%d.%m.%Y - %H:%M:%S")
+        timestamp = time.time()
+        current_moment = datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
 
         dto_dict = {
             'name': self.name,
@@ -50,7 +52,8 @@ class RevPiVacuumActuator(GenericRevPiActuator):
             'type': self.__class__.__name__,
             'layer': 'sensor-actuator',
             
-            'timestamp': current_moment 
+            'timestamp': timestamp,
+            'current-time': current_moment 
         }
         return dto_dict
 

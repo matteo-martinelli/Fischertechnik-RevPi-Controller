@@ -11,6 +11,7 @@ This class is composed by the following objects:
 from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
 from components.revpi_light_barrier_sensor import RevPiLightBarrierSensor
 from datetime import datetime
+import time
 import json
 
 
@@ -88,7 +89,8 @@ class ConveyorCarrier(object):
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def to_dto(self):
-        current_moment = datetime.now().strftime("%d.%m.%Y - %H:%M:%S")
+        timestamp = time.time()
+        current_moment = datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
 
         dto_dict = {
             'dept': self.dept,
@@ -100,7 +102,8 @@ class ConveyorCarrier(object):
             'prod_on_conv:': self.get_prod_on_conveyor(),
             'process_complete:': self.get_process_completed(),
             
-            'timestamp': current_moment 
+            'timestamp': timestamp,
+            'current-time': current_moment
         }
         return dto_dict
 

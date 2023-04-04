@@ -175,7 +175,8 @@ class OvenStation(object):
 
     # MQTT 
     def to_dto(self):
-        current_moment = datetime.now().strftime("%d.%m.%Y - %H:%M:%S")
+        timestamp = time.time()
+        current_moment = datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
 
         dto_dict = {
             'dept': self.dept,
@@ -191,7 +192,8 @@ class OvenStation(object):
             'prod-on-carrier': self.get_prod_on_carrier(),
             'proc-completed': self.get_process_completed(),
             
-            'timestamp': current_moment
+            'timestamp': int(timestamp),
+            'current-time': current_moment
         }
         return dto_dict
 
