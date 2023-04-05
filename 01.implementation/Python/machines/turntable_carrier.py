@@ -32,33 +32,42 @@ class TurntableCarrier(object):
         self.station = station
         self.turntable_pos = 'None'
         self.pusher_state = False
-        # Class actuators
-        self.motor = \
-            RevPiDoubleMotionActuator(rpi, 'carrier-motor', 
-                                      turntable_clock_act_pin, 
-                                      turntable_counterclock_act_pin)   # 1, 2
-        self.pusher_activation = \
-            RevPiVacuumActuator(rpi, 'pusher-act', pusher_act_pin)      # 14
-        # Class sensors
-        self.at_vacuum_carrier = \
-            RevPiReferenceSensor(rpi, 'carrier-at-vacuum', 
-                                 at_vacuum_carrier_sens_pin)            # 1
-        self.at_conveyor = \
-            RevPiReferenceSensor(rpi, 'carrier-at-conveyor', 
-                                 at_conveyor_carrier_sens_pin)          # 2
-        self.at_saw = \
-            RevPiReferenceSensor(rpi, 'carrier-at-saw', 
-                                 at_saw_sens_pin)                       # 4
-        # Initializing class fields
-        self.turntable_pos = self.get_carrier_position()
-        self.pusher_state = self.pusher_activation.get_state()
         # Class virtual sensors
         self.prod_on_carrier = False
         self.process_completed = False
         # MQTT
         self.mqtt_publisher = mqtt_publisher
         self.topic = self.dept + '/' + self.station
-
+        # Class actuators
+        # pin 1,2
+        self.motor = \
+            RevPiDoubleMotionActuator(rpi, 'carrier-motor', 
+                                      turntable_clock_act_pin, 
+                                      turntable_counterclock_act_pin, 
+                                      self.topic, self.mqtt_publisher)
+        # pin 14
+        self.pusher_activation = \
+            RevPiVacuumActuator(rpi, 'pusher-act', pusher_act_pin, 
+                                self.topic, self.mqtt_publisher)
+        # Class sensors
+        # pin 1
+        self.at_vacuum_carrier = \
+            RevPiReferenceSensor(rpi, 'carrier-at-vacuum', 
+                                 at_vacuum_carrier_sens_pin, 
+                                 self.topic, self.mqtt_publisher)
+        # pin 2
+        self.at_conveyor = \
+            RevPiReferenceSensor(rpi, 'carrier-at-conveyor', 
+                                 at_conveyor_carrier_sens_pin, 
+                                 self.topic, self.mqtt_publisher)
+        # pin 4
+        self.at_saw = \
+            RevPiReferenceSensor(rpi, 'carrier-at-saw', at_saw_sens_pin, 
+                                 self.topic, self.mqtt_publisher)
+        # Initializing class fields
+        self.turntable_pos = self.get_carrier_position()
+        self.pusher_state = self.pusher_activation.get_state()
+        
 
     # Setters
     def set_prod_on_carrier(self, value: bool) -> None: 
@@ -101,51 +110,49 @@ class TurntableCarrier(object):
 
     # Class Methods
     def activate_pusher(self) -> None: 
-        self.pusher_activation.turn_on()
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        if(self.pusher_activation.get_state() == False):
+            self.pusher_activation.turn_on()
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
     
     def deactivate_pusher(self) -> None: 
-        self.pusher_activation.turn_off()
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        if(self.pusher_activation.get_state() == True):
+            self.pusher_activation.turn_off()
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
     
     def rotate_towards_saw(self) -> None:
-        counter = 0 
-
+        if (self.at_vacuum_carrier.get_state() == True):
+            self.motor.turn_on(self.motor.pin_tuple[0]) # Clockwise
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        elif (self.at_conveyor.get_state() == True):
+            self.motor.turn_on(self.motor.pin_tuple[1]) # Counter-clockwise
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        
+        # Wait until the turntable reaches the at_saw sensor
         while (self.at_saw.get_state() == False):
-            if (self.at_vacuum_carrier.get_state() == True):
-                self.motor.turn_on(self.motor.pin_tuple[0]) # Clockwise
-                if (counter == 0):
-                    counter += 1 
-                    self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                               self.to_json())
-            elif (self.at_conveyor.get_state() == True):
-                self.motor.turn_on(self.motor.pin_tuple[1]) # Counter-clockwise
-                if (counter == 1): 
-                    counter += 1
-                    self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                               self.to_json())
+            pass
+
         self.motor.turn_off()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def rotate_towards_conveyor(self) -> None:
-        counter = 0
+        self.motor.turn_on(self.motor.pin_tuple[0])     # Clockwise
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        
+        # Wait until the turntable reaches the at_conveyor sensor
         while (self.at_conveyor.get_state() == False):
-            self.motor.turn_on(self.motor.pin_tuple[0])     # Clockwise
-            if (counter == 0): 
-                counter += 1
-                self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            pass
+
         self.motor.turn_off()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def rotate_towards_vacuum_carrier(self) -> None:
-        counter = 0
-
+        self.motor.turn_on(self.motor.pin_tuple[1])     # Counter-clockwise 
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        
+        # Wait until the turntable reaches the at_vacuum_carrier sensor
         while (self.at_vacuum_carrier.get_state() == False):
-            self.motor.turn_on(self.motor.pin_tuple[1])     # Counter-clockwise
-            if (counter == 0):
-                counter += 1 
-                self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                           self.to_json())
+            pass
+        
         self.motor.turn_off()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 

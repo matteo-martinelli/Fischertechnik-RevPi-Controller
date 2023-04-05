@@ -67,6 +67,7 @@ class MultiprocessManager():
         # Process fields
         self.piece_counter = 0
         self.process_completed = False
+        self.to_reset = False
         
         # Support time sensors 
         # TODO: evaluate if is worth to use all those vars or only one is enough
@@ -353,17 +354,20 @@ class MultiprocessManager():
                 self.piece_counter += 1
                 # Setting the process as completed
                 self.process_completed = True
+                self.to_reset = True
 
             #################################################################
             # If the product is in moved from the conveyor light barrier, reset
             # everything, and set the dept as ready to restart
             if(self.conveyor_carrier.get_light_barrier_state() == True 
-               and self.process_completed == True):
+               and self.process_completed == True
+               and self.to_reset == True):
                 # Print the process completion message
                 print('resetting the dept')
                 # Reset the system
                 self.conveyor_carrier.set_prod_on_conveyor(False)
                 self.reset_station_states_and_restart()
+                self.to_reset = False
 
 if __name__ == "__main__":
     # Instantiating the controlling class

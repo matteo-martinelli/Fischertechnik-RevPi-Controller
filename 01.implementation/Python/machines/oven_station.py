@@ -40,27 +40,38 @@ class OvenStation(object):
         self.mqtt_publisher = mqtt_publisher
         self.topic = self.dept + '/' + self.station
         # Class actuators
+        # pin 5, 6
         self.oven_carrier = \
             RevPiDoubleMotionActuator(rpi, 'carrier-motor', 
                                       carrier_in_act_pin, 
-                                      carrier_out_act_pin)          # 5, 6
+                                      carrier_out_act_pin, self.topic, 
+                                      self.mqtt_publisher)
+        # pin 13
         self.oven_door_opening = \
             RevPiVacuumActuator(rpi, 'door-motor', 
-                                vacuum_door_act_pin)                # 13    
+                                vacuum_door_act_pin, 
+                                self.topic, self.mqtt_publisher)    
+        # pin 9
         self.oven_proc_light = \
             RevPiSingleMotionActuator(rpi, 'proc-light', 
                                       proc_light_act_pin, self.topic, 
-                                      mqtt_publisher)           # 9
+                                      mqtt_publisher)
         # Class sensors
+        # pin 6
         self.inside_oven_switch = \
             RevPiReferenceSensor(rpi, 'carrier-inside', 
-                                 in_oven_sens_pin)                  # 6
+                                 in_oven_sens_pin, 
+                                 self.topic, self.mqtt_publisher)
+        # pin 7
         self.outside_oven_switch = \
             RevPiReferenceSensor(rpi, 'carrier-outside', 
-                                 out_oven_sens_pin)                 # 7
+                                 out_oven_sens_pin, 
+                                 self.topic, self.mqtt_publisher)
+        # pin 9
         self.light_barrier = \
             RevPiLightBarrierSensor(rpi, 'oven-light-barrier', 
-                                    light_barrier_sens_pin)         # 9
+                                    light_barrier_sens_pin, 
+                                    self.topic, self.mqtt_publisher)
         # Initializing class fields 
         #self.carrier_pos = self.get_carrier_position()  
         #self.door_pos = self.get_door_pos()
@@ -121,42 +132,44 @@ class OvenStation(object):
         
     # Class Methods
     def move_carrier_inward(self) -> None:
-        counter = 0
         self.oven_door_opening.turn_on()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
+        self.oven_carrier.turn_on(self.oven_carrier.pin_tuple[0])
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+
+        # Wait until the oven carrier reaches the outward oven switch
         while (self.inside_oven_switch.get_state() == False):
-            self.oven_carrier.turn_on(self.oven_carrier.pin_tuple[0])
-            if (counter == 0):
-                counter += 1
-                self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                           self.to_json())
+            pass
+
         self.oven_carrier.turn_off()
         self.oven_door_opening.turn_off()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def move_carrier_outward(self) -> None:
-        counter = 0
         self.oven_door_opening.turn_on()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
+        self.oven_carrier.turn_on(self.oven_carrier.pin_tuple[1])
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+
+        # Wait until the oven carrier reaches the outward oven switch
         while (self.outside_oven_switch.get_state() == False):
-            self.oven_carrier.turn_on(self.oven_carrier.pin_tuple[1])
-            if(counter == 0): 
-                counter += 1 
-                self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                           self.to_json())
+            pass
+
         self.oven_carrier.turn_off()
         self.oven_door_opening.turn_off()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def activate_proc_light(self) -> None:
-        self.oven_proc_light.turn_on()
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        if (self.oven_proc_light.get_state() == False):
+            self.oven_proc_light.turn_on()
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
     
     def deactivate_proc_light(self) -> None:
-        self.oven_proc_light.turn_off()
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        if (self.oven_proc_light.get_state() == True):
+            self.oven_proc_light.turn_off()
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
     
     # TODO: test this function if works
     def oven_process_start(self, proc_time: int) -> None:

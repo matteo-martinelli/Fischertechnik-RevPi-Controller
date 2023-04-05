@@ -31,34 +31,42 @@ class VacuumCarrier(object):
         self.carrier_pos = 'None'
         self.gripper_lowering_state = False
         self.gripper_state = False
-        # Class actuators
-        self.motor = \
-            RevPiDoubleMotionActuator(rpi, 'motor', 
-                                      at_turntable_act_pin, 
-                                      at_oven_act_pin)                  # 7, 8
-        self.gripper_activation = \
-            RevPiVacuumActuator(rpi, 'gripper', grip_act_pin)    # 11
-        self.gripper_lowering = \
-            RevPiVacuumActuator(rpi, 'gripper-lowering', 
-                                grip_lower_act_pin)                     # 12
-        # Class sensors
-        self.at_turntable = \
-            RevPiReferenceSensor(rpi, 'carrier-at-turntable', 
-                                 at_turntable_sens_pin)                 # 5
-        self.at_oven = \
-            RevPiReferenceSensor(rpi, 'carrier-at-oven', 
-                                 at_oven_sens_pin)                      # 8
-        # Initializing class fields
-        self.carrier_pos = self.get_carrier_position()
-        self.gripper_lowering_state = self.gripper_activation.get_state()
-        self.gripper_state = self.gripper_lowering.get_state()
         # Class virtual sensors
         self.prod_on_carrier = False
         self.process_completed = False
         # MQTT
         self.mqtt_publisher = mqtt_publisher
         self.topic = self.dept + '/' + self.station
-
+        # Class actuators
+        # pin 7,8
+        self.motor = \
+            RevPiDoubleMotionActuator(rpi, 'motor', 
+                                      at_turntable_act_pin, at_oven_act_pin, 
+                                      self.topic, self.mqtt_publisher)
+        # pin 11
+        self.gripper_activation = \
+            RevPiVacuumActuator(rpi, 'gripper', grip_act_pin, 
+                                self.topic, self.mqtt_publisher)
+        # pin 12
+        self.gripper_lowering = \
+            RevPiVacuumActuator(rpi, 'gripper-lowering', grip_lower_act_pin, 
+                                self.topic, self.mqtt_publisher)
+        # Class sensors
+        # pin 5
+        self.at_turntable = \
+            RevPiReferenceSensor(rpi, 'carrier-at-turntable', 
+                                 at_turntable_sens_pin, 
+                                 self.topic, self.mqtt_publisher)
+        # pin 8
+        self.at_oven = \
+            RevPiReferenceSensor(rpi, 'carrier-at-oven', at_oven_sens_pin, 
+                                 self.topic, self.mqtt_publisher)
+        
+        # Initializing class fields
+        self.carrier_pos = self.get_carrier_position()
+        self.gripper_lowering_state = self.gripper_activation.get_state()
+        self.gripper_state = self.gripper_lowering.get_state()
+    
 
     # Setters
     def set_prod_on_carrier(self, value: bool) -> None: 
@@ -103,42 +111,46 @@ class VacuumCarrier(object):
 
     # Class Methods
     def activate_gripper(self) -> None: 
-        self.gripper_activation.turn_on()
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        if(self.gripper_activation.get_state() == False):
+            self.gripper_activation.turn_on()
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def deactivate_gripper(self) -> None: 
-        self.gripper_activation.turn_off()
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        if(self.gripper_activation.get_state() == True):
+            self.gripper_activation.turn_off()
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def lower_gripper(self) -> None: 
-        self.gripper_lowering.turn_on()
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        if(self.gripper_lowering.get_state() == False):
+            self.gripper_lowering.turn_on()
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def higher_gripper(self) -> None: 
-        self.gripper_lowering.turn_off()
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        if(self.gripper_lowering.get_state() == True):
+            self.gripper_lowering.turn_off()
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def move_carrier_towards_oven(self) -> None:
-        counter = 0
-
-        while (self.at_oven.get_state() == False):
+        if(self.at_oven.get_state() == False):
             self.motor.turn_on(self.motor.pin_tuple[0])
-            if (counter == 0): 
-                counter += 1
-                self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                           self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+
+        # Wait until the at_oven sensor turns into True
+        while (self.at_oven.get_state() == False):
+            pass
+        
         self.motor.turn_off()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def move_carrier_towards_turntable(self) -> None:
-        counter = 0
-
-        while (self.at_turntable.get_state() == False):
+        if(self.at_turntable.get_state() == False):
             self.motor.turn_on(self.motor.pin_tuple[1])
-            if (counter == 0): 
-                counter += 1
-                self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                           self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+
+        # Wait until the at_turntable sensor turns into True
+        while (self.at_turntable.get_state() == False):
+            pass
+
         self.motor.turn_off()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 

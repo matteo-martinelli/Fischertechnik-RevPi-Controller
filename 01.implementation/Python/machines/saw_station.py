@@ -24,10 +24,11 @@ class SawStation(object):
         self.mqtt_publisher = mqtt_publisher
         self.topic = self.dept + '/' + self.station
         # Class actuators
+        # pin 4
         self.motor = \
             RevPiSingleMotionActuator(rpi, 'motor', 
                                       saw_motor_act_pin, self.topic, 
-                                      mqtt_publisher)        # 4
+                                      mqtt_publisher)
         # Class virtual sensors
         self.prod_under_saw = False
         self.process_completed = False
@@ -63,12 +64,14 @@ class SawStation(object):
 
     # Class Methods
     def activate_saw(self) -> None: 
-        self.motor.turn_on()
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        if(self.motor.get_state() == False):
+            self.motor.turn_on()
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def deactivate_saw(self) -> None: 
-        self.motor.turn_off()
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        if(self.motor.get_state() == True):
+            self.motor.turn_off()
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def deactivate_station(self) -> None: 
         self.motor.turn_off()
@@ -78,7 +81,6 @@ class SawStation(object):
 
     # MQTT 
     def to_dto(self):
-
         timestamp = time.time()
         current_moment = datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
 

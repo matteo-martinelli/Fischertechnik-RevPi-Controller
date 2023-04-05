@@ -27,12 +27,15 @@ class ConveyorCarrier(object):
         self.mqtt_publisher = mqtt_publisher
         self.topic = self.dept + '/' + self.station
         # Class actuators
+        # pin 3
         self.motor = \
             RevPiSingleMotionActuator(rpi, 'motor', motor_act_pin, 
-                                      self.topic, mqtt_publisher) # 3
+                                      self.topic, mqtt_publisher)
+        # pin 3
         self.light_barrier = \
             RevPiLightBarrierSensor(rpi, 'light-barrier', 
-                                    barrier_sens_pin)                       # 3
+                                    barrier_sens_pin, self.topic, 
+                                    self.mqtt_publisher)
         # Class virtual sensors
         self.prod_on_conveyor = False
         self.process_completed = False
@@ -68,15 +71,12 @@ class ConveyorCarrier(object):
 
     # Class Methods
     def move_to_the_exit(self) -> None:
-        # Counter set to publish only 1 time through the cycle
-        counter = 0
+        self.motor.turn_on()
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        
+        # Wait until a product reaches the light_barrier sensor
         while (self.light_barrier.get_state() != False):
-            self.motor.turn_on()
-            
-            if (counter == 0): 
-                self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                           self.to_json())
-                counter += 1
+            pass
         
         self.motor.turn_off()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
