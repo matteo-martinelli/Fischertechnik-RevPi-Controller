@@ -34,6 +34,14 @@ class RevPiReferenceSensor(GenericRevPiSensor):
     def get_name(self) -> str:
         return self.name
     
+    def get_state(self) -> str:
+        self.state = self.rpi.io['I_' + str(self.pin)].value
+        if(self.state != self.previous_state):
+            self.previous_state = self.state
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                    self.to_json())
+        return self.state
+    
     # MQTT 
     def to_dto(self):
         timestamp = time.time()

@@ -144,6 +144,11 @@ class MultiprocessManager():
         # The cycle is set in ... .exitsignal.wait(0.05) every 0.05s
         while (self.rpi.exitsignal.wait(0.05) == False):
             # TODO: simplify the process loop
+            # First things first: reading all the sensors states
+            self.vacuum_gripper_carrier.get_carrier_position()
+            # TODO: add a "update all sensors" method to all the involved classes;
+            # TODO: this method will be called here. 
+
             # Follows the process description ###############################
             # If the oven_station-light sensor is False, that is there is the 
             # product. So, set the self.prod_on_oven_station_carrier to True

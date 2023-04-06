@@ -18,6 +18,7 @@ class GenericRevPiSensor(object):
         self.pin = pin
         # TODO: eventually assign directly here the state from revpimodio
         self.state = False
+        self.previous_state = False
         
     
     def get_pin(self) -> int: 

@@ -29,6 +29,7 @@ class VacuumCarrier(object):
         self.dept = dept
         self.station = station
         self.carrier_pos = 'None'
+        self.last_carrier_pos = 'None'
         self.prod_on_carrier = False
         self.process_completed = False
         # MQTT
@@ -76,6 +77,8 @@ class VacuumCarrier(object):
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
 
+    # TODO: update all getters with a check to the last value; 
+    # TODO: add an "read all getters" method to read all the sensors states
     # Getters
     def get_dept(self) -> str: 
         return self.dept
@@ -98,15 +101,48 @@ class VacuumCarrier(object):
     def get_carrier_position(self) -> str: 
         if (self.at_turntable.get_state() == True and
             self.at_oven.get_state() == False):
-            return 'turntable'
+            # Eventually change into a setter
+            self.carrier_pos = 'turntable'
+            if (self.carrier_pos != self.last_carrier_pos):
+                self.last_carrier_pos = self.carrier_pos
+                self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                           self.to_json())
+            return self.carrier_pos
+            #return 'turntable'
         elif (self.at_turntable.get_state() == False and
             self.at_oven.get_state() == True):
-            return 'oven'
-        elif(self.at_turntable.get_state() == False and
-            self.at_oven.get_state() == False):
-            return 'moving'
+            # Eventually change into a setter
+            self.carrier_pos = 'oven'
+            if (self.carrier_pos != self.last_carrier_pos):
+                self.last_carrier_pos = self.carrier_pos
+                self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                           self.to_json())
+            return self.carrier_pos
+            #return 'oven'
+        #elif(self.at_turntable.get_state() == False and
+        #    self.at_oven.get_state() == False):
+        elif(self.motor.state[0] == False and self.motor.state[1] == False):
+            # Eventually change into a setter
+            self.carrier_pos = 'moving' # TODO: CHANGE THIS STUPID STATE INTO THE MOTOR ACTION METHOD.
+            if (self.carrier_pos != self.last_carrier_pos):
+                self.last_carrier_pos = self.carrier_pos
+                self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                           self.to_json())
+            return self.carrier_pos
+            #return 'moving'
         else:
-            return 'position error'
+            # Eventually change into a setter
+            self.carrier_pos = 'position error'
+            if (self.carrier_pos != self.last_carrier_pos):
+                self.last_carrier_pos = self.carrier_pos
+                self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                           self.to_json())
+            return self.carrier_pos
+            #return 'position error'
+
+    def get_all_sensors(self) -> None: 
+        self.get_carrier_position()
+
 
     # Class Methods
     def activate_gripper(self) -> None: 
@@ -179,7 +215,7 @@ class VacuumCarrier(object):
             'station': self.station,
             'type': self.__class__.__name__,
             'layer': 'machine',
-            'carrier-pos': self.carrier_pos,
+            'carrier-pos': self.get_carrier_position(),
             'grip-low-state': self.gripper_lowering.get_state(), 
             'grip-state': self.gripper_activation.get_state(),
             'motor': self.motor.get_state(),

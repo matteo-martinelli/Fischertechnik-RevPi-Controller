@@ -38,6 +38,10 @@ class RevPiSingleMotionActuator(GenericRevPiActuator):
 
     def get_state(self) -> bool: 
         self.state = self.rpi.io['O_'+ str(self.pin)].value
+        if(self.state != self.previous_state):
+            self.previous_state = self.state
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
         return self.state
     
     # Class Methods

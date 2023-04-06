@@ -15,3 +15,4 @@ class GenericRevPiActuator(object):
         self.rpi = rpi
         # TODO: eventually assign directly here the state from revpimodio
         self.state = False
+        self.previous_state = False
