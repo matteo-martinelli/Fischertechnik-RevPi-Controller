@@ -85,12 +85,14 @@ class OvenStation(object):
     #    self.state = value
 
     def set_prod_on_carrier(self, value: bool) -> None: 
-        self.prod_on_carrier = value
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        if(value != self.get_prod_on_carrier()):
+            self.prod_on_carrier = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def set_process_completed(self, value: bool) -> None: 
-        self.process_completed = value
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        if(value != self.get_process_completed()):
+            self.process_completed = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
     
     # Getters
     def get_dept(self) -> str: 
@@ -197,11 +199,9 @@ class OvenStation(object):
             'station': self.station,
             'type': self.__class__.__name__,
             'layer': 'machine',
-            #'carrier-pos': self.carrier_pos,
-            #'door-pos': self.door_pos, 
             'oven-carrier': self.get_carrier_position(),
             'oven-door': self.get_door_pos(),
-            #'proc-light': self.oven_proc_light.get_state() # TODO: adapt, since flashes
+            'proc-light': self.get_proc_light_state(),
             'light-barrier': self.get_light_barrier_state(),
             'prod-on-carrier': self.get_prod_on_carrier(),
             'proc-completed': self.get_process_completed(),

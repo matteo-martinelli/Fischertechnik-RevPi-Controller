@@ -43,12 +43,14 @@ class ConveyorCarrier(object):
 
     # Setters
     def set_prod_on_conveyor(self, value: bool) -> None: 
-        self.prod_on_conveyor = value
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        if(value != self.get_prod_on_conveyor()):
+            self.prod_on_conveyor = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def set_process_completed(self, value: bool) -> None: 
-        self.process_completed = value
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        if(value != self.get_process_completed()):
+            self.process_completed = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
     
     # Getters
     def get_dept(self) -> str: 

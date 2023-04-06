@@ -29,8 +29,6 @@ class VacuumCarrier(object):
         self.dept = dept
         self.station = station
         self.carrier_pos = 'None'
-        self.gripper_lowering_state = False
-        self.gripper_state = False
         # Class virtual sensors
         self.prod_on_carrier = False
         self.process_completed = False
@@ -64,18 +62,18 @@ class VacuumCarrier(object):
         
         # Initializing class fields
         self.carrier_pos = self.get_carrier_position()
-        self.gripper_lowering_state = self.gripper_activation.get_state()
-        self.gripper_state = self.gripper_lowering.get_state()
-    
+        
 
     # Setters
     def set_prod_on_carrier(self, value: bool) -> None: 
-        self.prod_on_carrier = value
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        if(value != self.get_prod_on_carrier()):
+            self.prod_on_carrier = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def set_process_completed(self, value: bool) -> None: 
-        self.process_completed = value
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        if (value != self.get_process_completed()):
+            self.process_completed = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     # Getters
     def get_dept(self) -> str: 
@@ -173,8 +171,8 @@ class VacuumCarrier(object):
             'type': self.__class__.__name__,
             'layer': 'machine',
             'carrier-pos': self.carrier_pos,
-            'grip-low-state': self.gripper_lowering_state, 
-            'grip-state': self.gripper_state,
+            'grip-low-state': self.gripper_lowering.get_state(), 
+            'grip-state': self.gripper_activation.get_state(),
             'motor': self.motor.get_state(),
             'prod-on-carrier': self.get_prod_on_carrier(),
             'proc-completed': self.get_process_completed(),

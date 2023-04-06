@@ -71,12 +71,14 @@ class TurntableCarrier(object):
 
     # Setters
     def set_prod_on_carrier(self, value: bool) -> None: 
-        self.prod_on_carrier = value
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        if(value != self.get_prod_on_carrier()):
+            self.prod_on_carrier = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def set_process_completed(self, value: bool) -> None: 
-        self.process_completed = value
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        if (value != self.get_process_completed()):
+            self.process_completed = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
     
     # Getters
     def get_dept(self) -> str: 
@@ -120,15 +122,15 @@ class TurntableCarrier(object):
             self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
     
     def rotate_towards_saw(self) -> None:
-        if (self.at_vacuum_carrier.get_state() == True):
+        if(self.at_vacuum_carrier.get_state() == True):
             self.motor.turn_on(self.motor.pin_tuple[0]) # Clockwise
             self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
-        elif (self.at_conveyor.get_state() == True):
+        elif(self.at_conveyor.get_state() == True):
             self.motor.turn_on(self.motor.pin_tuple[1]) # Counter-clockwise
             self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
         
         # Wait until the turntable reaches the at_saw sensor
-        while (self.at_saw.get_state() == False):
+        while(self.at_saw.get_state() == False):
             pass
 
         self.motor.turn_off()
@@ -173,8 +175,8 @@ class TurntableCarrier(object):
             'station': self.station,
             'type': self.__class__.__name__,
             'layer': 'machine',
-            'turntable-pos': self.turntable_pos,
-            'pusher-state': self.pusher_state,
+            'turntable-pos': self.get_carrier_position(),
+            'pusher-state': self.pusher_activation.get_state(),
             'prod-on-carrier': self.get_prod_on_carrier(),
             'proc-completed': self.get_process_completed(),
             

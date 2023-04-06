@@ -39,12 +39,14 @@ class SawStation(object):
     #    self.state = self.motor.get_state()
     
     def set_prod_under_saw(self, value: bool) -> None: 
-        self.prod_under_saw = value
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        if(value != self.get_prod_under_saw()):
+            self.prod_under_saw = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def set_process_completed(self, value: bool) -> None: 
-        self.process_completed = value
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        if (value != self.get_process_completed()):
+            self.process_completed = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
     
     # Getters
     def get_dept(self) -> str: 
@@ -90,7 +92,7 @@ class SawStation(object):
             'type': self.__class__.__name__,
             'layer': 'machine',
             'motor': self.motor.get_state(),
-            'prod-on-carrier': self.get_prod_under_saw(),
+            'prod-on-carrier': self.get_prod_under_saw(),   # Not updated, maybe it needs an Observer...
             'proc-completed': self.get_process_completed(),
             
             'timestamp': timestamp,
