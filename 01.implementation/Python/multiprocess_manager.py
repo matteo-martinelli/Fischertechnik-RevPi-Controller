@@ -11,8 +11,6 @@ The loop is managed via the RevPi event manager, that is set for being not
 blocking, with a personalised while loop next to the event system. 
 """
 
-# TODO: controlla bene pubblicazione di tutto lo strato degli attuatori
-# TODO: controlla consistenza pubblicazione dati
 # TODO: aggiungi pubblicazione dei sensori solo se è cambiato dall'ultimo valore.
 
 import revpimodio2
@@ -294,6 +292,7 @@ class MultiprocessManager():
                 if (self.turntable_carrier.get_carrier_position() != 'saw' and
                     self.saw_station.get_process_completed() == False):
                     self.turntable_carrier.rotate_towards_saw()
+                    self.saw_station.set_prod_under_saw(True)
 
                 # Activate the saw for the design processing time
                 if (self.turntable_carrier.get_carrier_position() == 'saw' 
@@ -311,6 +310,7 @@ class MultiprocessManager():
                 # Activate the turntable until it reaches the conveyor                
                 if (self.saw_station.get_process_completed() == True and
                     self.turntable_carrier.get_carrier_position() != 'conveyor'):                    
+                    self.saw_station.set_prod_under_saw(False)
                     self.turntable_carrier.rotate_towards_conveyor()
             
                 # Activate the pusher
