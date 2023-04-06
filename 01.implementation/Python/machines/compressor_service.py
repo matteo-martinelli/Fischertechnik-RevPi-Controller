@@ -47,7 +47,7 @@ class CompressorService(object):
             'station': self.station,
             'type': self.__class__.__name__,
             'layer': 'machine',
-            'motor': self.motor.get_name(),
+            'motor': self.motor.get_state(),
             
             'timestamp': timestamp,
             'current-time': current_moment 
