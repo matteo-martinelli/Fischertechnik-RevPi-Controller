@@ -6,6 +6,7 @@ mqtt_conf_parameter.py: MqttConfiguratorParameter class
 Stores the mqtt broker connection global variables
 """
 
+
 class MqttConfiguratorParameter(object):
     BROKER_ADDRESS = '192.168.137.125'
     BROKER_PORT = 1883
