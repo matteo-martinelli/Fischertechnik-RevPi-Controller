@@ -7,8 +7,6 @@ This is the root class for every actuator used in the simulation.
 It collects all the common fields and methods of any simulation actuator.  
 """
 
-from typing import Union
-
 
 class GenericRevPiActuator(object):
     """Reference Switch class for reference switch objects."""

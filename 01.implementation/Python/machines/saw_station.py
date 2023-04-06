@@ -12,6 +12,7 @@ from datetime import datetime
 import time
 import json
 
+
 class SawStation(object):
     """Saw class for saw objects."""
     def __init__(self, rpi, dept: str, station:str, saw_motor_act_pin: int, 

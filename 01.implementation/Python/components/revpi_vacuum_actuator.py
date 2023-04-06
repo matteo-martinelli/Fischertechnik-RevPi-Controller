@@ -16,6 +16,7 @@ from datetime import datetime
 import time
 import json
 
+
 class RevPiVacuumActuator(GenericRevPiActuator):
     """Vacuum Actuator class for vacuum activated objects."""
     def __init__(self, rpi, name: str, pin: int, parent_topic: str, 
