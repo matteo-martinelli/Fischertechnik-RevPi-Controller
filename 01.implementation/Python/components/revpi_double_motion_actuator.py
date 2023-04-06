@@ -29,7 +29,8 @@ class RevPiDoubleMotionActuator(GenericRevPiActuator):
         # Class fields
         self.name = name
         self.pin_tuple = (pin_A, pin_B)
-        self.get_state()     # First reading of the actual state
+        # Fields init
+        self.get_state()
 
 
     # Getters
@@ -46,7 +47,8 @@ class RevPiDoubleMotionActuator(GenericRevPiActuator):
                 self.rpi.io['O_' + str(self.pin_tuple[i])].value == False): 
                 self.rpi.io['O_' + str(self.pin_tuple[i])].value = True
                 self.state = True
-                self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+                self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                           self.to_json())
             else: 
                 self.rpi.io['O_' + str(self.pin_tuple[i])].value = False
         
@@ -55,12 +57,14 @@ class RevPiDoubleMotionActuator(GenericRevPiActuator):
             self.state = False
             for i in range(len(self.pin_tuple)):
                 self.rpi.io['O_' + str(self.pin_tuple[i])].value = self.state
-            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
 
     # MQTT 
     def to_dto(self):
         timestamp = time.time()
-        current_moment = datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
+        current_moment = \
+            datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
 
         dto_dict = {
             'name': self.name,

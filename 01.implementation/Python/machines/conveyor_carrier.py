@@ -19,10 +19,11 @@ class ConveyorCarrier(object):
     """Conveyor Carrier class for conveyor objects."""
     def __init__(self, rpi, dept: str, station: str, motor_act_pin: int, 
                  barrier_sens_pin: int, mqtt_publisher):
-        # Class descriptive fields
+        # Class fields
         self.dept = dept
         self.station = station
-        #self.state = self.motor.get_state()    # Helpful to track the 'idle' or 'working'state of a machine?
+        self.prod_on_conveyor = False
+        self.process_completed = False
         # MQTT
         self.mqtt_publisher = mqtt_publisher
         self.topic = self.dept + '/' + self.station
@@ -36,21 +37,20 @@ class ConveyorCarrier(object):
             RevPiLightBarrierSensor(rpi, 'light-barrier', 
                                     barrier_sens_pin, self.topic, 
                                     self.mqtt_publisher)
-        # Class virtual sensors
-        self.prod_on_conveyor = False
-        self.process_completed = False
 
 
     # Setters
     def set_prod_on_conveyor(self, value: bool) -> None: 
         if(value != self.get_prod_on_conveyor()):
             self.prod_on_conveyor = value
-            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
 
     def set_process_completed(self, value: bool) -> None: 
         if(value != self.get_process_completed()):
             self.process_completed = value
-            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
     
     # Getters
     def get_dept(self) -> str: 
@@ -58,9 +58,6 @@ class ConveyorCarrier(object):
     
     def get_station(self) -> str: 
         return self.station
-    
-    #def get_state(self) -> bool: 
-    #    return self.state
 
     def get_light_barrier_state(self) -> bool: 
         return self.light_barrier.get_state()
@@ -92,7 +89,8 @@ class ConveyorCarrier(object):
 
     def to_dto(self):
         timestamp = time.time()
-        current_moment = datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
+        current_moment = \
+            datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
 
         dto_dict = {
             'dept': self.dept,

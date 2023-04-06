@@ -30,12 +30,11 @@ class OvenStation(object):
                  proc_light_act_pin: int, vacuum_door_act_pin: int, 
                  in_oven_sens_pin: int, out_oven_sens_pin: int, 
                  light_barrier_sens_pin: int, mqtt_publisher):
-        # Class descriptive fields
+        # Class fields
         self.dept = dept
         self.station = station
-        #self.state = False     # Helpful to track the 'idle' or 'working'state of a machine?
-        #self.carrier_pos = self.get_carrier_position()  
-        #self.door_pos = False
+        self.prod_on_carrier = False
+        self.process_completed = False
         # MQTT
         self.mqtt_publisher = mqtt_publisher
         self.topic = self.dept + '/' + self.station
@@ -72,27 +71,20 @@ class OvenStation(object):
             RevPiLightBarrierSensor(rpi, 'oven-light-barrier', 
                                     light_barrier_sens_pin, 
                                     self.topic, self.mqtt_publisher)
-        # Initializing class fields 
-        #self.carrier_pos = self.get_carrier_position()  
-        #self.door_pos = self.get_door_pos()
-        # Class virtual sensors
-        self.prod_on_carrier = False
-        self.process_completed = False
-
+        
 
     # Setters
-    #def set_state(self, value: bool) ->None: 
-    #    self.state = value
-
     def set_prod_on_carrier(self, value: bool) -> None: 
         if(value != self.get_prod_on_carrier()):
             self.prod_on_carrier = value
-            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
 
     def set_process_completed(self, value: bool) -> None: 
         if(value != self.get_process_completed()):
             self.process_completed = value
-            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
     
     # Getters
     def get_dept(self) -> str: 
@@ -100,9 +92,6 @@ class OvenStation(object):
     
     def get_station(self) -> str: 
         return self.station
-    
-    #def get_state(self) -> bool: 
-    #    return self.state
 
     def get_prod_on_carrier(self) -> bool: 
         return self.prod_on_carrier
@@ -166,12 +155,14 @@ class OvenStation(object):
     def activate_proc_light(self) -> None:
         if (self.oven_proc_light.get_state() == False):
             self.oven_proc_light.turn_on()
-            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
     
     def deactivate_proc_light(self) -> None:
         if (self.oven_proc_light.get_state() == True):
             self.oven_proc_light.turn_off()
-            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
     
     # TODO: test this function if works
     def oven_process_start(self, proc_time: int) -> None:
@@ -192,7 +183,8 @@ class OvenStation(object):
     # MQTT 
     def to_dto(self):
         timestamp = time.time()
-        current_moment = datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
+        current_moment = \
+            datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
 
         dto_dict = {
             'dept': self.dept,

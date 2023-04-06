@@ -25,11 +25,10 @@ class VacuumCarrier(object):
                  at_oven_act_pin: int, grip_act_pin: int, 
                  grip_lower_act_pin: int, at_turntable_sens_pin: int, 
                  at_oven_sens_pin: int, mqtt_publisher):
-        # Class descriptive fields
+        # Class fields
         self.dept = dept
         self.station = station
         self.carrier_pos = 'None'
-        # Class virtual sensors
         self.prod_on_carrier = False
         self.process_completed = False
         # MQTT
@@ -68,12 +67,14 @@ class VacuumCarrier(object):
     def set_prod_on_carrier(self, value: bool) -> None: 
         if(value != self.get_prod_on_carrier()):
             self.prod_on_carrier = value
-            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
 
     def set_process_completed(self, value: bool) -> None: 
         if (value != self.get_process_completed()):
             self.process_completed = value
-            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
 
     # Getters
     def get_dept(self) -> str: 
@@ -111,39 +112,46 @@ class VacuumCarrier(object):
     def activate_gripper(self) -> None: 
         if(self.gripper_activation.get_state() == False):
             self.gripper_activation.turn_on()
-            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
 
     def deactivate_gripper(self) -> None: 
         if(self.gripper_activation.get_state() == True):
             self.gripper_activation.turn_off()
-            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
 
     def lower_gripper(self) -> None: 
         if(self.gripper_lowering.get_state() == False):
             self.gripper_lowering.turn_on()
-            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
 
     def higher_gripper(self) -> None: 
         if(self.gripper_lowering.get_state() == True):
             self.gripper_lowering.turn_off()
-            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
 
     def move_carrier_towards_oven(self) -> None:
         if(self.at_oven.get_state() == False):
             self.motor.turn_on(self.motor.pin_tuple[0])
-            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
 
         # Wait until the at_oven sensor turns into True
         while (self.at_oven.get_state() == False):
             pass
         
         self.motor.turn_off()
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                   self.to_json())
 
     def move_carrier_towards_turntable(self) -> None:
         if(self.at_turntable.get_state() == False):
             self.motor.turn_on(self.motor.pin_tuple[1])
-            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
 
         # Wait until the at_turntable sensor turns into True
         while (self.at_turntable.get_state() == False):
@@ -163,7 +171,8 @@ class VacuumCarrier(object):
     # MQTT 
     def to_dto(self):
         timestamp = time.time()
-        current_moment = datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
+        current_moment = \
+            datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
         
         dto_dict = {
             'dept': self.dept,

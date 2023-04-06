@@ -17,8 +17,6 @@ import revpimodio2
 
 from mqtt_publisher import MqttPublisher
 
-from datetime import datetime  
-
 from machines.compressor_service import CompressorService
 from machines.oven_station import OvenStation
 from machines.vacuum_carrier import VacuumCarrier
@@ -39,7 +37,6 @@ class MultiprocessManager():
         # Instantiating the MQTT publisher
         self.mqtt_publisher = MqttPublisher()
         self.dept_name = dept_name  # Dept mqtt root topic
-                                    # TODO: set as a mqtt pub field
         
         # My aggregated objects
         self.oven_station = \
@@ -108,7 +105,6 @@ class MultiprocessManager():
     
     def reset_station_states_and_restart(self):
         # Turning off all the system actuators and resetting stations states
-        #self.compressor_service.deactivate_service()
         self.oven_station.deactivate_station()
         self.vacuum_gripper_carrier.deactivate_carrier()
         self.turntable_carrier.deactivate_carrier()
@@ -122,12 +118,6 @@ class MultiprocessManager():
         self.time_sens_delivery_count = 0 
         self.time_sens_turntable_pusher_timer = 0
         self.timer = 0
-        # Objects process completed flags
-        #self.oven_station.process_completed = False
-        #self.conveyor_carrier.process_completed = False
-        #self.turntable_carrier.process_completed = False
-        #self.saw_station.process_completed = False
-        #self.conveyor_carrier.process_completed = False
 
     def start(self):
         """Start event system and own cyclic loop."""
@@ -144,11 +134,7 @@ class MultiprocessManager():
         self.mqtt_publisher.open_connection()
         
         # Activating the process services - i.e. the compressor_service
-        #self.compressor_service.motor.turn_on()
         self.compressor_service.activate_service()
-        #self.mqtt_publisher.publish_telemetry_data(
-        #    'proc_dept/services/compressor_service/telemetry', 
-        #    self.compressor_service.motor.to_json())
 
         # My own loop to do some work next to the event system. We will stay
         # here till self.rpi.exitsignal.wait returns True after SIGINT/SIGTERM
@@ -159,13 +145,13 @@ class MultiprocessManager():
         while (self.rpi.exitsignal.wait(0.05) == False):
             # TODO: simplify the process loop
             # Follows the process description ###############################
-            # If the oven_station-light sensor is False, that is there is the product
-            # So, set the self.prod_on_oven_station_carrier to True
+            # If the oven_station-light sensor is False, that is there is the 
+            # product. So, set the self.prod_on_oven_station_carrier to True
             if (self.oven_station.get_light_barrier_state() == False):
                 self.oven_station.set_prod_on_carrier(True)
 
-            # If there is the product on the oven_station carrier, move the vacuum 
-            # carrier towards the oven_station
+            # If there is the product on the oven_station carrier, move the 
+            # vacuum carrier towards the oven_station
             if (self.oven_station.get_process_completed() == False and 
                 self.oven_station.get_prod_on_carrier() == True):
                 # Move the carrier towards the oven_station

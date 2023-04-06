@@ -9,9 +9,9 @@ O_4: saw;
 O_9: processing light;
 O_10: compressor.
 """
-import paho.mqtt.client as mqtt
-from conf.mqtt_conf_parameters import MqttConfiguratorParameter
-from components.basic_components.generic_revpi_actuator import GenericRevPiActuator
+
+from components.basic_components.generic_revpi_actuator import \
+    GenericRevPiActuator
 from datetime import datetime
 import time
 import json
@@ -38,7 +38,6 @@ class RevPiSingleMotionActuator(GenericRevPiActuator):
 
     def get_state(self) -> bool: 
         self.state = self.rpi.io['O_'+ str(self.pin)].value
-        #self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
         return self.state
     
     # Class Methods
@@ -46,18 +45,21 @@ class RevPiSingleMotionActuator(GenericRevPiActuator):
         if (self.state == False):
             self.state = True
             self.rpi.io['O_'+ str(self.pin)].value = self.state
-            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
     
     def turn_off(self) -> None:
         if (self.state == True):
             self.state = False
             self.rpi.io['O_'+ str(self.pin)].value = self.state
-            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
 
     # MQTT 
     def to_dto(self):
         timestamp = time.time()
-        current_moment = datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
+        current_moment = \
+            datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
 
         dto_dict = {
             'name': self.name,

@@ -16,10 +16,11 @@ class SawStation(object):
     """Saw class for saw objects."""
     def __init__(self, rpi, dept: str, station:str, saw_motor_act_pin: int, 
                  mqtt_publisher):
-        # Class descriptive fields
+        # Class fields
         self.dept = dept
         self.station = station
-        #self.state = False     # Helpful to track the 'idle' or 'working'state of a machine?
+        self.prod_under_saw = False
+        self.process_completed = False
         # MQTT
         self.mqtt_publisher = mqtt_publisher
         self.topic = self.dept + '/' + self.station
@@ -29,24 +30,20 @@ class SawStation(object):
             RevPiSingleMotionActuator(rpi, 'motor', 
                                       saw_motor_act_pin, self.topic, 
                                       mqtt_publisher)
-        # Class virtual sensors
-        self.prod_under_saw = False
-        self.process_completed = False
 
 
     # Setters
-    #def set_state(self) -> bool:
-    #    self.state = self.motor.get_state()
-    
     def set_prod_under_saw(self, value: bool) -> None: 
         if(value != self.get_prod_under_saw()):
             self.prod_under_saw = value
-            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
 
     def set_process_completed(self, value: bool) -> None: 
         if (value != self.get_process_completed()):
             self.process_completed = value
-            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
     
     # Getters
     def get_dept(self) -> str: 
@@ -55,9 +52,6 @@ class SawStation(object):
     def get_station(self) -> str: 
         return self.station
     
-    #def get_state(self) -> bool: 
-    #    return self.state
-
     def get_prod_under_saw(self) -> bool: 
         return self.prod_under_saw
 
@@ -68,12 +62,14 @@ class SawStation(object):
     def activate_saw(self) -> None: 
         if(self.motor.get_state() == False):
             self.motor.turn_on()
-            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
 
     def deactivate_saw(self) -> None: 
         if(self.motor.get_state() == True):
             self.motor.turn_off()
-            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
 
     def deactivate_station(self) -> None: 
         self.motor.turn_off()
@@ -84,7 +80,8 @@ class SawStation(object):
     # MQTT 
     def to_dto(self):
         timestamp = time.time()
-        current_moment = datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
+        current_moment = \
+            datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
 
         dto_dict = {
             'dept': self.dept,
@@ -92,7 +89,7 @@ class SawStation(object):
             'type': self.__class__.__name__,
             'layer': 'machine',
             'motor': self.motor.get_state(),
-            'prod-on-carrier': self.get_prod_under_saw(),   # Not updated, maybe it needs an Observer...
+            'prod-on-carrier': self.get_prod_under_saw(),
             'proc-completed': self.get_process_completed(),
             
             'timestamp': timestamp,
