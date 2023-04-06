@@ -41,15 +41,13 @@ class RevPiVacuumActuator(GenericRevPiActuator):
         if(self.state == False):
             self.state = True
             self.rpi.io['O_'+ str(self.pin)].value = self.state
-            #self.mqtt_publisher.publish_telemetry_data(self.topic, 
-            # self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
              
     def turn_off(self) -> None:
         if(self.state == True):
             self.state = False
             self.rpi.io['O_'+ str(self.pin)].value = self.state
-            #self.mqtt_publisher.publish_telemetry_data(self.topic, 
-            # self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     # MQTT 
     def to_dto(self):
@@ -70,3 +68,4 @@ class RevPiVacuumActuator(GenericRevPiActuator):
 
     def to_json(self):
         return json.dumps(self.to_dto())
+    
