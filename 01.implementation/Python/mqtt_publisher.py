@@ -40,4 +40,4 @@ class MqttPublisher(object):
                                             topic)
             #target_payload = payload.to_json()
             self.mqtt_client.publish(target_topic, target_payload, 0, True)
-            print(f"Info Published: Topic: {target_topic} Payload: {target_payload}")
+            #print(f"Info Published: Topic: {target_topic} Payload: {target_payload}")
