@@ -61,7 +61,7 @@ class VacuumCarrier(object):
                                  self.topic, self.mqtt_publisher)
         
         # Initializing class fields
-        self.carrier_pos = self.get_carrier_position()
+        self.set_carrier_position()
         
 
     # Setters
