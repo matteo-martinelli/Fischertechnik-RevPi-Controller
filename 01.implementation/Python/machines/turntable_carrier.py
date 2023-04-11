@@ -69,6 +69,20 @@ class TurntableCarrier(object):
         self.pusher_activation.get_state()
         print('Turntable pos is: ' + str(self.turntable_pos))
 
+
+    # Setters
+    def set_prod_on_carrier(self, value: bool) -> None: 
+        if(value != self.get_prod_on_carrier()):
+            self.prod_on_carrier = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
+
+    def set_process_completed(self, value: bool) -> None: 
+        if (value != self.get_process_completed()):
+            self.process_completed = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
+    
     def set_carrier_position(self) -> None:
         print('evaluating carrier pos')
         if (self.at_vacuum_carrier.get_state() == True
@@ -97,19 +111,6 @@ class TurntableCarrier(object):
         else: 
             self.turntable_pos = 'position error'
             print('pos error')
-
-    # Setters
-    def set_prod_on_carrier(self, value: bool) -> None: 
-        if(value != self.get_prod_on_carrier()):
-            self.prod_on_carrier = value
-            self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
-
-    def set_process_completed(self, value: bool) -> None: 
-        if (value != self.get_process_completed()):
-            self.process_completed = value
-            self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
     
     # Getters
     def get_dept(self) -> str: 
