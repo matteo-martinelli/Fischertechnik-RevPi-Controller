@@ -31,6 +31,7 @@ class TurntableCarrier(object):
         self.dept = dept
         self.station = station
         self.turntable_pos = 'None'
+        self.last_turntable_pos = 'None' # TODO: implement for getters and MQTT
         self.pusher_state = False
         self.prod_on_carrier = False
         self.process_completed = False
@@ -64,9 +65,38 @@ class TurntableCarrier(object):
             RevPiReferenceSensor(rpi, 'carrier-at-saw', at_saw_sens_pin, 
                                  self.topic, self.mqtt_publisher)
         # Initializing class fields
-        self.turntable_pos = self.get_carrier_position()
-        self.pusher_state = self.pusher_activation.get_state()
+        self.set_carrier_position()
+        self.pusher_activation.get_state()
+        print('Turntable pos is: ' + str(self.turntable_pos))
+
+    def set_carrier_position(self) -> None:
+        print('evaluating carrier pos')
+        if (self.at_vacuum_carrier.get_state() == True
+            and self.motor.get_state()[0] == False 
+            and self.motor.get_state()[1] == False):
+            self.turntable_pos = 'vacuum carrier'
+            print('pos: ' + str(self.turntable_pos))
         
+        elif (self.at_saw.get_state() == True
+            and self.motor.get_state()[0] == False 
+            and self.motor.get_state()[1] == False): 
+            self.turntable_pos = 'saw'
+            print('saw')
+        
+        elif (self.at_conveyor.get_state() == True
+            and self.motor.get_state()[0] == False 
+            and self.motor.get_state()[1] == False): 
+            self.turntable_pos = 'conveyor'
+            print('conveyor')
+
+        elif (self.motor.get_state()[0] == True or 
+            self.motor.get_state()[1] == True): 
+            self.turntable_pos = 'moving'
+            print('moving')
+        
+        else: 
+            self.turntable_pos = 'position error'
+            print('pos error')
 
     # Setters
     def set_prod_on_carrier(self, value: bool) -> None: 
@@ -97,20 +127,9 @@ class TurntableCarrier(object):
     def get_process_completed(self) -> bool: 
         return self.process_completed
 
-    def get_carrier_position(self) -> str: 
-        if (self.at_vacuum_carrier.get_state() == True):
-            return 'vacuum carrier'
-        elif (self.at_saw.get_state() == True): 
-            return 'saw'
-        elif (self.at_conveyor.get_state() == True): 
-            return 'conveyor'
-        elif (self.at_vacuum_carrier.get_state() == False and 
-              self.at_saw.get_state() == False and 
-              self.at_conveyor.get_state() == False): 
-            return 'moving'
-        else: 
-            return 'position error'
-
+    def get_carrier_position(self) -> str:
+        return self.turntable_pos
+    
     # Class Methods
     def activate_pusher(self) -> None: 
         if(self.pusher_activation.get_state() == False):
@@ -127,10 +146,12 @@ class TurntableCarrier(object):
     def rotate_towards_saw(self) -> None:
         if(self.at_vacuum_carrier.get_state() == True):
             self.motor.turn_on(self.motor.pin_tuple[0]) # Clockwise
+            self.set_carrier_position()
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
         elif(self.at_conveyor.get_state() == True):
             self.motor.turn_on(self.motor.pin_tuple[1]) # Counter-clockwise
+            self.set_carrier_position()
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
         
@@ -139,10 +160,12 @@ class TurntableCarrier(object):
             pass
 
         self.motor.turn_off()
+        self.set_carrier_position()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def rotate_towards_conveyor(self) -> None:
         self.motor.turn_on(self.motor.pin_tuple[0])     # Clockwise
+        self.set_carrier_position()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
         
         # Wait until the turntable reaches the at_conveyor sensor
@@ -150,10 +173,12 @@ class TurntableCarrier(object):
             pass
 
         self.motor.turn_off()
+        self.set_carrier_position()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def rotate_towards_vacuum_carrier(self) -> None:
-        self.motor.turn_on(self.motor.pin_tuple[1])     # Counter-clockwise 
+        self.motor.turn_on(self.motor.pin_tuple[1])     # Counter-clockwise
+        self.set_carrier_position()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
         
         # Wait until the turntable reaches the at_vacuum_carrier sensor
@@ -161,6 +186,7 @@ class TurntableCarrier(object):
             pass
         
         self.motor.turn_off()
+        self.set_carrier_position()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def deactivate_carrier(self) -> None: 
@@ -182,6 +208,7 @@ class TurntableCarrier(object):
             'type': self.__class__.__name__,
             'layer': 'machine',
             'turntable-pos': self.get_carrier_position(),
+            'motor': self.motor.get_state(),
             'pusher-state': self.pusher_activation.get_state(),
             'prod-on-carrier': self.get_prod_on_carrier(),
             'proc-completed': self.get_process_completed(),
