@@ -67,7 +67,6 @@ class TurntableCarrier(object):
         # Initializing class fields
         self.set_carrier_position()
         self.pusher_activation.get_state()
-        print('Turntable pos is: ' + str(self.turntable_pos))
 
 
     # Setters
@@ -84,33 +83,27 @@ class TurntableCarrier(object):
                                                        self.to_json())
     
     def set_carrier_position(self) -> None:
-        print('evaluating carrier pos')
         if (self.at_vacuum_carrier.get_state() == True
             and self.motor.get_state()[0] == False 
             and self.motor.get_state()[1] == False):
             self.turntable_pos = 'vacuum carrier'
-            print('pos: ' + str(self.turntable_pos))
         
         elif (self.at_saw.get_state() == True
             and self.motor.get_state()[0] == False 
             and self.motor.get_state()[1] == False): 
             self.turntable_pos = 'saw'
-            print('saw')
         
         elif (self.at_conveyor.get_state() == True
             and self.motor.get_state()[0] == False 
             and self.motor.get_state()[1] == False): 
             self.turntable_pos = 'conveyor'
-            print('conveyor')
 
         elif (self.motor.get_state()[0] == True or 
             self.motor.get_state()[1] == True): 
             self.turntable_pos = 'moving'
-            print('moving')
         
         else: 
             self.turntable_pos = 'position error'
-            print('pos error')
     
     # Getters
     def get_dept(self) -> str: 
