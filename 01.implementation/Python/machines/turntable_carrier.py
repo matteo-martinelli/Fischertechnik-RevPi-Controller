@@ -31,10 +31,14 @@ class TurntableCarrier(object):
         self.dept = dept
         self.station = station
         self.turntable_pos = 'None'
-        self.last_turntable_pos = 'None' # TODO: implement for getters and MQTT
         self.pusher_state = False
         self.prod_on_carrier = False
         self.process_completed = False
+        
+        self.last_turntable_pos = 'None' # TODO: implement for getters and MQTT
+        self.last_pusher_state = False
+        self.last_prod_on_carrier = False
+        self.last_process_completed = False
         # MQTT
         self.mqtt_publisher = mqtt_publisher
         self.topic = self.dept + '/' + self.station
@@ -66,21 +70,16 @@ class TurntableCarrier(object):
                                  self.topic, self.mqtt_publisher)
         # Initializing class fields
         self.set_carrier_position()
-        self.pusher_activation.get_state()
+        self.set_pusher_state()
+        #self.pusher_activation.get_state()
 
 
     # Setters
-    def set_prod_on_carrier(self, value: bool) -> None: 
-        if(value != self.get_prod_on_carrier()):
-            self.prod_on_carrier = value
-            self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
-
-    def set_process_completed(self, value: bool) -> None: 
-        if (value != self.get_process_completed()):
-            self.process_completed = value
-            self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+    def set_pusher_state(self) -> None: 
+        if (self.pusher_activation.get_state() == True):
+            self.pusher_state = True
+        else:
+            self.pusher_state = False
     
     def set_carrier_position(self) -> None:
         if (self.at_vacuum_carrier.get_state() == True
@@ -104,6 +103,18 @@ class TurntableCarrier(object):
         
         else: 
             self.turntable_pos = 'position error'
+
+    def set_prod_on_carrier(self, value: bool) -> None: 
+        if(value != self.get_prod_on_carrier()):
+            self.prod_on_carrier = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
+
+    def set_process_completed(self, value: bool) -> None: 
+        if (value != self.get_process_completed()):
+            self.process_completed = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
     
     # Getters
     def get_dept(self) -> str: 
@@ -113,7 +124,21 @@ class TurntableCarrier(object):
         return self.station
     
     def get_pusher_state(self) -> bool: 
+        if (self.pusher_state != self.last_pusher_state):
+            self.last_pusher_state = self.pusher_state
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
         return self.pusher_state
+
+    def get_pusher_state2(self) -> bool: 
+        return self.pusher_state
+
+    def get_carrier_position(self) -> str:
+        if (self.turntable_pos != self.last_turntable_pos):
+            self.last_turntable_pos = self.turntable_pos
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
+        return self.turntable_pos
 
     def get_prod_on_carrier(self) -> bool: 
         return self.prod_on_carrier
@@ -121,19 +146,18 @@ class TurntableCarrier(object):
     def get_process_completed(self) -> bool: 
         return self.process_completed
 
-    def get_carrier_position(self) -> str:
-        return self.turntable_pos
-    
     # Class Methods
     def activate_pusher(self) -> None: 
         if(self.pusher_activation.get_state() == False):
             self.pusher_activation.turn_on()
+            self.set_pusher_state()
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
     
     def deactivate_pusher(self) -> None: 
         if(self.pusher_activation.get_state() == True):
             self.pusher_activation.turn_off()
+            self.set_pusher_state()
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
     
@@ -203,7 +227,7 @@ class TurntableCarrier(object):
             'layer': 'machine',
             'turntable-pos': self.get_carrier_position(),
             'motor': self.motor.get_state(),
-            'pusher-state': self.pusher_activation.get_state(),
+            'pusher-state': self.get_pusher_state(),
             'prod-on-carrier': self.get_prod_on_carrier(),
             'proc-completed': self.get_process_completed(),
             

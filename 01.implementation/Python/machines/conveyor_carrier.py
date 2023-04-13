@@ -22,8 +22,15 @@ class ConveyorCarrier(object):
         # Class fields
         self.dept = dept
         self.station = station
+        self.motor_state = False
+        self.light_barrier_state = False
         self.prod_on_conveyor = False
         self.process_completed = False
+        
+        self.last_motor_state = False
+        self.last_light_barrier_state = False
+        self.last_prod_on_conveyor = False
+        self.last_process_completed = False
         # MQTT
         self.mqtt_publisher = mqtt_publisher
         self.topic = self.dept + '/' + self.station
@@ -37,15 +44,42 @@ class ConveyorCarrier(object):
             RevPiLightBarrierSensor(rpi, 'light-barrier', 
                                     barrier_sens_pin, self.topic, 
                                     self.mqtt_publisher)
+        self.read_sensors()
+        self.read_actuators()
 
-
+    # Read all sensors
+    def read_sensors(self) -> None: 
+        self.set_light_barrier_state()
+    
+    def read_actuators(self) -> None: 
+        self.set_motor_state()
+    
     # Setters
+    # When necessary pub
+    def set_motor_state(self) -> None: 
+        value = self.motor.get_state()
+        if (value != self.motor_state):
+            self.motor_state = value
+
+    # Polling pub
+    def set_light_barrier_state(self) -> None: 
+        value = self.light_barrier.get_state()
+        if (value != self.light_barrier_state):
+            if (value == True):
+                self.light_barrier_state = True
+            else:
+                self.light_barrier_state = False
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
+    
+    # TODO: add "if flag = True, then publish"
     def set_prod_on_conveyor(self, value: bool) -> None: 
         if(value != self.get_prod_on_conveyor()):
             self.prod_on_conveyor = value
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
 
+    # TODO: add "if flag = True, then publish"
     def set_process_completed(self, value: bool) -> None: 
         if(value != self.get_process_completed()):
             self.process_completed = value
@@ -59,8 +93,11 @@ class ConveyorCarrier(object):
     def get_station(self) -> str: 
         return self.station
 
-    def get_light_barrier_state(self) -> bool: 
-        return self.light_barrier.get_state()
+    def get_motor_state(self) -> bool:
+        return self.motor_state
+
+    def get_light_barrier_state(self) -> bool:
+        return self.light_barrier_state
 
     def get_prod_on_conveyor(self) -> bool: 
         return self.prod_on_conveyor
@@ -71,17 +108,20 @@ class ConveyorCarrier(object):
     # Class Methods
     def move_to_the_exit(self) -> None:
         self.motor.turn_on()
+        #self.set_motor_state()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
         
         # Wait until a product reaches the light_barrier sensor
         while (self.light_barrier.get_state() != False):
             pass
-        
+
         self.motor.turn_off()
+        #self.set_motor_state()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def deactivate_carrier(self) -> None: 
         self.motor.turn_off()
+        #self.set_motor_state()
         self.set_prod_on_conveyor(False)
         self.set_process_completed(False)
         # MQTT Publish
@@ -97,8 +137,8 @@ class ConveyorCarrier(object):
             'station': self.station,
             'type': self.__class__.__name__,
             'layer': 'machine',
-            'conveyor_motor': self.motor.get_state(),
-            'light-barrier': self.light_barrier.get_state(),
+            'conveyor_motor': self.get_motor_state(),
+            'light-barrier': self.get_light_barrier_state(),
             'prod_on_conv:': self.get_prod_on_conveyor(),
             'process_complete:': self.get_process_completed(),
             
