@@ -35,14 +35,10 @@ class VacuumCarrier(object):
         self.prod_on_carrier = False
         self.process_completed = False
 
-        #self.last_carrier_pos = 'None'  # TODO: implement for getters and MQTT
-        #self.last_gripper_activation_state = False
-        #self.last_gripper_lowering_state = False
-        #self.last_prod_on_carrier = False
-        #self.last_process_completed = False
         # MQTT
         self.mqtt_publisher = mqtt_publisher
         self.topic = self.dept + '/' + self.station
+        
         # Class actuators
         # pin 7,8
         self.motor = \
@@ -69,8 +65,19 @@ class VacuumCarrier(object):
                                  self.topic, self.mqtt_publisher)
         
         # Initializing class fields
+        self.read_sensors()
+        self.read_actuators()
+        self.set_prod_on_carrier(False)
+        self.set_process_completed(False)
+    
+    # Read all sensors and actuators
+    def read_sensors(self) -> None:
         self.set_carrier_position()
-        
+
+    def read_actuators(self) -> None: 
+        self.set_motor_state()
+        self.set_gripper_activation_state()
+        self.set_gripper_lowering_state()
 
     ## Setters ##
     # Actuator

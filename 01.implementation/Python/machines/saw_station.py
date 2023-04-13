@@ -33,8 +33,15 @@ class SawStation(object):
             RevPiSingleMotionActuator(rpi, 'motor', 
                                       saw_motor_act_pin, self.topic, 
                                       mqtt_publisher)
+        # Initialising class fields
+        self.read_actuators()
+        self.set_prod_under_saw(False)
+        self.set_process_completed(False)
 
-
+    # Read all sensors and actuators
+    def read_actuators(self) -> None: 
+        self.set_motor_state()
+        
     ## Setters ##
     # Actuator
     def set_motor_state(self) -> None: 

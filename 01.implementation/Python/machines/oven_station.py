@@ -40,15 +40,10 @@ class OvenStation(object):
         self.process_completed = False
         self.light_barrier_state = False
         
-        #self.last_carrier_pos = 'None'  # TODO: implement for getters and MQTT
-        #self.last_door_pos = False
-        #self.last_proc_light_state = False
-        #self.last_light_barrier_state = False
-        #self.last_prod_on_carrier = False
-        #self.last_process_completed = False
         # MQTT
         self.mqtt_publisher = mqtt_publisher
         self.topic = self.dept + '/' + self.station
+        
         # Class actuators
         # pin 5, 6
         self.oven_carrier = \
@@ -85,6 +80,8 @@ class OvenStation(object):
         # Initialising class fields
         self.read_sensors()
         self.read_actuators()
+        self.set_prod_on_carrier(False)
+        self.set_process_completed(False)
         
     # Read all sensors and actuators
     def read_sensors(self) -> None: 
@@ -93,7 +90,6 @@ class OvenStation(object):
 
     def read_actuators(self) -> None: 
         self.set_door_pos()
-        self.set_carrier_position()
         self.set_proc_light_state()
 
     ## Setters ##

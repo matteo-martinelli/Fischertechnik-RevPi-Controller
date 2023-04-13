@@ -36,13 +36,10 @@ class TurntableCarrier(object):
         self.prod_on_carrier = False
         self.process_completed = False
         
-        #self.last_turntable_pos = 'None' # TODO: implement for getters and MQTT
-        #self.last_pusher_state = False
-        #self.last_prod_on_carrier = False
-        #self.last_process_completed = False
         # MQTT
         self.mqtt_publisher = mqtt_publisher
         self.topic = self.dept + '/' + self.station
+        
         # Class actuators
         # pin 1,2
         self.motor = \
@@ -72,9 +69,6 @@ class TurntableCarrier(object):
         # Initializing class fields
         self.read_sensors()
         self.read_actuators()
-        #self.set_carrier_position()
-        #self.set_pusher_state()
-        #self.pusher_activation.get_state()
 
     # Read all sensors
     def read_sensors(self) -> None: 

@@ -27,13 +27,10 @@ class ConveyorCarrier(object):
         self.prod_on_conveyor = False
         self.process_completed = False
         
-        #self.last_motor_state = False
-        #self.last_light_barrier_state = False
-        #self.last_prod_on_conveyor = False
-        #self.last_process_completed = False
         # MQTT
         self.mqtt_publisher = mqtt_publisher
         self.topic = self.dept + '/' + self.station
+        
         # Class actuators
         # pin 3
         self.motor = \
@@ -46,6 +43,8 @@ class ConveyorCarrier(object):
                                     self.mqtt_publisher)
         self.read_sensors()
         self.read_actuators()
+        self.set_prod_on_conveyor(False)
+        self.set_process_completed(False)
 
     # Read all sensors and actuators
     def read_sensors(self) -> None: 
