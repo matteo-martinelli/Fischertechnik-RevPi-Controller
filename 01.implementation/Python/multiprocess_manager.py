@@ -148,7 +148,7 @@ class MultiprocessManager():
             
             # Oven station
             self.oven_station.read_sensors()
-            
+
             # Saw station
 
             # Conveyor station
