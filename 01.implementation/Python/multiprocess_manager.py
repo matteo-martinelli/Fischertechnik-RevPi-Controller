@@ -145,10 +145,23 @@ class MultiprocessManager():
         while (self.rpi.exitsignal.wait(0.05) == False):
             # TODO: simplify the process loop
             # First things first: reading all the sensors states
-            self.vacuum_gripper_carrier.get_carrier_position()
+            
+            # Oven station
+            self.oven_station.read_sensors()
+            
+            # Saw station
+
+            # Conveyor station
+            self.conveyor_carrier.read_sensors()
+            self.conveyor_carrier.read_actuators()
+
+            #self.vacuum_gripper_carrier.get_carrier_position()
             # TODO: add a "update all sensors" method to all the involved classes;
             # TODO: this method will be called here. 
+            # TODO: evaluate the update all behaviour
 
+            # TODO: update deactivate_station methods with gets and sets from classes.
+            # TODO: change sensor setters into readers
             # Follows the process description ###############################
             # If the oven_station-light sensor is False, that is there is the 
             # product. So, set the self.prod_on_oven_station_carrier to True
@@ -264,7 +277,7 @@ class MultiprocessManager():
                   and self.time_sens_vacuum_timer < 30):
                     self.vacuum_gripper_carrier.deactivate_gripper()
                     self.time_sens_vacuum_timer += 1
-
+            
             # Raise the carrier vacuum gripper
             elif (self.vacuum_gripper_carrier.get_carrier_position() == 'turntable'
                   and self.vacuum_gripper_carrier.get_gripper_lowering_state() == True 
