@@ -28,6 +28,8 @@ class RevPiReferenceSensor(GenericRevPiSensor):
         self.mqtt_publisher = mqtt_publisher
         # Class fileds
         self.name = name
+        # Fields init
+        self.get_state()
 
     
     # Getters

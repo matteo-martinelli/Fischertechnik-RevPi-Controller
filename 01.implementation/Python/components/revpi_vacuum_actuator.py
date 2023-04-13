@@ -28,6 +28,8 @@ class RevPiVacuumActuator(GenericRevPiActuator):
         # MQTT
         self.topic = parent_topic + '/actuators/' + name
         self.mqtt_publisher = mqtt_publisher
+        # Fields init
+        self.get_state()
 
 
     # Getters

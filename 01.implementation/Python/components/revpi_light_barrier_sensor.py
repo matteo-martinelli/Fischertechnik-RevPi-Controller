@@ -13,6 +13,7 @@ from datetime import datetime
 import time
 import json
 
+
 class RevPiLightBarrierSensor(GenericRevPiSensor):
     """Light Barrier class for light barrier objects."""
     def __init__(self, rpi, name: str, pin: int, parent_topic: str, 
@@ -23,6 +24,8 @@ class RevPiLightBarrierSensor(GenericRevPiSensor):
         self.mqtt_publisher = mqtt_publisher
         # Class fields
         self.name = name
+        # Fields init
+        self.get_state()
         
 
     # Getters
