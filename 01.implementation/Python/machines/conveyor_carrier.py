@@ -27,10 +27,10 @@ class ConveyorCarrier(object):
         self.prod_on_conveyor = False
         self.process_completed = False
         
-        self.last_motor_state = False
-        self.last_light_barrier_state = False
-        self.last_prod_on_conveyor = False
-        self.last_process_completed = False
+        #self.last_motor_state = False
+        #self.last_light_barrier_state = False
+        #self.last_prod_on_conveyor = False
+        #self.last_process_completed = False
         # MQTT
         self.mqtt_publisher = mqtt_publisher
         self.topic = self.dept + '/' + self.station
@@ -47,20 +47,22 @@ class ConveyorCarrier(object):
         self.read_sensors()
         self.read_actuators()
 
-    # Read all sensors
+    # Read all sensors and actuators
     def read_sensors(self) -> None: 
         self.set_light_barrier_state()
     
     def read_actuators(self) -> None: 
         self.set_motor_state()
     
-    # Setters
+    ## Setters ##
+    # Actuator
     # When necessary pub
     def set_motor_state(self) -> None: 
         value = self.motor.get_state()
         if (value != self.motor_state):
             self.motor_state = value
 
+    # Sensor
     # Polling pub
     def set_light_barrier_state(self) -> None: 
         value = self.light_barrier.get_state()
@@ -86,16 +88,18 @@ class ConveyorCarrier(object):
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
     
-    # Getters
+    ## Getters ##
     def get_dept(self) -> str: 
         return self.dept
     
     def get_station(self) -> str: 
         return self.station
 
+    # Actuator
     def get_motor_state(self) -> bool:
         return self.motor_state
 
+    # Sensor
     def get_light_barrier_state(self) -> bool:
         return self.light_barrier_state
 
@@ -108,7 +112,7 @@ class ConveyorCarrier(object):
     # Class Methods
     def move_to_the_exit(self) -> None:
         self.motor.turn_on()
-        #self.set_motor_state()
+        self.set_motor_state()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
         
         # Wait until a product reaches the light_barrier sensor
@@ -116,12 +120,13 @@ class ConveyorCarrier(object):
             pass
 
         self.motor.turn_off()
-        #self.set_motor_state()
+        self.set_motor_state()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def deactivate_carrier(self) -> None: 
         self.motor.turn_off()
-        #self.set_motor_state()
+        self.set_motor_state()
+        
         self.set_prod_on_conveyor(False)
         self.set_process_completed(False)
         # MQTT Publish

@@ -40,12 +40,12 @@ class OvenStation(object):
         self.process_completed = False
         self.light_barrier_state = False
         
-        self.last_carrier_pos = 'None'  # TODO: implement for getters and MQTT
-        self.last_door_pos = False
-        self.last_proc_light_state = False
-        self.last_light_barrier_state = False
-        self.last_prod_on_carrier = False
-        self.last_process_completed = False
+        #self.last_carrier_pos = 'None'  # TODO: implement for getters and MQTT
+        #self.last_door_pos = False
+        #self.last_proc_light_state = False
+        #self.last_light_barrier_state = False
+        #self.last_prod_on_carrier = False
+        #self.last_process_completed = False
         # MQTT
         self.mqtt_publisher = mqtt_publisher
         self.topic = self.dept + '/' + self.station
@@ -86,7 +86,7 @@ class OvenStation(object):
         self.read_sensors()
         self.read_actuators()
         
-
+    # Read all sensors and actuators
     def read_sensors(self) -> None: 
         self.set_light_barrier_state()
         self.set_carrier_position()
@@ -114,7 +114,6 @@ class OvenStation(object):
                 self.carrier_pos = 'inside'
                 self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                            self.to_json())
-        
         elif (self.outside_oven_switch.get_state() == True
             and self.oven_carrier.get_state()[0] == False
             and self.oven_carrier.get_state()[1] == False):
@@ -122,14 +121,12 @@ class OvenStation(object):
                 self.carrier_pos = 'outside'
                 self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                            self.to_json())
-        
         elif (self.oven_carrier.get_state()[0] == True 
             or self.oven_carrier.get_state()[1] == True):
             if (self.carrier_pos != 'moving'):
                 self.carrier_pos = 'moving'
                 self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                            self.to_json())
-
         elif (self.inside_oven_switch.get_state() == True and 
             self.outside_oven_switch.get_state() == True):
             if (self.carrier_pos != 'carrier position error'):
