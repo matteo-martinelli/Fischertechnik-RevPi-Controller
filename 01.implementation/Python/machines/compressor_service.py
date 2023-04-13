@@ -20,6 +20,7 @@ class CompressorService(object):
         # Class descriptive fields
         self.dept = dept
         self.station = station
+        self.motor_state = False
         # MQTT
         self.mqtt_pub = mqtt_pub
         self.topic = self.dept + '/' + self.station 
@@ -27,14 +28,33 @@ class CompressorService(object):
         self.motor = \
             RevPiSingleMotionActuator(rpi, 'motor', motor_act_pin, 
                                       self.topic, mqtt_pub)
+        self.read_actuators()
 
+    # Read all sensors and actuators
+    def read_actuators(self) -> None: 
+        self.set_motor_state()
 
+    ## Setters ##
+    # Actuator
+    def set_motor_state(self) -> None: 
+        value = self.motor.get_state()
+        if (value != self.motor_state):
+            self.motor_state = value
+
+    ## Getters ##
+    # Actuator
+    def get_motor_state(self) -> bool:
+        return self.motor_state
+    
+    # Class methods
     def activate_service(self):
         self.motor.turn_on()
+        self.set_motor_state()
         self.mqtt_pub.publish_telemetry_data(self.topic, self.to_json())
         
     def deactivate_service(self):
         self.motor.turn_off()
+        self.set_motor_state()
         self.mqtt_pub.publish_telemetry_data(self.topic, self.to_json())
         
     # MQTT 
