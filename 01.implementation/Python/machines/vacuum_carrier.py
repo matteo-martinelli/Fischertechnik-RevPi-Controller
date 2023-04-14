@@ -82,7 +82,7 @@ class VacuumCarrier(object):
     ## Setters ##
     # Actuator
     def set_motor_state(self) -> None: 
-        value = self.motor.state
+        value = self.motor.get_state()
         if (value != self.motor_state):
             self.motor_state = value
 
