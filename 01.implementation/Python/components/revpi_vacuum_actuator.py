@@ -67,10 +67,10 @@ class RevPiVacuumActuator(GenericRevPiActuator):
 
         dto_dict = {
             'name': self.name,
-            'pin': self.pin,
-            'state': self.state,
             'type': self.__class__.__name__,
             'layer': 'sensor-actuator',
+            'pin': self.pin,
+            'state': self.state,
             
             'timestamp': timestamp,
             'current-time': current_moment 

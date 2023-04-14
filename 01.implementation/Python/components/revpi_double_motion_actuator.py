@@ -72,10 +72,10 @@ class RevPiDoubleMotionActuator(GenericRevPiActuator):
 
         dto_dict = {
             'name': self.name,
-            'pins': self.pin_tuple,
-            'state': self.state,
             'type': self.__class__.__name__,
             'layer': 'sensor-actuator',
+            'pins': self.pin_tuple,
+            'state': self.state,
             
             'timestamp': timestamp,
             'current-time': current_moment 

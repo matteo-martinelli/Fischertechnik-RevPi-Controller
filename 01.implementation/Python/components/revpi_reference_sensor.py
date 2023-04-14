@@ -31,7 +31,6 @@ class RevPiReferenceSensor(GenericRevPiSensor):
         # Fields init
         self.get_state()
 
-    
     # Getters
     def get_name(self) -> str:
         return self.name
@@ -52,10 +51,10 @@ class RevPiReferenceSensor(GenericRevPiSensor):
 
         dto_dict = {
             'name': self.name,
-            'pin': self.pin,
-            'state': self.state,
             'type': self.__class__.__name__,
             'layer': 'sensor-actuator',
+            'pin': self.pin,
+            'state': self.state,
             
             'timestamp': timestamp,
             'current-time': current_moment
