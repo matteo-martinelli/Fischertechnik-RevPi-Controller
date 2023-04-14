@@ -269,7 +269,7 @@ class OvenStation(object):
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     # MQTT 
-    def to_dto(self):
+    def to_dto(self):   # Data Transfer Objet
         timestamp = time.time()
         current_moment = \
             datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")

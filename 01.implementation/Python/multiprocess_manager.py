@@ -149,13 +149,19 @@ class MultiprocessManager():
             # Oven station
             self.oven_station.read_sensors()
 
-            # Saw station
+            # Vacuum carrier
+            self.vacuum_gripper_carrier.read_sensors()
 
+            # Turntable carrier
+            self.turntable_carrier.read_sensors()
+            
+            # Saw station
+            # no senors!
+            
             # Conveyor station
             self.conveyor_carrier.read_sensors()
-            self.conveyor_carrier.read_actuators()
+            #self.conveyor_carrier.read_actuators()
 
-            #self.vacuum_gripper_carrier.get_carrier_position()
             # TODO: add a "update all sensors" method to all the involved classes;
             # TODO: this method will be called here. 
             # TODO: evaluate the update all behaviour

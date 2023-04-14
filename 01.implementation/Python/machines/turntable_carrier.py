@@ -94,21 +94,25 @@ class TurntableCarrier(object):
                 
     # Sensor
     def set_carrier_position(self) -> None:
-        if (self.at_vacuum_carrier.get_state() == True
+        at_conveyor = self.at_conveyor.get_state()
+        at_vacuum = self.at_vacuum_carrier.get_state()
+        at_saw = self.at_saw.get_state()
+        
+        if (at_vacuum == True
             and self.motor.get_state()[0] == False 
             and self.motor.get_state()[1] == False):
             if (self.turntable_pos != 'vacuum carrier'):
                 self.turntable_pos = 'vacuum carrier'
                 self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                            self.to_json())
-        elif (self.at_saw.get_state() == True
+        elif (at_saw == True
             and self.motor.get_state()[0] == False 
             and self.motor.get_state()[1] == False): 
             if (self.turntable_pos != 'saw'):
                 self.turntable_pos = 'saw'
                 self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                             self.to_json())
-        elif (self.at_conveyor.get_state() == True
+        elif (at_conveyor == True
             and self.motor.get_state()[0] == False 
             and self.motor.get_state()[1] == False): 
             if (self.turntable_pos != 'conveyor'):
@@ -240,8 +244,8 @@ class TurntableCarrier(object):
             pass
         
         self.motor.turn_off()
-        self.set_carrier_position()
         self.set_motor_state()
+        self.set_carrier_position()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def deactivate_carrier(self) -> None: 

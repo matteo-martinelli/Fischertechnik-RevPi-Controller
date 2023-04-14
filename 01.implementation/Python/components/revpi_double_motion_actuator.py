@@ -38,29 +38,31 @@ class RevPiDoubleMotionActuator(GenericRevPiActuator):
         state_A = self.rpi.io['O_' + str(self.pin_tuple[0])].value
         state_B = self.rpi.io['O_' + str(self.pin_tuple[1])].value
         self.state = (state_A, state_B)
-        if(self.state != self.previous_state):
+        if(self.state != self.previous_state):  # TODO: where is previous state?
             self.previous_state = self.state
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
         return self.state
     
     # Class Methods
-    def turn_on(self, activation_pin: int):
+    def turn_on(self, activation_pin: int): # TODO: write it better
         for i in range(len(self.pin_tuple)):
             if (self.pin_tuple[i] == activation_pin and 
                 self.rpi.io['O_' + str(self.pin_tuple[i])].value == False): 
                 self.rpi.io['O_' + str(self.pin_tuple[i])].value = True
-                self.state = True
-                self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                           self.to_json())
+                #self.state = True
+                #self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                #                                           self.to_json())
+                self.get_state()
             else: 
                 self.rpi.io['O_' + str(self.pin_tuple[i])].value = False
+                self.get_state()
         
-    def turn_off(self) -> None:
-        if (self.state != False):
-            self.state = False
+    def turn_off(self) -> None: # TODO: write it better
+        if (self.state[0] != False or self.state[1] != False):
+            self.state = (False, False)
             for i in range(len(self.pin_tuple)):
-                self.rpi.io['O_' + str(self.pin_tuple[i])].value = self.state
+                self.rpi.io['O_' + str(self.pin_tuple[i])].value = False
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
 
