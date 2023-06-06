@@ -85,6 +85,13 @@ class SawStation(object):
             self.set_motor_state()
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
+    
+    def processing(self, proc_time) -> None: 
+        if(self.motor.get_state() == False):
+            self.activate_saw()
+            # Time in seconds
+            time.sleep(proc_time)
+            self.deactivate_saw()
 
     def deactivate_saw(self) -> None: 
         if(self.motor.get_state() == True):
