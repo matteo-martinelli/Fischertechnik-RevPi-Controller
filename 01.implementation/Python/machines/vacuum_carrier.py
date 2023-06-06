@@ -204,7 +204,15 @@ class VacuumCarrier(object):
             self.set_gripper_lowering_state()
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
-
+    
+    def lower_gripper(self, proc_time) -> None:  
+        if(self.gripper_lowering.get_state() == False):
+            self.gripper_lowering.turn_on() 
+            time.sleep(proc_time)
+            self.set_gripper_lowering_state()
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
+    
     def higher_gripper(self) -> None: 
         if(self.gripper_lowering.get_state() == True):
             self.gripper_lowering.turn_off()
