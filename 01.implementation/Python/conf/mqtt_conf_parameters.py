@@ -8,7 +8,7 @@ Stores the mqtt broker connection global variables
 
 
 class MqttConfiguratorParameter(object):
-    BROKER_ADDRESS = '192.168.137.125'
+    BROKER_ADDRESS = '10.0.0.6'
     BROKER_PORT = 1883
     MQTT_USER = 'dept_manager'
     MQTT_PW = 'put here the pw'
