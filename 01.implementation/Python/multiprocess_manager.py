@@ -63,8 +63,15 @@ class MultiprocessManager():
         # Process fields
         self.piece_counter = 0
         self.process_completed = False
-        self.to_reset = False        
-
+        self.to_reset = False
+    
+    def read_all_sensors(self):
+        self.oven_station.read_sensors()            # Oven station
+        self.vacuum_gripper_carrier.read_sensors()  # Vacuum carrier  
+        self.turntable_carrier.read_sensors()       # Turntable carrier
+        # no senors!                                # Saw station
+        self.conveyor_carrier.read_sensors()        # Conveyor station
+        
     def cleanup(self):
         """Cleanup function to leave the RevPi in a defined state."""
         print('Cleaning the system state')
@@ -124,27 +131,8 @@ class MultiprocessManager():
         while (self.rpi.exitsignal.wait(0.05) == False):
             # TODO: simplify the process loop
             # First things first: reading all the sensors states
+            self.read_all_sensors()
             
-            # Oven station
-            self.oven_station.read_sensors()
-
-            # Vacuum carrier
-            self.vacuum_gripper_carrier.read_sensors()
-
-            # Turntable carrier
-            self.turntable_carrier.read_sensors()
-            
-            # Saw station
-            # no senors!
-            
-            # Conveyor station
-            self.conveyor_carrier.read_sensors()
-            #self.conveyor_carrier.read_actuators()
-
-            # TODO: add a "update all sensors" method to all the involved classes;
-            # TODO: this method will be called here. 
-            # TODO: evaluate the update all behaviour
-
             # TODO: update deactivate_station methods with gets and sets from classes.
             # TODO: change sensor setters into readers
             # Follows the process description #################################
@@ -169,7 +157,7 @@ class MultiprocessManager():
             if (self.oven_station.get_process_completed() == False and
                 self.oven_station.get_prod_on_carrier() == True and 
                 self.vacuum_gripper_carrier.get_carrier_position() == 'oven'):
-                # Move inside the oven_station the oven_station carrier
+                # Move inside the oven the oven_station carrier
                 if (self.oven_station.get_carrier_position() == 'outside'):
                     self.oven_station.move_carrier_inward()
                 
@@ -187,22 +175,22 @@ class MultiprocessManager():
 
             # Take the product with the carrier grip
             # Lower the vacuum gripper
-            # If oven_station feeder sensor is True and oven_station ready is 
-            # True and the vacuum gripper variable is True and vacuum counter 
-            # is less than 10, that is if the oven_station feeder is out from 
-            # the oven_station and the oven_station is in ready state and the 
-            # vacuum carrieer gripper is at the oven_station and the vacuum 
-            # counter is less than 10 The counter is needed in order to wait 
-            # for the vacuum gripper to be completely lowered  
+            # If 
+            #   - the 'oven station' carrier is 'outside'
+            #   - the 'oven process' is completed
+            #   - the 'oven prod on carrier' sensor is true
+            #   - the 'vacuum carrier' is at the 'oven'
+            # Then
+            #   - grab the product with the 'vacuum carrier' from the 
+            #     'oven carrier'  
             if (self.oven_station.get_carrier_position() == 'outside' and 
                 self.oven_station.get_process_completed() == True and
                 self.oven_station.get_prod_on_carrier() == True and
                 self.vacuum_gripper_carrier.get_carrier_position() == 'oven'):
                 
-                self.vacuum_gripper_carrier.lower_gripper(1)
-
+                # Grip the product
+                self.vacuum_gripper_carrier.lower_gripper()
                 self.vacuum_gripper_carrier.activate_gripper()
-            
                 self.vacuum_gripper_carrier.higher_gripper()
 
                 # Set the gripping process as completed
@@ -229,9 +217,14 @@ class MultiprocessManager():
                 and self.vacuum_gripper_carrier.get_prod_on_carrier() == True
                 and self.vacuum_gripper_carrier.get_gripper_activation_state() 
                 == True ):
-                    self.vacuum_gripper_carrier.lower_gripper(0.5)
+                    
+                    # If the turntable is not already facing the vacuum carrier
+                    if (self.turntable_carrier.get_carrier_position != 
+                        'vacuum carrier'):
+                        self.turntable_carrier.rotate_towards_vacuum_carrier()
+                    
+                    self.vacuum_gripper_carrier.lower_gripper()
                     self.vacuum_gripper_carrier.deactivate_gripper()
-                    time.sleep(1) # TODO: Add this sleep into deactivate_gripper(waiting_time)
 
             # Raise the carrier vacuum gripper
             elif (self.vacuum_gripper_carrier.get_carrier_position() == 
@@ -254,7 +247,7 @@ class MultiprocessManager():
                     self.turntable_carrier.rotate_towards_saw()
                     self.saw_station.set_prod_under_saw(True)
 
-                # Activate the saw for the design processing time
+                # Activate the saw for the designed processing time
                 if (self.turntable_carrier.get_carrier_position() == 'saw' 
                     and self.saw_station.get_process_completed() == False):
                     self.saw_station.processing(2)
@@ -270,8 +263,7 @@ class MultiprocessManager():
                 # Activate the pusher
                 if (self.turntable_carrier.get_carrier_position() == 
                     'conveyor'):
-                    self.turntable_carrier.activate_pusher(1)
-                    self.turntable_carrier.deactivate_pusher()
+                    self.turntable_carrier.push_product()
                     self.turntable_carrier.set_prod_on_carrier(False)
                     self.turntable_carrier.set_process_completed(True)
                     self.conveyor_carrier.set_prod_on_conveyor(True)
