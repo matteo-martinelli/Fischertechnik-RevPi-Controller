@@ -181,25 +181,22 @@ class TurntableCarrier(object):
         return self.process_completed
 
     # Class Methods
+    def push_product(self) -> None: 
+        self.activate_pusher()
+        self.deactivate_pusher()
+    
     def activate_pusher(self) -> None: 
         if(self.pusher_activation.get_state() == False):
             self.pusher_activation.turn_on()
+            time.sleep(0.8)
             self.set_pusher_state()
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
             
-    def activate_pusher(self, proc_time) -> None: 
-        if(self.pusher_activation.get_state() == False):
-            self.pusher_activation.turn_on()
-            # in seconds
-            time.sleep(proc_time)
-            self.set_pusher_state()
-            self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
-    
     def deactivate_pusher(self) -> None: 
         if(self.pusher_activation.get_state() == True):
             self.pusher_activation.turn_off()
+            time.sleep(0.4)
             self.set_pusher_state()
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
