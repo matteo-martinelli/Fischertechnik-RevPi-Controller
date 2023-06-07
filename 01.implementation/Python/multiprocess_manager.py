@@ -58,7 +58,7 @@ class MultiprocessManager():
 
         self.compressor_service = \
             CompressorService(self.rpi, self.dept_name, 'compressor-service', 
-                              10, self.mqtt_publisher) # TODO: evaluate class changing
+                              10, self.mqtt_publisher)
         
         # Process fields
         self.piece_counter = 0
@@ -133,7 +133,6 @@ class MultiprocessManager():
             # First things first: reading all the sensors states
             self.read_all_sensors()
             
-            # TODO: update deactivate_station methods with gets and sets from classes.
             # TODO: change sensor setters into readers
             # Follows the process description #################################
             # If the oven_station-light sensor is False, that is there is the 
