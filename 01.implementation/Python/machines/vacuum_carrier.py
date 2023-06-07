@@ -194,21 +194,16 @@ class VacuumCarrier(object):
     def deactivate_gripper(self) -> None: 
         if(self.gripper_activation.get_state() == True):
             self.gripper_activation.turn_off()
+            # Fixed time for the pneumatic propagation to take effect
+            time.sleep(0.8)
             self.set_gripper_activation_state()
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
 
-    def lower_gripper(self) -> None: 
-        if(self.gripper_lowering.get_state() == False):
-            self.gripper_lowering.turn_on()
-            self.set_gripper_lowering_state()
-            self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
-    
-    def lower_gripper(self, proc_time) -> None:  
+    def lower_gripper(self) -> None:  
         if(self.gripper_lowering.get_state() == False):
             self.gripper_lowering.turn_on() 
-            time.sleep(proc_time)
+            time.sleep(0.8)
             self.set_gripper_lowering_state()
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
@@ -216,6 +211,7 @@ class VacuumCarrier(object):
     def higher_gripper(self) -> None: 
         if(self.gripper_lowering.get_state() == True):
             self.gripper_lowering.turn_off()
+            time.sleep(0.4)
             self.set_gripper_lowering_state()
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
