@@ -17,6 +17,7 @@ import revpimodio2
 import time
 
 from mqtt_publisher import MqttPublisher
+from mqtt_conf_listener import MqttConfListener
 
 from machines.compressor_service import CompressorService
 from machines.oven_station import OvenStation
@@ -29,6 +30,7 @@ from machines.conveyor_carrier import ConveyorCarrier
 class MultiprocessManager():
     """Entry point for Fischertechnik Multiprocess Station with Oven control 
     over RevPi."""
+
     def __init__(self, dept_name):
         # Instantiate RevPiModIO controlling library
         self.rpi = revpimodio2.RevPiModIO(autorefresh=True)
@@ -37,6 +39,7 @@ class MultiprocessManager():
 
         # Instantiating the MQTT publisher
         self.mqtt_publisher = MqttPublisher()
+        self.mqtt_conf_listener = MqttConfListener('multiproc_dept/dept_conf')
         self.dept_name = dept_name  # Dept mqtt root topic
         
         # My aggregated objects
@@ -60,10 +63,27 @@ class MultiprocessManager():
             CompressorService(self.rpi, self.dept_name, 'compressor-service', 
                               10, self.mqtt_publisher)
         
-        # Process fields
-        self.piece_counter = 0
+        # Config fields
+        self.pieces_counter = 0
+        self.pieces_to_produce = 2
+        self.compressor_behaviour = 1
+        self.oven_processing_time = 1           # Time in seconds
+        self.saw_processing_time = 1            # Time in seconds
+        self.vacuum_gripper_carrier_speed = 1   # TBD
+        self.turntable_carrier_speed = 1        # TBD
+        
+        # Process fileds
         self.process_completed = False
         self.to_reset = False
+
+    def set_received_configuration(self, conf):
+        print('a configuration have been saved')
+        self.pieces_to_produce = conf.pieces_to_produce
+        self.compressor_behaviour = conf.compressor_behaviour
+        self.oven_processing_time = conf.oven_processing_time
+        self.saw_processing_time = conf.saw_processing_time
+        self.vacuum_gripper_carrier_speed = conf.vacuum_carrier_speed
+        self.turntable_carrier_speed = conf.turntable_carrier_speed
     
     def read_all_sensors(self):
         self.oven_station.read_sensors()            # Oven station
@@ -71,7 +91,7 @@ class MultiprocessManager():
         self.turntable_carrier.read_sensors()       # Turntable carrier
         # no senors!                                # Saw station
         self.conveyor_carrier.read_sensors()        # Conveyor station
-        
+    
     def cleanup(self):
         """Cleanup function to leave the RevPi in a defined state."""
         print('Cleaning the system state')
@@ -81,6 +101,7 @@ class MultiprocessManager():
         
         # Closing the MQTT connection
         self.mqtt_publisher.close_connection()
+        self.mqtt_conf_listener.close_connection()
 
         # Turning off all the system actuators and resetting stations states
         self.compressor_service.deactivate_service()
@@ -112,12 +133,19 @@ class MultiprocessManager():
         # https://revpimodio.org/en/events-in-the-mainloop/
         self.rpi.mainloop(blocking=False)
 
-        # Sets the Rpi a1 light: switch on / off green part of LED A1 | or 
-        # do other things
+        # Sets the Rpi a1 light: switch on / off green part of LED A1
         self.rpi.core.a1green.value = not self.rpi.core.a1green.value
 
-        # Connecting to the MQTT broker
+        # Connecting to the MQTT broker 
+        # With the publisher
         self.mqtt_publisher.open_connection()
+        # With the configuration listener
+        self.mqtt_conf_listener.open_connection()
+        time.sleep(0.5)
+        if(self.mqtt_conf_listener.configuration != ''):
+            self.set_received_configuration(self.mqtt_conf_listener.configuration)
+        else: 
+            print('No confsaved found, proceeding the standard conf')
         
         # Activating the process services - i.e. the compressor_service
         self.compressor_service.activate_service()
@@ -162,7 +190,8 @@ class MultiprocessManager():
                 
                 # When the carrier is inside the oven_station
                 if (self.oven_station.get_carrier_position() == 'inside'):
-                    self.oven_station.oven_process_start(3) # Time in seconds
+                    # Time in seconds
+                    self.oven_station.oven_process_start(self.oven_processing_time)
                     self.oven_station.set_process_completed(True)
 
                 # When the oven_station process is completed
@@ -249,7 +278,7 @@ class MultiprocessManager():
                 # Activate the saw for the designed processing time
                 if (self.turntable_carrier.get_carrier_position() == 'saw' 
                     and self.saw_station.get_process_completed() == False):
-                    self.saw_station.processing(2)
+                    self.saw_station.processing(self.saw_processing_time)
                     self.saw_station.set_process_completed(True)
             
                 # Activate the turntable until it reaches the conveyor                
@@ -287,13 +316,15 @@ class MultiprocessManager():
                and self.vacuum_gripper_carrier.get_process_completed() == True 
                and self.oven_station.get_process_completed() == True
                and self.process_completed == False):
-                # Print the process completion message
-                print('process completed')
                 # Add 1 to the piece counter
-                self.piece_counter += 1
+                self.pieces_counter += 1
                 # Setting the process as completed
                 self.process_completed = True
                 self.to_reset = True
+                # Print the process completion message
+                print('piece completed')
+                pieces_left = self.pieces_to_produce - self.pieces_counter
+                print(pieces_left, ' pieces left to be produced')
 
             ###################################################################
             # If the product is in moved from the conveyor light barrier, reset
@@ -301,12 +332,18 @@ class MultiprocessManager():
             if(self.conveyor_carrier.get_light_barrier_state() == True 
                and self.process_completed == True
                and self.to_reset == True):
-                # Print the process completion message
-                print('resetting the dept')
-                # Reset the system
-                self.conveyor_carrier.set_prod_on_conveyor(False)
-                self.reset_station_states_and_restart()
-                self.to_reset = False
+                if(self.pieces_counter == self.pieces_to_produce):
+                    # Print the process completion message
+                    print('production completed, terminating the program cycle')
+                    self.reset_station_states_and_stop()
+                    break
+                else:
+                    print('Accepting another piece')
+                    # Reset the system
+                    self.conveyor_carrier.set_prod_on_conveyor(False)
+                    self.reset_station_states_and_restart()
+                    self.to_reset = False
+                    ('Waiting')
 
 if __name__ == "__main__":
     # Instantiating the controlling class
