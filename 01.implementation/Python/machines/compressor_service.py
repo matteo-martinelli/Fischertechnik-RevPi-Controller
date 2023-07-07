@@ -50,11 +50,13 @@ class CompressorService(object):
     def activate_service(self):
         self.motor.turn_on()
         self.set_motor_state()
+        print('compressor activated')
         self.mqtt_pub.publish_telemetry_data(self.topic, self.to_json())
         
     def deactivate_service(self):
         self.motor.turn_off()
         self.set_motor_state()
+        print('compressor deactivated')
         self.mqtt_pub.publish_telemetry_data(self.topic, self.to_json())
         
     # MQTT 

@@ -112,6 +112,7 @@ class ConveyorCarrier(object):
     def move_to_the_exit(self) -> None:
         self.motor.turn_on()
         self.set_motor_state()
+        print('conveyor activated')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
         
         # Wait until a product reaches the light_barrier sensor
@@ -120,6 +121,7 @@ class ConveyorCarrier(object):
 
         self.motor.turn_off()
         self.set_motor_state()
+        print('conveyor deactivated')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def deactivate_carrier(self) -> None: 

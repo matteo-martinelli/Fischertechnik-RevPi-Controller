@@ -188,11 +188,13 @@ class OvenStation(object):
     def move_carrier_inward(self) -> None:
         self.oven_door_opening.turn_on()
         self.set_door_pos()
+        print('oven door opened')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
         self.oven_carrier.turn_on(self.oven_carrier.pin_tuple[0])
         self.set_carrier_position()
         self.set_light_barrier_state()
+        print('oven carrier activated')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
         # Wait until the oven carrier reaches the outward oven switch
@@ -202,11 +204,13 @@ class OvenStation(object):
         
         self.oven_carrier.turn_off()
         self.set_carrier_position()
+        print('oven carrier deactivated')
         self.set_light_barrier_state()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
         
         self.oven_door_opening.turn_off()
         self.set_door_pos()
+        print('oven door closed')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def move_carrier_outward(self) -> None:

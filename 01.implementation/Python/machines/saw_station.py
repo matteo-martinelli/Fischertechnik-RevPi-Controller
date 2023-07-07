@@ -89,9 +89,11 @@ class SawStation(object):
     def processing(self, proc_time) -> None: 
         if(self.motor.get_state() == False):
             self.activate_saw()
+            print('saw activated')
             # Time in seconds
             time.sleep(proc_time)
             self.deactivate_saw()
+            print('saw deactivated')
 
     def deactivate_saw(self) -> None: 
         if(self.motor.get_state() == True):

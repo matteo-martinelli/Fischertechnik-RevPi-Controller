@@ -188,6 +188,7 @@ class VacuumCarrier(object):
         if(self.gripper_activation.get_state() == False):
             self.gripper_activation.turn_on()
             self.set_gripper_activation_state()
+            print('vacuum carrier gripper activated')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
 
@@ -197,6 +198,7 @@ class VacuumCarrier(object):
             # Fixed time for the pneumatic propagation to take effect
             time.sleep(0.8)
             self.set_gripper_activation_state()
+            print('vacuum carrier gripper deactivated')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
 
@@ -205,6 +207,7 @@ class VacuumCarrier(object):
             self.gripper_lowering.turn_on() 
             time.sleep(0.8)
             self.set_gripper_lowering_state()
+            print('vacuum carrier gripper lowered')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
     
@@ -213,12 +216,14 @@ class VacuumCarrier(object):
             self.gripper_lowering.turn_off()
             time.sleep(0.4)
             self.set_gripper_lowering_state()
+            print('vacuum carrier gripper highered')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
 
     def move_carrier_towards_oven(self) -> None:
         if(self.at_oven.get_state() == False):
             self.motor.turn_on(self.motor.pin_tuple[0])
+            print('vacuum carrier activated')
             self.set_motor_state()
             self.set_carrier_position()
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
@@ -231,6 +236,7 @@ class VacuumCarrier(object):
         self.motor.turn_off()
         self.set_carrier_position()
         self.set_motor_state()
+        print('vacuum carrier deactivated')
         self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                    self.to_json())
 
@@ -239,6 +245,7 @@ class VacuumCarrier(object):
             self.motor.turn_on(self.motor.pin_tuple[1])
             self.set_motor_state()
             self.set_carrier_position()
+            print('vacuum carrier activated')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
 
@@ -249,6 +256,7 @@ class VacuumCarrier(object):
         self.motor.turn_off()
         self.set_carrier_position()
         self.set_motor_state()
+        print('vacuum carrier deactivated')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def deactivate_carrier(self) -> None: 
