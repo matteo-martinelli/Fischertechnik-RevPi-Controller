@@ -25,7 +25,14 @@ from machines.vacuum_carrier import VacuumCarrier
 from machines.turntable_carrier import TurntableCarrier
 from machines.saw_station import SawStation
 from machines.conveyor_carrier import ConveyorCarrier
+from conf.multiproc_dept_conf import MultiProcDeptConf
 
+PIECES_TO_PRODUCE = 1
+COMPRESSOR_BEHAVIOUR = 'always_on'
+OVEN_PROCESSING_TIME = 1
+SAW_PROCESSING_TIME = 1
+VACUUM_CARRIER_SPEED = 1
+TURNTABLE_CARRIER_SPEED = 1
 
 class MultiprocessManager():
     """Entry point for Fischertechnik Multiprocess Station with Oven control 
@@ -63,27 +70,31 @@ class MultiprocessManager():
             CompressorService(self.rpi, self.dept_name, 'compressor-service', 
                               10, self.mqtt_publisher)
         
-        # Config fields
-        self.pieces_counter = 0
-        self.pieces_to_produce = 2
-        self.compressor_behaviour = 1
-        self.oven_processing_time = 1           # Time in seconds
-        self.saw_processing_time = 1            # Time in seconds
-        self.vacuum_gripper_carrier_speed = 1   # TBD
-        self.turntable_carrier_speed = 1        # TBD
-        
+        # Process config
+        self.process_conf = \
+            MultiProcDeptConf(
+            pieces_to_produce=PIECES_TO_PRODUCE, 
+            compressor_behaviour=COMPRESSOR_BEHAVIOUR,
+            oven_processing_time=OVEN_PROCESSING_TIME,      # Time in seconds
+            saw_processing_time=SAW_PROCESSING_TIME,        # Time in seconds
+            vacuum_carrier_speed=VACUUM_CARRIER_SPEED,      # TBD
+            turntable_carrier_speed=TURNTABLE_CARRIER_SPEED # TBD
+            )
+
         # Process fileds
+        self.pieces_counter = 0
         self.process_completed = False
         self.to_reset = False
 
     def set_received_configuration(self, conf):
         print('a configuration have been saved')
-        self.pieces_to_produce = conf.pieces_to_produce
-        self.compressor_behaviour = conf.compressor_behaviour
-        self.oven_processing_time = conf.oven_processing_time
-        self.saw_processing_time = conf.saw_processing_time
-        self.vacuum_gripper_carrier_speed = conf.vacuum_carrier_speed
-        self.turntable_carrier_speed = conf.turntable_carrier_speed
+        self.process_conf.pieces_to_produce = conf.pieces_to_produce
+        self.process_conf.compressor_behaviour = conf.compressor_behaviour
+        self.process_conf.oven_processing_time = conf.oven_processing_time
+        self.process_conf.saw_processing_time = conf.saw_processing_time
+        self.process_conf.vacuum_carrier_speed = conf.vacuum_carrier_speed
+        self.process_conf.turntable_carrier_speed = \
+            conf.turntable_carrier_speed
     
     def read_all_sensors(self):
         self.oven_station.read_sensors()            # Oven station
@@ -143,9 +154,10 @@ class MultiprocessManager():
         self.mqtt_conf_listener.open_connection()
         time.sleep(0.5)
         if(self.mqtt_conf_listener.configuration != ''):
-            self.set_received_configuration(self.mqtt_conf_listener.configuration)
+            self.set_received_configuration(
+                self.mqtt_conf_listener.configuration)
         else: 
-            print('No confsaved found, proceeding the standard conf')
+            print('No conf saved found, proceeding the standard conf')
         
         # Activating the process services - i.e. the compressor_service
         self.compressor_service.activate_service()
@@ -191,7 +203,8 @@ class MultiprocessManager():
                 # When the carrier is inside the oven_station
                 if (self.oven_station.get_carrier_position() == 'inside'):
                     # Time in seconds
-                    self.oven_station.oven_process_start(self.oven_processing_time)
+                    self.oven_station.oven_process_start(
+                        self.process_conf.oven_processing_time)
                     self.oven_station.set_process_completed(True)
 
                 # When the oven_station process is completed
@@ -278,7 +291,8 @@ class MultiprocessManager():
                 # Activate the saw for the designed processing time
                 if (self.turntable_carrier.get_carrier_position() == 'saw' 
                     and self.saw_station.get_process_completed() == False):
-                    self.saw_station.processing(self.saw_processing_time)
+                    self.saw_station.processing(
+                        self.process_conf.saw_processing_time)
                     self.saw_station.set_process_completed(True)
             
                 # Activate the turntable until it reaches the conveyor                
@@ -323,8 +337,9 @@ class MultiprocessManager():
                 self.to_reset = True
                 # Print the process completion message
                 print('piece completed')
-                pieces_left = self.pieces_to_produce - self.pieces_counter
-                print(pieces_left, ' pieces left to be produced')
+                pieces_left = \
+                    self.process_conf.pieces_to_produce - self.pieces_counter
+                print(pieces_left, 'pieces left to be produced')
 
             ###################################################################
             # If the product is in moved from the conveyor light barrier, reset
@@ -332,9 +347,10 @@ class MultiprocessManager():
             if(self.conveyor_carrier.get_light_barrier_state() == True 
                and self.process_completed == True
                and self.to_reset == True):
-                if(self.pieces_counter == self.pieces_to_produce):
+                if(self.pieces_counter == self.process_conf.pieces_to_produce):
                     # Print the process completion message
-                    print('production completed, terminating the program cycle')
+                    print('production completed, \
+                          terminating the program cycle')
                     self.reset_station_states_and_stop()
                     break
                 else:
@@ -343,6 +359,7 @@ class MultiprocessManager():
                     self.conveyor_carrier.set_prod_on_conveyor(False)
                     self.reset_station_states_and_restart()
                     self.to_reset = False
+                    self.process_completed = False
                     ('Waiting')
 
 if __name__ == "__main__":
