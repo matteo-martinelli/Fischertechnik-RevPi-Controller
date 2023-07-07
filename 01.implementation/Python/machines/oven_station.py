@@ -246,7 +246,6 @@ class OvenStation(object):
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
     
-    # TODO: test this function if works - IT WORKS :D
     def oven_process_start(self, proc_time: int) -> None:
         self.oven_proc_light.turn_on()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
