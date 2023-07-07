@@ -11,16 +11,7 @@ import json
 
 class MultiProcDeptConf(object):
     """Configuration class storing information about the department 
-    configuration setting.
-    
-    PROCESS PARAMETERS
-        - pieces to produce = inf
-        - compressor behaviour = always on
-        - oven processing time = 3
-        - saw processing time = 2
-        - (to be implemented) vacuum carrier speed pwm = nd
-        - (to be implemented) turntable carrier speed pwm = nd
-    
+    configuration setting.    
     """
 
     def __init__(self, pieces_to_produce=0, compressor_behaviour="always_on", 
