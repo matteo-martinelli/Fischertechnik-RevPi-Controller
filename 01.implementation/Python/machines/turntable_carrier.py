@@ -145,6 +145,12 @@ class TurntableCarrier(object):
             self._prod_on_carrier = value
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
+    
+    def set_process_completed(self, value: bool) -> None:
+        if(value != self._process_completed):
+            self._process_completed = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
 
     def push_product(self) -> None: 
         self.activate_pusher()
@@ -236,7 +242,7 @@ class TurntableCarrier(object):
         self.read_pusher_state()
         
         self.set_prod_on_carrier(False)
-        self.read_process_completed = False
+        self.set_process_completed(False)
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     # Reading underlying sensors/actuators

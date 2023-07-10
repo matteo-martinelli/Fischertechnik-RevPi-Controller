@@ -27,7 +27,7 @@ from machines.saw_station import SawStation
 from machines.conveyor_carrier import ConveyorCarrier
 from conf.multiproc_dept_conf import MultiProcDeptConf
 
-PIECES_TO_PRODUCE = 1
+PIECES_TO_PRODUCE = 3
 COMPRESSOR_BEHAVIOUR = 'always_on'
 OVEN_PROCESSING_TIME = 1
 SAW_PROCESSING_TIME = 1
