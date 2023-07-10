@@ -164,6 +164,8 @@ class MultiprocessManager():
         # Activating the process services - i.e. the compressor_service
         self.compressor_service.activate_service()
 
+        print('Waiting for the first piece to process')
+
         # My own loop to do some work next to the event system. We will stay
         # here till self.rpi.exitsignal.wait returns True after SIGINT/SIGTERM
         # The loop does 2 things, continuously: 
