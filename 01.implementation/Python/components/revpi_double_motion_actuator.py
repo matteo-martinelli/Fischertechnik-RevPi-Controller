@@ -27,42 +27,60 @@ class RevPiDoubleMotionActuator(GenericRevPiActuator):
         self.topic = parent_topic + '/actuators/' + name
         self.mqtt_publisher = mqtt_publisher
         # Class fields
-        self.name = name
-        self.pin_tuple = (pin_A, pin_B)
+        self._state = (False, False)
+        self._name = name
+        self._pin_tuple = (pin_A, pin_B)
         # Fields init
-        self.get_state()
-
+        self.read_state()
+    
 
     # Getters
-    def get_state(self) -> None:
-        state_A = self.rpi.io['O_' + str(self.pin_tuple[0])].value
-        state_B = self.rpi.io['O_' + str(self.pin_tuple[1])].value
-        self.state = (state_A, state_B)
-        if(self.state != self.previous_state):
+    @property
+    def state(self) -> tuple: 
+        return self._state
+    
+    @property
+    def name(self) -> str:
+        return self._name
+    
+    # Setters
+    @state.setter
+    def state(self, value_pin_A: bool, value_pin_B: bool) -> None:
+        self._state = (value_pin_A, value_pin_B) 
+
+    @name.setter
+    def name(self, value: str) -> None: 
+        self._name = value
+
+    # Class Methods
+    def read_state(self) -> tuple:
+        state_A = self.rpi.io['O_' + str(self._pin_tuple[0])].value
+        state_B = self.rpi.io['O_' + str(self._pin_tuple[1])].value
+        self._state = (state_A, state_B)
+        if(self.state != self._previous_state):
             self.previous_state = self.state
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
-        return self.state
-    
-    # Class Methods
-    def turn_on(self, activation_pin: int): # TODO: write it better
-        for i in range(len(self.pin_tuple)):
-            if (self.pin_tuple[i] == activation_pin and 
-                self.rpi.io['O_' + str(self.pin_tuple[i])].value == False): 
-                self.rpi.io['O_' + str(self.pin_tuple[i])].value = True
+        return self._state
+
+    def turn_on(self, activation_pin: int) -> None: # TODO: write it better
+        for i in range(len(self._pin_tuple)):
+            if (self._pin_tuple[i] == activation_pin and 
+                self.rpi.io['O_' + str(self._pin_tuple[i])].value == False): 
+                self.rpi.io['O_' + str(self._pin_tuple[i])].value = True
                 #self.state = True
                 #self.mqtt_publisher.publish_telemetry_data(self.topic, 
                 #                                           self.to_json())
-                self.get_state()
+                self.read_state()
             else: 
-                self.rpi.io['O_' + str(self.pin_tuple[i])].value = False
-                self.get_state()
+                self.rpi.io['O_' + str(self._pin_tuple[i])].value = False
+                self.read_state()
         
     def turn_off(self) -> None: # TODO: write it better
-        if (self.state[0] != False or self.state[1] != False):
-            self.state = (False, False)
-            for i in range(len(self.pin_tuple)):
-                self.rpi.io['O_' + str(self.pin_tuple[i])].value = False
+        if (self._state[0] != False or self._state[1] != False):
+            self._state = (False, False)
+            for i in range(len(self._pin_tuple)):
+                self.rpi.io['O_' + str(self._pin_tuple[i])].value = False
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
 
@@ -76,7 +94,7 @@ class RevPiDoubleMotionActuator(GenericRevPiActuator):
             'name': self.name,
             'type': self.__class__.__name__,
             'layer': 'sensor-actuator',
-            'pins': self.pin_tuple,
+            'pins': self._pin_tuple,
             'state': self.state,
             
             'timestamp': timestamp,

@@ -19,19 +19,16 @@ class ConveyorCarrier(object):
     """Conveyor Carrier class for conveyor objects."""
     def __init__(self, rpi, dept: str, station: str, motor_act_pin: int, 
                  barrier_sens_pin: int, mqtt_publisher):
-        # Class fields
-        self.dept = dept
-        self.station = station
-        self.motor_state = False
-        self.light_barrier_state = False
-        self.prod_on_conveyor = False
-        self.process_completed = False
+        self._dept = dept
+        self._station = station
+        self._motor_state = False
+        self._light_barrier_state = False
+        self._prod_on_conveyor = False
+        self._process_completed = False
         
-        # MQTT
         self.mqtt_publisher = mqtt_publisher
-        self.topic = self.dept + '/' + self.station
+        self.topic = self._dept + '/' + self._station
         
-        # Class actuators
         # pin 3
         self.motor = \
             RevPiSingleMotionActuator(rpi, 'motor', motor_act_pin, 
@@ -41,97 +38,117 @@ class ConveyorCarrier(object):
             RevPiLightBarrierSensor(rpi, 'light-barrier', 
                                     barrier_sens_pin, self.topic, 
                                     self.mqtt_publisher)
-        self.read_sensors()
-        self.read_actuators()
-        self.set_prod_on_conveyor(False)
-        self.set_process_completed(False)
+        self.read_all_sensors()
+        self.read_all_actuators()
 
-    # Read all sensors and actuators
-    def read_sensors(self) -> None: 
-        self.set_light_barrier_state()
     
-    def read_actuators(self) -> None: 
-        self.set_motor_state()
+    ## Getters
+    # Class fields
+    @property
+    def dept(self) -> str: 
+        return self._dept
     
-    ## Setters ##
-    # Actuator
-    # When necessary pub
-    def set_motor_state(self) -> None: 
-        value = self.motor.get_state()
-        if (value != self.motor_state):
-            self.motor_state = value
-
-    # Sensor
-    # Polling pub
-    def set_light_barrier_state(self) -> None: 
-        value = self.light_barrier.get_state()
-        if (value != self.light_barrier_state):
-            if (value == True):
-                self.light_barrier_state = True
-            else:
-                self.light_barrier_state = False
-            self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
-    
-    # TODO: add "if flag = True, then publish"
-    def set_prod_on_conveyor(self, value: bool) -> None: 
-        if(value != self.get_prod_on_conveyor()):
-            self.prod_on_conveyor = value
-            self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
-
-    # TODO: add "if flag = True, then publish"
-    def set_process_completed(self, value: bool) -> None: 
-        if(value != self.get_process_completed()):
-            self.process_completed = value
-            self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
-    
-    ## Getters ##
-    def get_dept(self) -> str: 
-        return self.dept
-    
-    def get_station(self) -> str: 
-        return self.station
+    @property
+    def station(self) -> str: 
+        return self._station
 
     # Actuator
-    def get_motor_state(self) -> bool:
-        return self.motor_state
+    @property
+    def motor_state(self) -> bool:
+        return self._motor_state
 
     # Sensor
-    def get_light_barrier_state(self) -> bool:
-        return self.light_barrier_state
+    @property
+    def light_barrier_state(self) -> bool:
+        return self._light_barrier_state
 
-    def get_prod_on_conveyor(self) -> bool: 
-        return self.prod_on_conveyor
+    @property
+    def prod_on_conveyor(self) -> bool: 
+        return self._prod_on_conveyor
 
-    def get_process_completed(self) -> bool: 
-        return self.process_completed
+    @property
+    def process_completed(self) -> bool: 
+        return self._process_completed
+
+    ## Setters
+    @dept.setter
+    def dept(self, value: str) -> None: 
+        self._dept = value
+    
+    @station.setter
+    def station(self, value: str) -> None: 
+        self._station = value
+
+    @motor_state.setter
+    def motor_state(self, value: bool) -> None: 
+        self._motor_state = value
+    
+    @light_barrier_state.setter
+    def light_barrier_state(self, value: bool) -> None: 
+        self._light_barrier_state = value
+
+    @prod_on_conveyor.setter
+    def prod_on_conveyor(self, value: bool) -> None: 
+        if(value != self._prod_on_conveyor):
+            self._prod_on_conveyor = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
+
+    @process_completed.setter
+    def process_completed(self, value: bool) -> None: 
+        if(value != self._process_completed):
+            self._process_completed = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
 
     # Class Methods
+    # Processes methods
     def move_to_the_exit(self) -> None:
         self.motor.turn_on()
-        self.set_motor_state()
+        self.read_motor_state()
         print('conveyor activated')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
         
         # Wait until a product reaches the light_barrier sensor
-        while (self.light_barrier.get_state() != False):
+        while (self.light_barrier.read_state() != False):
             pass
 
         self.motor.turn_off()
-        self.set_motor_state()
+        self.read_motor_state()
         print('conveyor deactivated')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def deactivate_carrier(self) -> None: 
         self.motor.turn_off()
-        self.set_motor_state()
+        self.read_motor_state()
         
-        self.set_prod_on_conveyor(False)
-        self.set_process_completed(False)
+        self._prod_on_conveyor = False
+        self._process_completed = False
         # MQTT Publish
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+
+    # Reading underlying sensors/actuators
+    def read_motor_state(self) -> None: # QUESTA E' UNA LETTURA
+        value = self.motor.read_state()
+        if (value != self._motor_state):
+            self._motor_state = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, \
+                                                       self.to_json())
+
+    def read_light_barrier_state(self) -> None: # QUESTA E' UNA LETTURA 
+        value = self.light_barrier.read_state()
+        if (value != self._light_barrier_state):
+            self._light_barrier_state = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
+    
+    # Read all sensors and actuators
+    def read_all_sensors(self) -> None: 
+        self.read_light_barrier_state()
+    
+    def read_all_actuators(self) -> None: 
+        self.read_motor_state()
+
 
     def to_dto(self):
         timestamp = time.time()
@@ -139,14 +156,14 @@ class ConveyorCarrier(object):
             datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
 
         dto_dict = {
-            'dept': self.dept,
-            'station': self.station,
+            'dept': self._dept,
+            'station': self._station,
             'type': self.__class__.__name__,
             'layer': 'machine',
-            'conveyor_motor': self.get_motor_state(),
-            'light-barrier': self.get_light_barrier_state(),
-            'prod_on_conv:': self.get_prod_on_conveyor(),
-            'process_complete:': self.get_process_completed(),
+            'conveyor_motor': self._motor_state,
+            'light-barrier': self._light_barrier_state,
+            'prod_on_conv:': self._prod_on_conveyor,
+            'process_complete:': self._process_completed,
             
             'timestamp': timestamp,
             'current-time': current_moment

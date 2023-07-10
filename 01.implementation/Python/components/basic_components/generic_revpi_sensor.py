@@ -15,15 +15,38 @@ class GenericRevPiSensor(object):
         self.rpi = rpi
         # TODO: eventually assign directly here the pin from revpimodio
         # TODO: put pin feasibility check
-        self.pin = pin
+        self._pin = pin
         # TODO: eventually assign directly here the state from revpimodio
-        self.state = False
-        self.previous_state = False
+        self._state = False
+        self._previous_state = False
         
-    
-    def get_pin(self) -> int: 
-        return self.pin
+    # Getters
+    @property
+    def pin(self) -> int: 
+        return self._pin
 
-    def get_state(self) -> bool:
-        self.state = self.rpi.io['I_' + str(self.pin)].value
-        return self.state
+    @property
+    def state(self) -> bool: 
+        return self._state
+    
+    @property
+    def previous_state(self) -> bool: 
+        return self._previous_state
+
+    # Setters
+    @pin.setter
+    def pin(self, value: int) -> None: 
+        self._pin = value
+
+    @state.setter
+    def state(self, value: bool) -> None: 
+        self._state = value
+
+    @previous_state.setter
+    def previous_state(self, value: bool) -> None: 
+        self._previous_state = value
+
+    # Class methods
+    def read_state(self) -> None:
+        value = self.rpi.io['I_' + str(self.pin)].value
+        self._state = value

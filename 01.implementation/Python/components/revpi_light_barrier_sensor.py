@@ -23,23 +23,39 @@ class RevPiLightBarrierSensor(GenericRevPiSensor):
         self.topic = parent_topic + '/sensors/' + name
         self.mqtt_publisher = mqtt_publisher
         # Class fields
-        self.name = name
+        self._name = name
         # Fields init
-        self.get_state()
-        
+        self.read_state()
 
-    # Getters
-    def get_name(self) -> str:
-        return self.name
     
-    def get_state(self) -> str: 
-        self.state = self.rpi.io['I_' + str(self.pin)].value
-        if(self.state != self.previous_state):
-            self.previous_state = self.state
+    # Getters
+    @property 
+    def name(self) -> str: 
+        return self._name
+    
+    @property 
+    def state(self) -> bool: 
+        return self._state        
+
+    # Setters
+    @name.setter
+    def name(self, value: str) -> None: 
+        self._name = value
+
+    @state.setter
+    def state(self, value: bool) -> None: 
+        self._state = value
+
+    # Class methods
+    def read_state(self) -> bool: 
+        value = self.rpi.io['I_' + str(self.pin)].value
+        self._state = value
+        if(self._state != self._previous_state):
+            self._previous_state = self._state
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
         return self.state
-    
+
     # MQTT 
     def to_dto(self):
         timestamp = time.time()

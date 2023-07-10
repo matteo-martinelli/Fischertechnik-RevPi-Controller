@@ -18,47 +18,55 @@ class CompressorService(object):
     def __init__(self, rpi, dept: str, station: str, motor_act_pin: int, 
                  mqtt_pub):
         # Class descriptive fields
-        self.dept = dept
-        self.station = station
-        self.motor_state = False
+        self._dept = dept
+        self._station = station
+        self._motor_state = False
         # MQTT
         self.mqtt_pub = mqtt_pub
-        self.topic = self.dept + '/' + self.station 
+        self.topic = self._dept + '/' + self._station 
         # Class actuators
         self.motor = \
             RevPiSingleMotionActuator(rpi, 'motor', motor_act_pin, 
                                       self.topic, mqtt_pub)
-        self.read_actuators()
+        self.read_all_actuators()
 
-    # Read all sensors and actuators
-    def read_actuators(self) -> None: 
-        self.set_motor_state()
 
-    ## Setters ##
-    # Actuator
-    def set_motor_state(self) -> None: 
-        value = self.motor.get_state()
-        if (value != self.motor_state):
-            self.motor_state = value
-
-    ## Getters ##
-    # Actuator
-    def get_motor_state(self) -> bool:
-        return self.motor_state
+    # Getters
+    @property
+    def motor_state(self) -> bool:
+        return self._motor_state
+    
+    # Setters
+    @motor_state.setter
+    def motor_state(self, value: bool) -> None: 
+        #value = self.motor.get_state()
+        if (value != self._motor_state):
+            self._motor_state = value
     
     # Class methods
     def activate_service(self):
         self.motor.turn_on()
-        self.set_motor_state()
+        self._motor_state = True
         print('compressor activated')
         self.mqtt_pub.publish_telemetry_data(self.topic, self.to_json())
         
     def deactivate_service(self):
         self.motor.turn_off()
-        self.set_motor_state()
+        self._motor_state = False
         print('compressor deactivated')
         self.mqtt_pub.publish_telemetry_data(self.topic, self.to_json())
-        
+
+    # Reading underlying sensors/actuators
+    def read_motor_state(self) -> None: 
+        value = self.motor.state
+        if(value != self._motor_state):
+            self._motor_state = value
+            self.mqtt_pub.publish_telemetry_data(self.topic, \
+                                                       self.to_json())
+
+    def read_all_actuators(self) -> None: 
+        self.read_motor_state
+    
     # MQTT 
     def to_dto(self):
         timestamp = time.time()
@@ -66,11 +74,11 @@ class CompressorService(object):
             datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
 
         dto_dict = {
-            'dept': self.dept,
-            'station': self.station,
+            'dept': self._dept,
+            'station': self._station,
             'type': self.__class__.__name__,
             'layer': 'machine',
-            'motor': self.motor.get_state(),
+            'motor': self.motor.state,
             
             'timestamp': timestamp,
             'current-time': current_moment 

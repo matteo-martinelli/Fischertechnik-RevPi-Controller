@@ -29,22 +29,37 @@ class RevPiSingleMotionActuator(GenericRevPiActuator):
         self.name = name
         self.pin = pin
         # Fields init
-        self.get_state()
+        self.read_state()
 
-
+    
     # Getters
-    def get_name(self) -> str:
-        return self.name
+    @property
+    def name(self) -> str: 
+        return self._name
+    
+    @property
+    def state(self) -> bool: 
+        return self._state
+    
+    # Setters
+    @name.setter
+    def name(self, value: str) -> None: 
+        self._name = value
 
-    def get_state(self) -> bool: 
-        self.state = self.rpi.io['O_'+ str(self.pin)].value
-        if(self.state != self.previous_state):
-            self.previous_state = self.state
+    @state.setter
+    def state(self, value: bool) -> None: 
+        self._state = value
+    
+    # Class Methods
+    def read_state(self) -> bool: 
+        value = self.rpi.io['O_'+ str(self.pin)].value
+        self.state = value
+        if(self.state != self._previous_state):
+            self._previous_state = self.state
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
         return self.state
-    
-    # Class Methods
+
     def turn_on(self) -> None:
         if (self.state == False):
             self.state = True

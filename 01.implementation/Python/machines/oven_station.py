@@ -31,18 +31,18 @@ class OvenStation(object):
                  in_oven_sens_pin: int, out_oven_sens_pin: int, 
                  light_barrier_sens_pin: int, mqtt_publisher):
         # Class fields
-        self.dept = dept
-        self.station = station
-        self.carrier_pos = 'None'
-        self.door_pos = False
-        self.proc_light_state = False
-        self.prod_on_carrier = False
-        self.process_completed = False
-        self.light_barrier_state = False
+        self._dept = dept
+        self._station = station
+        self._carrier_pos = 'None'
+        self._door_pos = False
+        self._proc_light_state = False
+        self._prod_on_carrier = False
+        self._process_completed = False
+        self._light_barrier_state = False
         
         # MQTT
         self.mqtt_publisher = mqtt_publisher
-        self.topic = self.dept + '/' + self.station
+        self.topic = self._dept + '/' + self._station
         
         # Class actuators
         # pin 5, 6
@@ -78,175 +78,148 @@ class OvenStation(object):
                                     light_barrier_sens_pin, 
                                     self.topic, self.mqtt_publisher)
         # Initialising class fields
-        self.read_sensors()
-        self.read_actuators()
-        self.set_prod_on_carrier(False)
-        self.set_process_completed(False)
-        
-    # Read all sensors and actuators
-    def read_sensors(self) -> None: 
-        self.set_light_barrier_state()
-        self.set_carrier_position()
+        self.read_all_sensors()
+        self.read_all_actuators()
 
-    def read_actuators(self) -> None: 
-        self.set_door_pos()
-        self.set_proc_light_state()
+
+    ## Getters
+    @property
+    def dept(self) -> str: 
+        return self._dept
+    
+    @property
+    def station(self) -> str: 
+        return self._station
+    
+    # Sensor
+    @property
+    def light_barrier_state(self) -> bool: 
+        return self._light_barrier_state
+    
+    # Sensor
+    @property
+    def carrier_pos(self) -> str:
+        return self._carrier_pos
+    
+    # Actuator
+    @property
+    def proc_light_state(self) -> bool: 
+        return self._proc_light_state
+        
+    # Actuator
+    @property
+    def door_pos(self) -> bool:
+        return self._door_pos
+    
+    @property
+    def prod_on_carrier(self) -> bool: 
+        return self._prod_on_carrier
+
+    @property
+    def process_completed(self) -> bool: 
+        return self._process_completed
 
     ## Setters ##
-    # Sensor
-    def set_light_barrier_state(self) -> None:
-        value = self.light_barrier.get_state()
-        if (value != self.light_barrier_state):
-            self.light_barrier_state = value
-            self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+    @dept.setter
+    def dept(self, value: str) -> None: 
+        self._dept = value
+    
+    @station.setter
+    def station(self, value: str) -> None: 
+        self._station = value
 
-    # Sensor
-    def set_carrier_position(self) -> None:
-        if (self.inside_oven_switch.get_state() == True
-            and self.oven_carrier.get_state()[0] == False
-            and self.oven_carrier.get_state()[1] == False): 
-            if (self.carrier_pos != 'inside'):
-                self.carrier_pos = 'inside'
-                self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                           self.to_json())
-        elif (self.outside_oven_switch.get_state() == True
-            and self.oven_carrier.get_state()[0] == False
-            and self.oven_carrier.get_state()[1] == False):
-            if (self.carrier_pos != 'outside'):
-                self.carrier_pos = 'outside'
-                self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                           self.to_json())
-        elif (self.oven_carrier.get_state()[0] == True 
-            or self.oven_carrier.get_state()[1] == True):
-            if (self.carrier_pos != 'moving'):
-                self.carrier_pos = 'moving'
-                self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                           self.to_json())
-        elif (self.inside_oven_switch.get_state() == True and 
-            self.outside_oven_switch.get_state() == True):
-            if (self.carrier_pos != 'carrier position error'):
-                self.carrier_pos = 'carrier position error'
-                self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                           self.to_json())
+    @light_barrier_state.setter
+    def light_barrier_state(self, value: bool) -> None: 
+        if (value != self._light_barrier_state):
+            self._light_barrier_state = value
+    
+    @carrier_pos.setter
+    def carrier_pos(self, value: str) -> None: 
+        if (value != self._carrier_pos):
+            self._carrier_pos = value
 
-    # Actuator     
-    def set_door_pos(self) -> None:
-        if (self.oven_door_opening.get_state() == True):
-            self.door_pos = True
-        else: 
-            self.door_pos = False
+    @door_pos.setter
+    def door_pos(self, value: bool) -> None: 
+        if (value != self._door_pos):
+            self._door_pos = value
 
-    # Actuator
-    def set_proc_light_state(self) -> None:
-        value = self.oven_proc_light.get_state()
-        if (self.proc_light_state != value):
-            self.proc_light_state = value
-    
-    def set_prod_on_carrier(self, value: bool) -> None: 
-        if(value != self.get_prod_on_carrier()):
-            self.prod_on_carrier = value
-            self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+    @proc_light_state.setter
+    def proc_light_state(self, value: bool) -> None: 
+        if (value != self._proc_light_state):
+            self._proc_light_state = value
 
-    def set_process_completed(self, value: bool) -> None: 
-        if(value != self.get_process_completed()):
-            self.process_completed = value
-            self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+    @prod_on_carrier.setter
+    def prod_on_carrier(self, value: bool) -> None: 
+        if (value != self._prod_on_carrier):
+            self._prod_on_carrier = value
     
-    ## Getters ##
-    def get_dept(self) -> str: 
-        return self.dept
-    
-    def get_station(self) -> str: 
-        return self.station
-    
-    # Sensor
-    def get_light_barrier_state(self) -> bool: 
-        return self.light_barrier_state
-    
-    # Sensor
-    def get_carrier_position(self) -> str:
-        return self.carrier_pos
-    
-    # Actuator
-    def get_proc_light_state(self) -> bool: 
-        return self.proc_light_state
-        
-    # Actuator
-    def get_door_pos(self) -> bool:
-        return self.door_pos
-        
-    def get_prod_on_carrier(self) -> bool: 
-        return self.prod_on_carrier
-
-    def get_process_completed(self) -> bool: 
-        return self.process_completed
+    @process_completed.setter
+    def process_completed(self, value: bool) -> None: 
+        if (value != self._process_completed):
+            self._process_completed = value
     
     # Class Methods
     def move_carrier_inward(self) -> None:
         self.oven_door_opening.turn_on()
-        self.set_door_pos()
+        self.read_door_pos()
         print('oven door opened')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
-        self.oven_carrier.turn_on(self.oven_carrier.pin_tuple[0])
-        self.set_carrier_position()
-        self.set_light_barrier_state()
+        self.oven_carrier.turn_on(self.oven_carrier._pin_tuple[0])
+        self.read_carrier_position()
+        self.read_light_barrier_state()
         print('oven carrier activated')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
         # Wait until the oven carrier reaches the outward oven switch
-        while (self.inside_oven_switch.get_state() == False):
-            self.set_carrier_position()
-            self.set_light_barrier_state()
+        while (self.inside_oven_switch.read_state() == False):
+            self.read_carrier_position()
+            self.read_light_barrier_state()
         
         self.oven_carrier.turn_off()
-        self.set_carrier_position()
+        self.read_carrier_position()
         print('oven carrier deactivated')
-        self.set_light_barrier_state()
+        self.read_light_barrier_state()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
         
         self.oven_door_opening.turn_off()
-        self.set_door_pos()
+        self.read_door_pos()
         print('oven door closed')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def move_carrier_outward(self) -> None:
         self.oven_door_opening.turn_on()
-        self.set_door_pos()
+        self.read_door_pos()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
-        self.oven_carrier.turn_on(self.oven_carrier.pin_tuple[1])
-        self.set_carrier_position()
-        self.set_light_barrier_state()
+        self.oven_carrier.turn_on(self.oven_carrier._pin_tuple[1])
+        self.read_carrier_position()
+        self.read_light_barrier_state()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
         # Wait until the oven carrier reaches the outward oven switch
-        while (self.outside_oven_switch.get_state() == False):
-            self.set_light_barrier_state()
-            self.get_light_barrier_state()
-
+        while (self.outside_oven_switch.read_state() == False):
+            self.read_light_barrier_state()
+            
         self.oven_carrier.turn_off()
-        self.set_carrier_position()
-        self.set_light_barrier_state()
+        self.read_carrier_position()
+        self.read_light_barrier_state()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
         self.oven_door_opening.turn_off()
-        self.set_door_pos()
+        self.read_door_pos()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def activate_proc_light(self) -> None:
-        if (self.oven_proc_light.get_state() == False):
+        if (self.oven_proc_light.state == False):
             self.oven_proc_light.turn_on()
-            self.set_proc_light_state()
+            self.read_proc_light_state()
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
     
     def deactivate_proc_light(self) -> None:
-        if (self.oven_proc_light.get_state() == True):
+        if (self.oven_proc_light.state == True):
             self.oven_proc_light.turn_off()
-            self.set_proc_light_state()
+            self.read_proc_light_state()
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
     
@@ -260,17 +233,91 @@ class OvenStation(object):
 
     def deactivate_station(self) -> None: 
         self.oven_carrier.turn_off()
-        self.set_carrier_position()
+        self.read_carrier_position()
 
         self.oven_proc_light.turn_off()
-        self.set_proc_light_state()
+        self.read_proc_light_state()
         
         self.oven_door_opening.turn_off()
-        self.set_door_pos()
+        self.read_door_pos()
 
         self.set_process_completed(False)
         self.set_prod_on_carrier(False)
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+
+    def set_prod_on_carrier(self, value: bool) -> None:
+        if(value != self._prod_on_carrier):
+            self._prod_on_carrier = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
+
+    def set_process_completed(self, value: bool) -> None:
+        if(value != self._process_completed):
+            self._process_completed = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
+
+    # Reading underlying sensors/actuators
+    # Sensor
+    def read_light_barrier_state(self) -> None:  # LETTURA
+        value = self.light_barrier.read_state()
+        if (value != self._light_barrier_state):
+            self._light_barrier_state = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json())
+
+    # Sensor
+    def read_carrier_position(self) -> None:     # LETTURA
+        if (self.inside_oven_switch.read_state() == True
+            and self.oven_carrier.state[0] == False
+            and self.oven_carrier.state[1] == False): 
+            if (self._carrier_pos != 'inside'):
+                self._carrier_pos = 'inside'
+                self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                           self.to_json())
+        elif (self.outside_oven_switch.read_state() == True
+            and self.oven_carrier.state[0] == False
+            and self.oven_carrier.state[1] == False):
+            if (self._carrier_pos != 'outside'):
+                self._carrier_pos = 'outside'
+                self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                           self.to_json())
+        elif (self.oven_carrier.state[0] == True 
+            or self.oven_carrier.state[1] == True):
+            if (self._carrier_pos != 'moving'):
+                self._carrier_pos = 'moving'
+                self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                           self.to_json())
+        elif (self.inside_oven_switch.read_state() == True and 
+            self.outside_oven_switch.read_state() == True):
+            if (self._carrier_pos != 'carrier position error'):
+                self._carrier_pos = 'carrier position error'
+                self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                           self.to_json())
+
+    # Actuator     
+    def read_door_pos(self) -> None:
+        value = self.oven_door_opening.read_state()
+        if (value != self._door_pos):
+            self._door_pos = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                           self.to_json())
+
+    # Actuator
+    def read_proc_light_state(self) -> None:
+        value = self.oven_proc_light.read_state()
+        if (self._proc_light_state != value):
+            self._proc_light_state = value
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                           self.to_json())
+
+    def read_all_sensors(self) -> None: 
+        self.read_light_barrier_state()
+        self.read_carrier_position()
+
+    def read_all_actuators(self) -> None: 
+        self.read_door_pos()
+        self.read_proc_light_state()
 
     # MQTT 
     def to_dto(self):   # Data Transfer Objet
@@ -279,20 +326,21 @@ class OvenStation(object):
             datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
 
         dto_dict = {
-            'dept': self.dept,
-            'station': self.station,
+            'dept': self._dept,
+            'station': self._station,
             'type': self.__class__.__name__,
             'layer': 'machine',
-            'oven-carrier': self.get_carrier_position(),
-            'oven-door': self.get_door_pos(),
-            'proc-light': self.get_proc_light_state(),
-            'light-barrier': self.get_light_barrier_state(),
-            'prod-on-carrier': self.get_prod_on_carrier(),
-            'proc-completed': self.get_process_completed(),
+            'oven-carrier': self._carrier_pos,
+            'oven-door': self._door_pos,
+            'proc-light': self._proc_light_state,
+            'light-barrier': self._light_barrier_state,
+            'prod-on-carrier': self._prod_on_carrier,
+            'proc-completed': self._process_completed,
             
             'timestamp': int(timestamp),
             'current-time': current_moment
         }
+
         return dto_dict
 
     def to_json(self):
