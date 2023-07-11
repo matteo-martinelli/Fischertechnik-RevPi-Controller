@@ -27,7 +27,8 @@ class MqttPublisher(object):
 
     def open_connection(self):
         self.mqtt_client.on_connect = self.on_connect
-        self.mqtt_client.will_set(self.lwm_topic, "off", 0, True)
+        self.mqtt_client.will_set(self.lwm_topic,\
+                                  json.dumps({'status': 'off'}), 0, True)
 
         #mqtt_configured_user = MqttConfiguratorParameter.MQTT_USER
         #mqtt_configured_pw = MqttConfiguratorParameter.MQTT_PW
