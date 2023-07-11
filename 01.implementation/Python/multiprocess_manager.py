@@ -37,7 +37,6 @@ VACUUM_CARRIER_SPEED = 1
 TURNTABLE_CARRIER_SPEED = 1
 
 # TODO: add logging
-# TODO: move the macro-processes from this class to each machine
 class MultiprocessManager():
     """Entry point for Fischertechnik Multiprocess Station with Oven control 
     over RevPi."""
@@ -49,7 +48,7 @@ class MultiprocessManager():
         self.rpi.handlesignalend(self.cleanup)
 
         # Instantiating the MQTT publisher
-        self.mqtt_publisher = MqttPublisher()
+        self.mqtt_publisher = MqttPublisher('user:dept_manager/multiproc_dept')
         self.mqtt_conf_listener = MqttConfListener('multiproc_dept/dept_conf')
         self.dept_name = dept_name  # Dept mqtt root topic
         
@@ -176,7 +175,7 @@ class MultiprocessManager():
         # The cycle is set in ... .exitsignal.wait(0.05) every 0.05s
         while (self.rpi.exitsignal.wait(0.05) == False):
             # TODO: simplify the process loop
-            # TODO: move "process complete check" and various positioning checks inside classes
+            # TODO: move "process complete check" and various positioning checks inside classes -> To do so you have to perform one check of all sensors at the end of each process
             # First things first: reading all the sensors states
             self.read_all_sensors()
             # Follows the process description #################################
@@ -184,9 +183,7 @@ class MultiprocessManager():
             # vacuum carrier towards the oven_station
             if (self.oven_station.process_completed == False and 
                 self.oven_station.prod_on_carrier == True):
-                # Move the carrier towards the oven_station
                 if (self.vacuum_gripper_carrier.carrier_position != 'oven'):
-                    # Activate it towards the oven_station
                     self.vacuum_gripper_carrier.move_carrier_towards_oven()
                     
             # If the oven_station process is not completed and the vacuum 
@@ -195,8 +192,8 @@ class MultiprocessManager():
             if (self.oven_station.process_completed == False and
                 self.oven_station.prod_on_carrier == True and 
                 self.vacuum_gripper_carrier.carrier_position == 'oven'):
-                    self.oven_station.oven_process_start(
-                        self.process_conf.oven_processing_time)
+                    self.oven_station.oven_process_start(self.process_conf.\
+                                                         oven_processing_time)
 
             # Check that the turntable is rotated towards the vacuum_carrier, 
             # then transfer the product with the vacuum_carrier
@@ -210,7 +207,8 @@ class MultiprocessManager():
 
                 # Grip the product
                 self.oven_station.prod_on_carrier = False
-                self.vacuum_gripper_carrier.transfer_product_from_oven_to_turntable()
+                self.vacuum_gripper_carrier.\
+                    transfer_product_from_oven_to_turntable()
                 self.turntable_carrier.prod_on_carrier = True
                     
             # Turn the turntable towards the saw
@@ -225,8 +223,8 @@ class MultiprocessManager():
                 # Activate the saw for the designed processing time
                 if (self.turntable_carrier.turntable_pos == 'saw' and 
                     self.saw_station.process_completed == False):
-                    self.saw_station.processing(
-                        self.process_conf.saw_processing_time)
+                    self.saw_station.processing(self.process_conf.\
+                                                saw_processing_time)
             
                 # Activate the turntable until it reaches the conveyor                
                 if (self.saw_station.process_completed == True and
