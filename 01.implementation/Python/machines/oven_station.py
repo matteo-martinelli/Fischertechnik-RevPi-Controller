@@ -77,6 +77,7 @@ class OvenStation(object):
             RevPiLightBarrierSensor(rpi, 'oven-light-barrier', 
                                     light_barrier_sens_pin, 
                                     self.topic, self.mqtt_publisher)
+        
         # Initialising class fields
         self.read_all_sensors()
         self.read_all_actuators()
@@ -224,12 +225,17 @@ class OvenStation(object):
                                                        self.to_json())
     
     def oven_process_start(self, proc_time: int) -> None:
-        self.oven_proc_light.turn_on()
+        self.move_carrier_inward()
+
+        self.activate_proc_light()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
         # Time in seconds
         time.sleep(proc_time)
-        self.oven_proc_light.turn_off()
+        self.deactivate_proc_light()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        
+        self.move_carrier_outward()
+        self.set_process_completed(True)
 
     def deactivate_station(self) -> None: 
         self.oven_carrier.turn_off()
@@ -260,9 +266,18 @@ class OvenStation(object):
     # Reading underlying sensors/actuators
     # Sensor
     def read_light_barrier_state(self) -> None:  # LETTURA
-        value = self.light_barrier.read_state()
-        if (value != self._light_barrier_state):
-            self._light_barrier_state = value
+        light_barrier_read = self.light_barrier.read_state()
+        process_complete = self.process_completed
+        if (light_barrier_read == False):
+            if (process_complete == False):
+                self.set_prod_on_carrier(True)
+        
+        if (light_barrier_read == True):
+            if (process_complete == True):
+                self.set_prod_on_carrier(False)
+        
+        if (light_barrier_read != self._light_barrier_state):
+            self._light_barrier_state = light_barrier_read
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
 

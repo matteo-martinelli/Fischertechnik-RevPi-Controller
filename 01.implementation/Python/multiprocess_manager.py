@@ -12,7 +12,9 @@ blocking, with a personalised while loop next to the event system.
 """
 
 # TODO: aggiungi pubblicazione dei sensori solo se è cambiato dall'ultimo valore.
-
+# TODO: move config reading inside each class when the process start is called 
+# TODO: aggiungi campo status: online/offline dentro a ogni classe, pubblica dentro al relativo topic + momento quando è cambiato 
+# TODO: aggiungi inferimento informazione da parte del dt dove: se proc complete false e prod on carrier true = in lavorazione else waiting else completed
 import revpimodio2
 import time
 
@@ -29,7 +31,7 @@ from conf.multiproc_dept_conf import MultiProcDeptConf
 
 PIECES_TO_PRODUCE = 3
 COMPRESSOR_BEHAVIOUR = 'always_on'
-OVEN_PROCESSING_TIME = 1
+OVEN_PROCESSING_TIME = 3
 SAW_PROCESSING_TIME = 1
 VACUUM_CARRIER_SPEED = 1
 TURNTABLE_CARRIER_SPEED = 1
@@ -71,7 +73,7 @@ class MultiprocessManager():
         self.compressor_service = \
             CompressorService(self.rpi, self.dept_name, 'compressor-service', 
                               10, self.mqtt_publisher)
-        
+
         # Process config
         self.process_conf = \
             MultiProcDeptConf(
@@ -111,7 +113,7 @@ class MultiprocessManager():
 
         # Switch of LED and outputs before exit program
         self.rpi.core.a1green.value = False
-        
+
         # Closing the MQTT connection
         self.mqtt_publisher.close_connection()
         self.mqtt_conf_listener.close_connection()
@@ -174,15 +176,10 @@ class MultiprocessManager():
         # The cycle is set in ... .exitsignal.wait(0.05) every 0.05s
         while (self.rpi.exitsignal.wait(0.05) == False):
             # TODO: simplify the process loop
+            # TODO: move "process complete check" and various positioning checks inside classes
             # First things first: reading all the sensors states
             self.read_all_sensors()
-            # TODO: change sensor setters into readers
             # Follows the process description #################################
-            # If the oven_station-light sensor is False, that is there is the 
-            # product. So, set the self.prod_on_oven_station_carrier to True
-            if (self.oven_station.light_barrier_state == False):
-                self.oven_station.prod_on_carrier = True
-
             # If there is the product on the oven_station carrier, move the 
             # vacuum carrier towards the oven_station
             if (self.oven_station.process_completed == False and 
@@ -192,93 +189,30 @@ class MultiprocessManager():
                     # Activate it towards the oven_station
                     self.vacuum_gripper_carrier.move_carrier_towards_oven()
                     
-            # If the oven_station is not ready and the vacuum carrier grip is 
-            # at the oven_station and the product is on the oven_station 
-            # carrier: 
+            # If the oven_station process is not completed and the vacuum 
+            # carrier grip is at the oven_station and the product is on the 
+            # oven_station carrier, start the oven process 
             if (self.oven_station.process_completed == False and
                 self.oven_station.prod_on_carrier == True and 
                 self.vacuum_gripper_carrier.carrier_position == 'oven'):
-                # Move inside the oven the oven_station carrier
-                if (self.oven_station.carrier_pos == 'outside'):
-                    self.oven_station.move_carrier_inward()
-                
-                # When the carrier is inside the oven_station
-                if (self.oven_station.carrier_pos == 'inside'):
-                    # Time in seconds
                     self.oven_station.oven_process_start(
                         self.process_conf.oven_processing_time)
-                    self.oven_station.process_completed = True
 
-                # When the oven_station process is completed
-                if (self.oven_station.process_completed == True and 
-                    self.oven_station.prod_on_carrier == True):
-                    # If oven_station_feeder_out sensor is False = the carrier 
-                    # is not out
-                    self.oven_station.move_carrier_outward()        
-
-            # Take the product with the carrier grip
-            # Lower the vacuum gripper
-            # If 
-            #   - the 'oven station' carrier is 'outside'
-            #   - the 'oven process' is completed
-            #   - the 'oven prod on carrier' sensor is true
-            #   - the 'vacuum carrier' is at the 'oven'
-            # Then
-            #   - grab the product with the 'vacuum carrier' from the 
-            #     'oven carrier'  
+            # Check that the turntable is rotated towards the vacuum_carrier, 
+            # then transfer the product with the vacuum_carrier
             if (self.oven_station.carrier_pos == 'outside' and 
                 self.oven_station.process_completed == True and
                 self.oven_station.prod_on_carrier == True and
                 self.vacuum_gripper_carrier.carrier_position == 'oven'):
-                
+            
+                # Rotate the turntable towards the vacuum carrier
+                self.turntable_carrier.rotate_towards_vacuum_carrier()
+
                 # Grip the product
-                self.vacuum_gripper_carrier.lower_gripper()
-                self.vacuum_gripper_carrier.activate_gripper()
-                self.vacuum_gripper_carrier.higher_gripper()
-
-                # Set the gripping process as completed
-                if(self.vacuum_gripper_carrier.carrier_position == 'oven'
-                    and self.vacuum_gripper_carrier.
-                    gripper_lowering_state == False
-                    and self.vacuum_gripper_carrier.
-                    gripper_activation_state == True 
-                    ):
-                    self.oven_station.prod_on_carrier = False
-                    self.vacuum_gripper_carrier.prod_on_carrier = True
-                
-            # Move the carrier to the turntable
-            if (self.vacuum_gripper_carrier.prod_on_carrier == True and
-                self.vacuum_gripper_carrier.carrier_position != 
-                'turntable'):
-                # Bring the carrier vacuum gripper to the turn-table
-                self.vacuum_gripper_carrier.move_carrier_towards_turntable()
-
-            # Release the product
-            # Lower the carrier vacuum gripper
-            if (self.vacuum_gripper_carrier.carrier_position == 'turntable'
-                and self.vacuum_gripper_carrier.prod_on_carrier == True
-                and self.vacuum_gripper_carrier.gripper_activation_state 
-                == True ):
+                self.oven_station.prod_on_carrier = False
+                self.vacuum_gripper_carrier.transfer_product_from_oven_to_turntable()
+                self.turntable_carrier.prod_on_carrier = True
                     
-                    # If the turntable is not already facing the vacuum carrier
-                    if (self.turntable_carrier.turntable_pos != 
-                        'vacuum carrier'):
-                        self.turntable_carrier.rotate_towards_vacuum_carrier()
-                    
-                    self.vacuum_gripper_carrier.lower_gripper()
-                    self.vacuum_gripper_carrier.deactivate_gripper()
-
-            # Raise the carrier vacuum gripper
-            elif (self.vacuum_gripper_carrier.carrier_position == 'turntable'
-                  and self.vacuum_gripper_carrier.
-                  gripper_lowering_state == True 
-                  and self.vacuum_gripper_carrier.
-                  gripper_activation_state == False):
-                    self.vacuum_gripper_carrier.higher_gripper()
-                    self.vacuum_gripper_carrier.prod_on_carrier = False
-                    self.vacuum_gripper_carrier.process_completed = True
-                    self.turntable_carrier.prod_on_carrier = True
-
             # Turn the turntable towards the saw
             if (self.turntable_carrier.prod_on_carrier == True and
                 self.turntable_carrier.process_completed == False):
@@ -293,21 +227,13 @@ class MultiprocessManager():
                     self.saw_station.process_completed == False):
                     self.saw_station.processing(
                         self.process_conf.saw_processing_time)
-                    self.saw_station.process_completed = True
             
                 # Activate the turntable until it reaches the conveyor                
                 if (self.saw_station.process_completed == True and
                     self.turntable_carrier.turntable_pos != 'conveyor'):                    
                     self.saw_station.prod_under_saw = False
-                    self.turntable_carrier.rotate_towards_conveyor()
-            
-                # Activate the pusher
-                if (self.turntable_carrier.turntable_pos == 'conveyor'):
-                    self.turntable_carrier.push_product()
-                    self.turntable_carrier.prod_on_carrier = False
-                    self.turntable_carrier.process_completed = True
+                    self.turntable_carrier.transfer_product_to_conveyor()
                     self.conveyor_carrier.prod_on_conveyor = True
-                    self.turntable_carrier.rotate_towards_vacuum_carrier()
             
             # Activate the conveyor
             if (self.conveyor_carrier.prod_on_conveyor == True
@@ -315,10 +241,7 @@ class MultiprocessManager():
                 # Move towards exit
                 if (self.conveyor_carrier.light_barrier_state == True):
                     self.conveyor_carrier.move_to_the_exit()
-                # Once at the exit, set the process as completed
-                if (self.conveyor_carrier.light_barrier_state == False):
-                    self.conveyor_carrier.process_completed = True
-                    
+
             ###################################################################
             # If there is the product in front of the light sensor
             if(self.conveyor_carrier.light_barrier_state == False 

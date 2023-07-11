@@ -113,6 +113,7 @@ class SawStation(object):
             time.sleep(proc_time)
             self.deactivate_saw()
             print('saw deactivated')
+            self.process_completed = True
 
     def deactivate_station(self) -> None: 
         self.motor.turn_off()

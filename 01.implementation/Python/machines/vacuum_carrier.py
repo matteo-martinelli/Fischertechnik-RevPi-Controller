@@ -190,6 +190,18 @@ class VacuumCarrier(object):
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
 
+    def grip_product(self):
+        self.lower_gripper()
+        self.activate_gripper()
+        self.higher_gripper()
+        self.prod_on_carrier = True
+
+    def release_product(self):
+        self.lower_gripper()
+        self.deactivate_gripper()
+        self.higher_gripper()
+        self.prod_on_carrier = False
+
     def move_carrier_towards_oven(self) -> None:
         if(self.at_oven.state == False):
             self.motor.turn_on(self.motor._pin_tuple[0])
@@ -228,6 +240,12 @@ class VacuumCarrier(object):
         self.read_motor_state()
         print('vacuum carrier deactivated')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+
+    def transfer_product_from_oven_to_turntable(self):
+        self.grip_product()
+        self.move_carrier_towards_turntable()
+        self.release_product()
+        self.process_completed = True
 
     def deactivate_carrier(self) -> None: 
         self.motor.turn_off()

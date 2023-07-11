@@ -116,6 +116,7 @@ class ConveyorCarrier(object):
         self.motor.turn_off()
         self.read_motor_state()
         print('conveyor deactivated')
+        self.process_completed = True
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def deactivate_carrier(self) -> None: 

@@ -234,6 +234,16 @@ class TurntableCarrier(object):
         print('turntable deactivated')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
+    def transfer_product_to_saw(self):
+        pass
+
+    def transfer_product_to_conveyor(self):
+        self.rotate_towards_conveyor()
+        self.push_product()
+        self.prod_on_carrier = False
+        self.rotate_towards_vacuum_carrier()
+        self.process_completed = True
+
     def deactivate_carrier(self) -> None: 
         self.motor.turn_off()
         self.read_motor_state()
