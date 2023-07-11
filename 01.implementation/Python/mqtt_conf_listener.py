@@ -17,7 +17,7 @@ class MqttConfListener(object):
     def __init__(self, topic_to_subscribe):
         self.mqtt_client = mqtt.Client()
         self.topic_to_subscribe = topic_to_subscribe
-        self.configuration = ''
+        self.configuration = '' # TODO: try None
 
     def on_connect(self, client , userdata , flags , rc):
         print('Mqtt listener client connected with result code ' + str(rc))
