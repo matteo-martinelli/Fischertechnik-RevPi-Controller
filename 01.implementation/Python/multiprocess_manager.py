@@ -47,9 +47,20 @@ class MultiprocessManager():
         # Handle SIGINT / SIGTERM to exit program cleanly
         self.rpi.handlesignalend(self.cleanup)
 
+        # Process config
+        self.process_conf = \
+            MultiProcDeptConf(
+            pieces_to_produce=PIECES_TO_PRODUCE, 
+            compressor_behaviour=COMPRESSOR_BEHAVIOUR,
+            oven_processing_time=OVEN_PROCESSING_TIME,      # Time in seconds
+            saw_processing_time=SAW_PROCESSING_TIME,        # Time in seconds
+            vacuum_carrier_speed=VACUUM_CARRIER_SPEED,      # TBD
+            turntable_carrier_speed=TURNTABLE_CARRIER_SPEED # TBD
+            )
+
         # Instantiating the MQTT publisher
         self.mqtt_publisher = MqttPublisher('user:dept_manager/multiproc_dept')
-        self.mqtt_conf_listener = MqttConfListener('multiproc_dept/dept_conf')
+        self.mqtt_conf_listener = MqttConfListener('multiproc_dept/dept_conf', self.process_conf.__class__)
         self.dept_name = dept_name  # Dept mqtt root topic
         
         # My aggregated objects
@@ -134,7 +145,7 @@ class MultiprocessManager():
     
     def reset_station_states_and_restart(self):
         # Turning off all the system actuators and resetting stations states
-        self.oven_station.deactivate_station()
+        self.oven_station.deactivate_station()          # TODO: change all those methods into restarts; into the deactivate methods add the mqtt conf listener close connection
         self.vacuum_gripper_carrier.deactivate_carrier()
         self.turntable_carrier.deactivate_carrier()
         self.saw_station.deactivate_station()
@@ -156,7 +167,7 @@ class MultiprocessManager():
         # With the configuration listener
         self.mqtt_conf_listener.open_connection()
         time.sleep(0.5)
-        if(self.mqtt_conf_listener.configuration != ''):
+        if(self.mqtt_conf_listener.configuration != None):
             self.set_received_configuration(
                 self.mqtt_conf_listener.configuration)
         else: 
