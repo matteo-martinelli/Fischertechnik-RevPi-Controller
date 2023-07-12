@@ -15,20 +15,22 @@ import json
 
 class MqttPublisher(object):
     """Mqtt publisher class to publish mqtt topics."""
-    def __init__(self, lwm_topic):
+    def __init__(self, lwm_topic = None):
         self.mqtt_client = mqtt.Client()
         self.lwm_topic = lwm_topic
 
     def on_connect(self, client , userdata , flags , rc):
         print('Mqtt publisher client connected with result code ' + str(rc))
         connection_message = {'status': 'on'}
-        self.mqtt_client.publish(self.lwm_topic, \
-                                json.dumps(connection_message), 0, True)
+        if (self.lwm_topic != None):
+            self.mqtt_client.publish(self.lwm_topic, \
+                                    json.dumps(connection_message), 0, True)
 
     def open_connection(self):
         self.mqtt_client.on_connect = self.on_connect
-        self.mqtt_client.will_set(self.lwm_topic,\
-                                  json.dumps({'status': 'off'}), 0, True)
+        if (self.lwm_topic != None):
+            self.mqtt_client.will_set(self.lwm_topic,\
+                                    json.dumps({'status': 'off'}), 0, True)
 
         #mqtt_configured_user = MqttConfiguratorParameter.MQTT_USER
         #mqtt_configured_pw = MqttConfiguratorParameter.MQTT_PW
@@ -44,7 +46,7 @@ class MqttPublisher(object):
         print('Mqtt publisher client Loop stopped')
 
     # TODO: set the configuration retain flag
-    def publish_telemetry_data(self, topic: str, target_payload: json):
+    def publish_telemetry_data(self, topic: str, target_payload: str):
         if (MqttConfiguratorParameter.ACTIVE_MQTT == True):
             mqtt_configured_user = MqttConfiguratorParameter.MQTT_USER
             target_topic = 'user:{0}/{1}/'.format(mqtt_configured_user, topic)
