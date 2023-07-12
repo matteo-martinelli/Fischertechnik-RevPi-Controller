@@ -18,17 +18,21 @@ from components.revpi_reference_sensor import RevPiReferenceSensor
 from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
 from components.revpi_vacuum_actuator import RevPiVacuumActuator
 
+from machines.configurations.oven_station_conf import OvenStationConf
+from mqtt_conf_listener import MqttConfListener
+
 from datetime import datetime 
 import time
 import json
 
+OVEN_PROCESSING_TIME = 1
 
 class OvenStation(object):
     """Oven class for oven objects."""
     def __init__(self, rpi, dept: str, station: str, 
                  carrier_in_act_pin: int, carrier_out_act_pin: int, 
                  proc_light_act_pin: int, vacuum_door_act_pin: int, 
-                 in_oven_sens_pin: int, out_oven_sens_pin: int, 
+                 in_oven_sens_pin, out_oven_sens_pin: int, 
                  light_barrier_sens_pin: int, mqtt_publisher):
         # Class fields
         self._dept = dept
@@ -39,11 +43,18 @@ class OvenStation(object):
         self._prod_on_carrier = False
         self._process_completed = False
         self._light_barrier_state = False
+
+        self.configuration = OvenStationConf(OVEN_PROCESSING_TIME)
         
         # MQTT
         self.mqtt_publisher = mqtt_publisher
         self.topic = self._dept + '/' + self._station
-        
+
+        self.mqtt_conf_listener = MqttConfListener('multiproc_dept/oven-station/conf', self.configuration.__class__)
+        self.mqtt_conf_listener.open_connection()
+        self.read_conf()
+        #self.configuration = self.mqtt_conf_listener.configuration # TODO: Change using the function that checks
+
         # Class actuators
         # pin 5, 6
         self.oven_carrier = \
@@ -225,12 +236,13 @@ class OvenStation(object):
                                                        self.to_json())
     
     def oven_process_start(self, proc_time: int) -> None:
+        self.read_conf()
         self.move_carrier_inward()
 
         self.activate_proc_light()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
         # Time in seconds
-        time.sleep(proc_time)
+        time.sleep(self.configuration.oven_processing_time) # TODO: change into time.sleep(configuration.proc_time)
         self.deactivate_proc_light()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
         
@@ -335,6 +347,14 @@ class OvenStation(object):
         self.read_proc_light_state()
 
     # MQTT 
+    def read_conf(self) -> None: 
+        oven_proc_time_conf = self.mqtt_conf_listener.configuration 
+        if (oven_proc_time_conf != self.configuration._oven_processing_time 
+            and oven_proc_time_conf != None):
+            self.configuration = oven_proc_time_conf
+            print('New configuration received for oven station process time ',\
+                  self.configuration.oven_processing_time)
+        
     def to_dto(self):   # Data Transfer Objet
         timestamp = time.time()
         current_moment = \
