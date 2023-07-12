@@ -14,10 +14,11 @@ import json
 
 class MqttConfListener(object):
     """Mqtt publisher class to publish mqtt topics."""
-    def __init__(self, topic_to_subscribe):
+    def __init__(self, topic_to_subscribe, conf_class):
         self.mqtt_client = mqtt.Client()
         self.topic_to_subscribe = topic_to_subscribe
-        self.configuration = '' # TODO: try None
+        self.conf_class = conf_class
+        self.configuration = None # TODO: try None
 
     def on_connect(self, client , userdata , flags , rc):
         print('Mqtt listener client connected with result code ' + str(rc))
@@ -62,12 +63,12 @@ class MqttConfListener(object):
 
     def manually_decode_conf(self, conf_dict: dict):
         try:
-            multiproc_conf = MultiProcDeptConf()
+            multiproc_conf = self.conf_class
             print('Decoding ...')
             for key in conf_dict:
                 setattr(multiproc_conf, key, conf_dict[key])
             
-            self.configuration = multiproc_conf
+            self.configuration = self.conf_class(multiproc_conf) 
             print('Received MQTT configuration saved')
         except Exception as exc: 
             print('an error occured! Error: ', exc)
