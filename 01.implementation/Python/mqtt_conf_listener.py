@@ -11,28 +11,35 @@ from conf.mqtt_conf_parameters import MqttConfiguratorParameter
 from conf.multiproc_dept_conf import MultiProcDeptConf
 import paho.mqtt.client as mqtt
 import json
+import logging
+
 
 class MqttConfListener(object):
     """Mqtt publisher class to publish mqtt topics."""
     def __init__(self, topic_to_subscribe, conf_class):
+        
+        self.logger = logging.getLogger('multiproc_dept_logger')
+        
         self.mqtt_client = mqtt.Client()
         self.topic_to_subscribe = topic_to_subscribe
         self.conf_class = conf_class
-        self.configuration = None # TODO: try None
+        self.configuration = None
 
     def on_connect(self, client , userdata , flags , rc):
-        print('Mqtt listener client connected with result code ' + str(rc))
+        self.logger.info('Mqtt listener client connected with result code {}'\
+                         .format(str(rc)))
         self.subscribe_multiproc_dept_configuration(self.topic_to_subscribe)
 
     def on_message(self, client, userdata, msg):
         decoded_message = str(msg.payload.decode("utf-8"))
         json_message = json.loads(decoded_message)
-        print('Received a conf message for', self.conf_class)
+        self.logger.info('Received a conf message for {}'\
+                         .format(self.conf_class))
         self.manually_decode_conf(json_message)
         # TODO: check if the message has the needed format
 
     def on_subscribe(self, client, userdata, mid, granted_qos):
-        print('Succesfully subscribed with mid ', mid)
+        self.logger.info('Succesfully subscribed with mid {}'.format(mid))
 
     def open_connection(self):
         self.mqtt_client.on_connect = self.on_connect
@@ -51,7 +58,7 @@ class MqttConfListener(object):
         
     def close_connection(self):
         self.mqtt_client.loop_stop()
-        print('Mqtt listener client Loop stopped')
+        self.logger.info('Mqtt listener client Loop stopped')
 
     # TODO: set the configuration retain flag
     def subscribe_multiproc_dept_configuration(self, topic):
@@ -59,18 +66,20 @@ class MqttConfListener(object):
             mqtt_configured_user = MqttConfiguratorParameter.MQTT_USER
             target_topic = 'user:{0}/{1}/'.format(mqtt_configured_user, topic)
             self.mqtt_client.subscribe(target_topic)
-            print('Subscribing tentative to ', target_topic, ' ...')
+            self.logger.info('Subscribing tentative to {}'\
+                             .format(target_topic, ' ...'))
 
     def manually_decode_conf(self, conf_dict: dict):
         try:
             multiproc_conf = self.conf_class
-            print('Decoding ...')
+            self.logger.info('Decoding ...')
             for key in conf_dict:
                 setattr(multiproc_conf, key, conf_dict[key])
             
             self.configuration = self.conf_class(multiproc_conf) 
-            print('Received MQTT configuration saved for', self.conf_class)
+            self.logger.info('Received MQTT configuration saved for {}'\
+                             .format(self.conf_class))
         except Exception as exc: 
-            print('an error occured! Error: ', exc)
+            self.logger.info('an error occured! Error: {}'.format(exc))
             # printing stack trace
-            print(traceback.print_exc())
+            self.logger.info(traceback.print_exc())

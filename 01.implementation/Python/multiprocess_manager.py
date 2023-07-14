@@ -15,6 +15,7 @@ blocking, with a personalised while loop next to the event system.
 # TODO: on DT, infer workign status as follows: if proc_complete=false and prod_on_carrier=true -> working else waiting else completed
 import revpimodio2
 import time
+import logging
 
 from mqtt_publisher import MqttPublisher
 from mqtt_conf_listener import MqttConfListener
@@ -31,7 +32,6 @@ from machines.configurations.default_station_configs \
     import DefaultStationsConfigs
 
 
-# TODO: add logging
 class MultiprocessManager():
     """Entry point for Fischertechnik Multiprocess Station with Oven control 
     over RevPi."""
@@ -41,6 +41,10 @@ class MultiprocessManager():
         self.rpi = revpimodio2.RevPiModIO(autorefresh=True)
         # Handle SIGINT / SIGTERM to exit program cleanly
         self.rpi.handlesignalend(self.cleanup)
+        # Logger
+        logging.basicConfig(format='[%(asctime)s] - %(message)s', 
+                            datefmt='%d-%b-%y %H:%M:%S', level=logging.DEBUG)
+        self.logger = logging.getLogger('multiproc_dept_logger')
 
         # Process config
         self.process_conf = \
@@ -86,7 +90,7 @@ class MultiprocessManager():
         self.to_reset = False
 
     def set_received_configuration(self, conf):
-        print('a configuration have been saved')
+        self.logger.info('a configuration have been saved')
         self.process_conf.pieces_to_produce = conf.pieces_to_produce
         self.process_conf.compressor_behaviour = conf.compressor_behaviour
         self.process_conf.oven_processing_time = conf.oven_processing_time
@@ -104,7 +108,7 @@ class MultiprocessManager():
     
     def cleanup(self):
         """Cleanup function to leave the RevPi in a defined state."""
-        print('Cleaning the system state')
+        self.logger.info('Cleaning the system state')
 
         # Switch of LED and outputs before exit program
         self.rpi.core.a1green.value = False                                     # type: ignore
@@ -137,9 +141,9 @@ class MultiprocessManager():
         self.saw_station.deactivate_station()
         self.conveyor_carrier.deactivate_carrier()
 
-    def start(self):
+    def start(self):        
         """Start event system and own cyclic loop."""
-        print('start')
+        self.logger.info('start')
         # Start event system loop without blocking here. Reference at 
         # https://revpimodio.org/en/events-in-the-mainloop/
         self.rpi.mainloop(blocking=False)
@@ -147,25 +151,26 @@ class MultiprocessManager():
         # Sets the Rpi a1 light: switch on / off green part of LED A1
         self.rpi.core.a1green.value = not self.rpi.core.a1green.value           # type: ignore
 
+
         # Connecting to the MQTT broker 
         # With the publisher
         self.mqtt_publisher.open_connection() 
         # With the configuration listener
         self.mqtt_conf_listener.open_connection()
         time.sleep(0.5)
-        print(self.mqtt_conf_listener.configuration)
         if(self.mqtt_conf_listener.configuration != None):
             self.set_received_configuration(
                 self.mqtt_conf_listener.configuration)
-            print('New conf saved found for', self.dept_name, ', uploaded')
+            self.logger.info('New conf saved found for {}, '
+                             'uploaded '.format(self.dept_name))
         else: 
-            print('No conf saved found, proceeding the standard conf for', 
-                  self.dept_name)
+            self.logger.info('No conf saved found, proceeding the standard '    
+                             'conf for {}'.format(self.dept_name))
         
         # Activating the process services - i.e. the compressor_service
         self.compressor_service.activate_service()
 
-        print('Waiting for the first piece to process')
+        self.logger.info('Waiting for the first piece to process')
 
         # My own loop to do some work next to the event system. We will stay
         # here till self.rpi.exitsignal.wait returns True after SIGINT/SIGTERM
@@ -255,10 +260,11 @@ class MultiprocessManager():
                 self.process_completed = True
                 self.to_reset = True
                 # Print the process completion message
-                print('piece completed')
+                self.logger.info('piece completed')
                 pieces_left = \
                     self.process_conf.pieces_to_produce - self.pieces_counter
-                print(pieces_left, 'pieces left to be produced')
+                self.logger.info('{} pieces left to be produced'\
+                             .format(pieces_left))
 
             ###################################################################
             # If the product is in moved from the conveyor light barrier, reset
@@ -268,12 +274,12 @@ class MultiprocessManager():
                and self.to_reset == True):
                 if(self.pieces_counter == self.process_conf.pieces_to_produce):
                     # Print the process completion message
-                    print('production completed,', \
-                          'terminating the program cycle')
+                    self.logger.info('production completed,'
+                                     'terminating the program cycle')
                     self.reset_station_states_and_stop()
                     break
                 else:
-                    print('Accepting another piece')
+                    self.logger.info('Accepting another piece')
                     # Reset the system
                     self.conveyor_carrier.prod_on_conveyor = False
                     self.reset_station_states_and_restart()

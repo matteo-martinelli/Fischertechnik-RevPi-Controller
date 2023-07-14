@@ -11,6 +11,7 @@ from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
 from datetime import datetime
 import time
 import json
+import logging
 
 from machines.configurations.compressor_service_conf import CompressorServiceConf
 from mqtt_conf_listener import MqttConfListener
@@ -23,6 +24,9 @@ class CompressorService(object):
     """Compressor class for compressor objects."""
     def __init__(self, rpi, dept: str, station: str, motor_act_pin: int, 
                  mqtt_pub):
+        
+        self.logger = logging.getLogger('multiproc_dept_logger')
+
         # Class descriptive fields
         self._dept = dept
         self._station = station
@@ -35,7 +39,9 @@ class CompressorService(object):
         self.mqtt_pub = mqtt_pub
         self.topic = self._dept + '/' + self._station 
         
-        self.mqtt_conf_listener = MqttConfListener('multiproc_dept/compressor-service/conf', self.configuration.__class__)        
+        self.mqtt_conf_listener = \
+            MqttConfListener('multiproc_dept/compressor-service/conf', \
+                             self.configuration.__class__)        
         self.mqtt_conf_listener.open_connection()
         self.read_conf()
         
@@ -78,13 +84,13 @@ class CompressorService(object):
     def activate_service(self):
         self.motor.turn_on()
         self._motor_state = True
-        print('compressor activated')
+        self.logger.info('compressor activated')
         self.mqtt_pub.publish_telemetry_data(self.topic, self.to_json())
         
     def deactivate_service(self):
         self.motor.turn_off()
         self._motor_state = False
-        print('compressor deactivated')
+        self.logger.info('compressor deactivated')
         self.mqtt_pub.publish_telemetry_data(self.topic, self.to_json())
 
     # Reading underlying sensors/actuators
@@ -104,11 +110,12 @@ class CompressorService(object):
         if (compressor_behaviour_conf != self.configuration.compressor_behaviour 
             and compressor_behaviour_conf != None):
             self.configuration = compressor_behaviour_conf
-            print('New configuration received for compressor service'\
-                  'behaviour', self.configuration.compressor_behaviour)
+            self.logger.info('New configuration received for compressor '
+                             'service behaviour {}'\
+                             .format(self.configuration.compressor_behaviour))
         else: 
-            print('No conf updated, proceeding with the last configuration'\
-                  'for', self.station)
+            self.logger.info('No conf updated, proceeding with the last '
+                             'configuration for'.format(self.station))
     
     def to_dto(self):
         timestamp = time.time()

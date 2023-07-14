@@ -24,6 +24,7 @@ from mqtt_conf_listener import MqttConfListener
 from datetime import datetime 
 import time
 import json
+import logging
 
 from machines.configurations.default_station_configs \
     import DefaultStationsConfigs
@@ -36,6 +37,9 @@ class OvenStation(object):
                  proc_light_act_pin: int, vacuum_door_act_pin: int, 
                  in_oven_sens_pin, out_oven_sens_pin: int, 
                  light_barrier_sens_pin: int, mqtt_publisher):
+        
+        self.logger = logging.getLogger('multiproc_dept_logger')     
+
         # Class fields
         self._dept = dept
         self._station = station
@@ -177,13 +181,13 @@ class OvenStation(object):
     def move_carrier_inward(self) -> None:
         self.oven_door_opening.turn_on()
         self.read_door_pos()
-        print('oven door opened')
+        self.logger.info('oven door opened')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
         self.oven_carrier.turn_on(self.oven_carrier._pin_tuple[0])
         self.read_carrier_position()
         self.read_light_barrier_state()
-        print('oven carrier activated')
+        self.logger.info('oven carrier activated')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
         # Wait until the oven carrier reaches the outward oven switch
@@ -193,13 +197,13 @@ class OvenStation(object):
         
         self.oven_carrier.turn_off()
         self.read_carrier_position()
-        print('oven carrier deactivated')
+        self.logger.info('oven carrier deactivated')
         self.read_light_barrier_state()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
         
         self.oven_door_opening.turn_off()
         self.read_door_pos()
-        print('oven door closed')
+        self.logger.info('oven door closed')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def move_carrier_outward(self) -> None:
@@ -355,11 +359,12 @@ class OvenStation(object):
         if (oven_proc_time_conf != self.configuration.oven_processing_time 
             and oven_proc_time_conf != None):
             self.configuration = oven_proc_time_conf
-            print('New configuration received for oven station process time',\
-                  self.configuration.oven_processing_time)
+            self.logger.info('New configuration received for oven station '
+                             'process time {}'\
+                            .format(self.configuration.oven_processing_time))
         else: 
-            print('No conf updated, proceeding with the last configuration'\
-                  'for', self.station)
+            self.logger.info('No conf updated, proceeding with the last '
+                             'configuration for {}'.format(self.station))
         
     def to_dto(self):   # Data Transfer Objet
         timestamp = time.time()

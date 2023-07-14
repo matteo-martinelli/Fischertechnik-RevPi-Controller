@@ -17,6 +17,7 @@ from components.revpi_vacuum_actuator import RevPiVacuumActuator
 from datetime import datetime
 import time
 import json
+import logging
 
 from machines.configurations.vacuum_carrier_conf import VacuumCarrierConf
 from mqtt_conf_listener import MqttConfListener
@@ -31,6 +32,9 @@ class VacuumCarrier(object):
                  at_oven_act_pin: int, grip_act_pin: int, 
                  grip_lower_act_pin: int, at_turntable_sens_pin: int, 
                  at_oven_sens_pin: int, mqtt_publisher):
+        
+        self.logger = logging.getLogger('multiproc_dept_logger')     
+        
         # Class fields
         self._dept = dept
         self._station = station
@@ -48,7 +52,9 @@ class VacuumCarrier(object):
         self.mqtt_publisher = mqtt_publisher
         self.topic = self._dept + '/' + self._station
 
-        self.mqtt_conf_listener = MqttConfListener('multiproc_dept/vacuum-carrier/conf', self.configuration.__class__)
+        self.mqtt_conf_listener = \
+            MqttConfListener('multiproc_dept/vacuum-carrier/conf',\
+                              self.configuration.__class__)
         self.mqtt_conf_listener.open_connection()
         self.read_conf()
         # Class actuators
@@ -170,7 +176,7 @@ class VacuumCarrier(object):
         if(self._gripper_activation_state == False):
             self.gripper_activation.turn_on()
             self._gripper_activation_state = True
-            print('vacuum carrier gripper activated')
+            self.logger.info('vacuum carrier gripper activated')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
 
@@ -180,7 +186,7 @@ class VacuumCarrier(object):
             # Fixed time for the pneumatic propagation to take effect
             time.sleep(0.8)
             self.read_gripper_activation_state()
-            print('vacuum carrier gripper deactivated')
+            self.logger.info('vacuum carrier gripper deactivated')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
 
@@ -189,7 +195,7 @@ class VacuumCarrier(object):
             self.gripper_lowering.turn_on() 
             time.sleep(0.8)
             self.read_gripper_lowering_state()
-            print('vacuum carrier gripper lowered')
+            self.logger.info('vacuum carrier gripper lowered')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
     
@@ -198,7 +204,7 @@ class VacuumCarrier(object):
             self.gripper_lowering.turn_off()
             time.sleep(0.4)
             self.read_gripper_lowering_state()
-            print('vacuum carrier gripper highered')
+            self.logger.info('vacuum carrier gripper highered')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
 
@@ -217,7 +223,7 @@ class VacuumCarrier(object):
     def move_carrier_towards_oven(self) -> None:
         if(self.at_oven.state == False):
             self.motor.turn_on(self.motor._pin_tuple[0])
-            print('vacuum carrier activated')
+            self.logger.info('vacuum carrier activated')
             self._motor_state = (True, False)
             self.read_carrier_position()
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
@@ -230,7 +236,7 @@ class VacuumCarrier(object):
         self.motor.turn_off()
         self.read_carrier_position()
         self.read_motor_state()
-        print('vacuum carrier deactivated')
+        self.logger.info('vacuum carrier deactivated')
         self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                    self.to_json())
 
@@ -239,7 +245,7 @@ class VacuumCarrier(object):
             self.motor.turn_on(self.motor._pin_tuple[1])
             self.read_motor_state()
             self.read_carrier_position()
-            print('vacuum carrier activated')
+            self.logger.info('vacuum carrier activated')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
 
@@ -250,7 +256,7 @@ class VacuumCarrier(object):
         self.motor.turn_off()
         self.read_carrier_position()
         self.read_motor_state()
-        print('vacuum carrier deactivated')
+        self.logger.info('vacuum carrier deactivated')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 
     def transfer_product_from_oven_to_turntable(self):
@@ -338,11 +344,11 @@ class VacuumCarrier(object):
         if (vaccum_carrier_speed != self.configuration.vacuum_carrier_speed 
             and vaccum_carrier_speed != None):
             self.configuration = vaccum_carrier_speed
-            print('New configuration received for vacuum carrier speed',\
-                  self.configuration.vacuum_carrier_speed)
+            self.logger.info('New configuration received for vacuum carrier speed '
+                        '{}'.format(self.configuration.vacuum_carrier_speed))
         else: 
-            print('No conf updated, proceeding with the last configuration'\
-                  'for', self.station)
+            self.logger.info('No conf updated, proceeding with the last '
+                        'configuration for {}'.format(self.station))
 
     def to_dto(self):
         timestamp = time.time()

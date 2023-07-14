@@ -13,12 +13,16 @@ from components.revpi_light_barrier_sensor import RevPiLightBarrierSensor
 from datetime import datetime
 import time
 import json
+import logging
 
 
 class ConveyorCarrier(object):
     """Conveyor Carrier class for conveyor objects."""
     def __init__(self, rpi, dept: str, station: str, motor_act_pin: int, 
                  barrier_sens_pin: int, mqtt_publisher):
+        
+        self.logger = logging.getLogger('multiproc_dept_logger')
+        
         self._dept = dept
         self._station = station
         self._motor_state = False
@@ -106,7 +110,7 @@ class ConveyorCarrier(object):
     def move_to_the_exit(self) -> None:
         self.motor.turn_on()
         self.read_motor_state()
-        print('conveyor activated')
+        self.logger.info('conveyor activated')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
         
         # Wait until a product reaches the light_barrier sensor
@@ -115,7 +119,7 @@ class ConveyorCarrier(object):
 
         self.motor.turn_off()
         self.read_motor_state()
-        print('conveyor deactivated')
+        self.logger.info('conveyor deactivated')
         self.process_completed = True
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
 

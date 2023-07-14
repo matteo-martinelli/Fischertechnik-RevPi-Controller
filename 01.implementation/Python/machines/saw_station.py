@@ -11,6 +11,7 @@ from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
 from datetime import datetime
 import time
 import json
+import logging
 
 from machines.configurations.saw_station_conf import SawStationConf
 from mqtt_conf_listener import MqttConfListener
@@ -22,6 +23,9 @@ class SawStation(object):
     """Saw class for saw objects."""
     def __init__(self, rpi, dept: str, station:str, saw_motor_act_pin: int, 
                  mqtt_publisher):
+        
+        self.logger = logging.getLogger('multiproc_dept_logger')
+        
         # Class fields
         self._dept = dept
         self._station = station
@@ -121,11 +125,11 @@ class SawStation(object):
     def processing(self, proc_time) -> None: 
         if(self.motor.state == False):
             self.activate_saw()
-            print('saw activated')
+            self.logger.info('saw activated')
             # Time in seconds
             time.sleep(proc_time)
             self.deactivate_saw()
-            print('saw deactivated')
+            self.logger.info('saw deactivated')
             self.process_completed = True
 
     def deactivate_station(self) -> None: 
@@ -152,11 +156,12 @@ class SawStation(object):
         if (saw_proc_time_conf != self.configuration.saw_processing_time 
             and saw_proc_time_conf != None):
             self.configuration = saw_proc_time_conf
-            print('New configuration received for saw station process time',\
-                  self.configuration.saw_proc_time_conf)
+            self.logger.info('New configuration received for saw station '
+                             'process time {}'\
+                             .format(self.configuration.saw_proc_time_conf))
         else: 
-            print('No conf updated, proceeding with the last configuration'\
-                  'for', self.station)
+            self.logger.info('No conf updated, proceeding with the last '
+                             'configuration {} for'.format(self.station))
 
     def to_dto(self):
         timestamp = time.time()
