@@ -25,6 +25,7 @@ from datetime import datetime
 import time
 import json
 
+
 OVEN_PROCESSING_TIME = 1
 
 class OvenStation(object):
@@ -349,7 +350,7 @@ class OvenStation(object):
     # MQTT 
     def read_conf(self) -> None: 
         oven_proc_time_conf = self.mqtt_conf_listener.configuration 
-        if (oven_proc_time_conf != self.configuration._oven_processing_time 
+        if (oven_proc_time_conf != self.configuration.oven_processing_time 
             and oven_proc_time_conf != None):
             self.configuration = oven_proc_time_conf
             print('New configuration received for oven station process time ',\

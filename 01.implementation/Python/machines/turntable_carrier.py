@@ -18,6 +18,11 @@ from datetime import datetime
 import time
 import json
 
+from machines.configurations.turntable_carrier_conf import TurntableCarrierConf
+from mqtt_conf_listener import MqttConfListener
+
+
+TURNTABLE_CARRIER_SPEED = 1
 
 class TurntableCarrier(object):
     """Turntable Carrier class for turntable objects."""
@@ -36,10 +41,16 @@ class TurntableCarrier(object):
         self._prod_on_carrier = False
         self._process_completed = False
         
+        self.configuration = TurntableCarrierConf(TURNTABLE_CARRIER_SPEED)
+
         # MQTT
         self.mqtt_publisher = mqtt_publisher
         self.topic = self.dept + '/' + self.station
         
+        self.mqtt_conf_listener = MqttConfListener('multiproc_dept/turntable-carrier/conf', self.configuration.__class__)
+        self.mqtt_conf_listener.open_connection()
+        self.read_conf()
+
         # Class actuators
         # pin 1,2
         self.motor = \
@@ -320,6 +331,14 @@ class TurntableCarrier(object):
 
 
     # MQTT 
+    def read_conf(self) -> None: 
+        turntable_carrier_speed_conf = self.mqtt_conf_listener.configuration 
+        if (turntable_carrier_speed_conf != self.configuration.turntable_carrier_speed 
+            and turntable_carrier_speed_conf != None):
+            self.configuration = turntable_carrier_speed_conf
+            print('New configuration received for turntable carrier speed ',\
+                  self.configuration.turntable_carrier_speed_conf)
+
     def to_dto(self):
         timestamp = time.time()
         current_moment = \

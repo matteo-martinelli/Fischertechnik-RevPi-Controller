@@ -163,7 +163,7 @@ class MultiprocessManager():
 
         # Connecting to the MQTT broker 
         # With the publisher
-        self.mqtt_publisher.open_connection()
+        self.mqtt_publisher.open_connection() 
         # With the configuration listener
         self.mqtt_conf_listener.open_connection()
         time.sleep(0.5)

@@ -18,6 +18,11 @@ from datetime import datetime
 import time
 import json
 
+from machines.configurations.vacuum_carrier_conf import VacuumCarrierConf
+from mqtt_conf_listener import MqttConfListener
+
+
+VACUUM_CARRIER_SPEED = 1
 
 class VacuumCarrier(object):
     """Vacuum Carrier class for oven objects."""
@@ -35,10 +40,15 @@ class VacuumCarrier(object):
         self._prod_on_carrier = False
         self._process_completed = False
 
+        self.configuration = VacuumCarrierConf(VACUUM_CARRIER_SPEED)
+
         # MQTT
         self.mqtt_publisher = mqtt_publisher
         self.topic = self._dept + '/' + self._station
-        
+
+        self.mqtt_conf_listener = MqttConfListener('multiproc_dept/vacuum-carrier/conf', self.configuration.__class__)
+        self.mqtt_conf_listener.open_connection()
+        self.read_conf()
         # Class actuators
         # pin 7,8
         self.motor = \
@@ -321,6 +331,14 @@ class VacuumCarrier(object):
         self.read_gripper_lowering_state()
 
     # MQTT 
+    def read_conf(self) -> None: 
+        vaccum_carrier_speed = self.mqtt_conf_listener.configuration 
+        if (vaccum_carrier_speed != self.configuration.vacuum_carrier_speed 
+            and vaccum_carrier_speed != None):
+            self.configuration = vaccum_carrier_speed
+            print('New configuration received for vacuum carrier speed ',\
+                  self.configuration.vacuum_carrier_speed)
+
     def to_dto(self):
         timestamp = time.time()
         current_moment = \

@@ -12,6 +12,11 @@ from datetime import datetime
 import time
 import json
 
+from machines.configurations.compressor_service_conf import CompressorServiceConf
+from mqtt_conf_listener import MqttConfListener
+
+
+COMPRESSOR_BEHAVIOUR = 'always_on'
 
 class CompressorService(object):
     """Compressor class for compressor objects."""
@@ -21,9 +26,17 @@ class CompressorService(object):
         self._dept = dept
         self._station = station
         self._motor_state = False
+
+        self.configuration = CompressorServiceConf(COMPRESSOR_BEHAVIOUR)        
+        
         # MQTT
         self.mqtt_pub = mqtt_pub
         self.topic = self._dept + '/' + self._station 
+        
+        self.mqtt_conf_listener = MqttConfListener('multiproc_dept/compressor-service/conf', self.configuration.__class__)        
+        self.mqtt_conf_listener.open_connection()
+        self.read_conf()
+        
         # Class actuators
         self.motor = \
             RevPiSingleMotionActuator(rpi, 'motor', motor_act_pin, 
@@ -68,6 +81,14 @@ class CompressorService(object):
         self.read_motor_state
     
     # MQTT 
+    def read_conf(self) -> None: 
+        compressor_behaviour_conf = self.mqtt_conf_listener.configuration 
+        if (compressor_behaviour_conf != self.configuration.compressor_behaviour 
+            and compressor_behaviour_conf != None):
+            self.configuration = compressor_behaviour_conf
+            print('New configuration received for compressor service behaviour ',\
+                  self.configuration.compressor_behaviour)
+    
     def to_dto(self):
         timestamp = time.time()
         current_moment = \

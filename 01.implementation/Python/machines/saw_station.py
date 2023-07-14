@@ -12,6 +12,11 @@ from datetime import datetime
 import time
 import json
 
+from machines.configurations.saw_station_conf import SawStationConf
+from mqtt_conf_listener import MqttConfListener
+
+
+SAW_PROCESSING_TIME = 1
 
 class SawStation(object):
     """Saw class for saw objects."""
@@ -24,9 +29,16 @@ class SawStation(object):
         self._prod_under_saw = False
         self._process_completed = False
         
+        self.configuration = SawStationConf(SAW_PROCESSING_TIME)
+
         # MQTT
         self.mqtt_publisher = mqtt_publisher
         self.topic = self.dept + '/' + self.station
+
+        self.mqtt_conf_listener = MqttConfListener('multiproc_dept/saw-station/conf', self.configuration.__class__)
+        self.mqtt_conf_listener.open_connection()
+        self.read_conf()
+       
         # Class actuators
         # pin 4
         self.motor = \
@@ -134,6 +146,14 @@ class SawStation(object):
         self.read_motor_state()
 
     # MQTT 
+    def read_conf(self) -> None: 
+        saw_proc_time_conf = self.mqtt_conf_listener.configuration 
+        if (saw_proc_time_conf != self.configuration.saw_processing_time 
+            and saw_proc_time_conf != None):
+            self.configuration = saw_proc_time_conf
+            print('New configuration received for saw station process time ',\
+                  self.configuration.saw_proc_time_conf)
+
     def to_dto(self):
         timestamp = time.time()
         current_moment = \
