@@ -7,6 +7,7 @@ For following pins:
 O_10: compressor.
 """
 
+
 from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
 from datetime import datetime
 import time

@@ -8,6 +8,7 @@ This class is composed by the following objects:
     2. light barrier sensor I_3;
 """
 
+
 from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
 from components.revpi_light_barrier_sensor import RevPiLightBarrierSensor
 from datetime import datetime
@@ -153,7 +154,6 @@ class ConveyorCarrier(object):
     
     def read_all_actuators(self) -> None: 
         self.read_motor_state()
-
 
     def to_dto(self):
         timestamp = time.time()

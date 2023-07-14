@@ -7,11 +7,6 @@ Contains and represents the compressor service configuration
 """
 
 
-from conf.mqtt_conf_parameters import MqttConfiguratorParameter
-import paho.mqtt.client as mqtt
-import json
-
-
 class CompressorServiceConf(object):
     def __init__(self, compressor_behaviour: str):
         self._compressor_behaviour = compressor_behaviour

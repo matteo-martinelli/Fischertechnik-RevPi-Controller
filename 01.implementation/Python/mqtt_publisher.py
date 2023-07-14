@@ -14,6 +14,7 @@ import paho.mqtt.client as mqtt
 import json
 import logging
 
+
 class MqttPublisher(object):
     """Mqtt publisher class to publish mqtt topics."""
     def __init__(self, lwm_topic = None):
@@ -51,10 +52,12 @@ class MqttPublisher(object):
         self.logger.info('Mqtt publisher client Loop stopped')
 
     # TODO: set the configuration retain flag
-    def publish_telemetry_data(self, topic: str, target_payload: str):
+    def publish_telemetry_data(self, topic: str, target_payload: str, 
+                               retain_flag: bool):
         if (MqttConfiguratorParameter.ACTIVE_MQTT == True):
             mqtt_configured_user = MqttConfiguratorParameter.MQTT_USER
             target_topic = 'user:{0}/{1}/'.format(mqtt_configured_user, topic)
             #target_payload = payload.to_json()
-            self.mqtt_client.publish(target_topic, target_payload, 0, True)
+            self.mqtt_client.publish(target_topic, target_payload, 0, 
+                                     retain_flag)
             #print(f"Info Published: Topic: {target_topic} Payload: {target_payload}")

@@ -11,6 +11,7 @@ The loop is managed via the RevPi event manager, that is set for being not
 blocking, with a personalised while loop next to the event system. 
 """
 
+
 # TODO: add sensors pubblication only if the last value changed
 # TODO: on DT, infer workign status as follows: if proc_complete=false and prod_on_carrier=true -> working else waiting else completed
 import revpimodio2
@@ -103,7 +104,7 @@ class MultiprocessManager():
         self.oven_station.read_all_sensors()            # Oven station
         self.vacuum_gripper_carrier.read_all_sensors()  # Vacuum carrier  
         self.turntable_carrier.read_all_sensors()       # Turntable carrier
-        # no senors!                                # Saw station
+        # no senors!                                    # Saw station
         self.conveyor_carrier.read_all_sensors()        # Conveyor station
     
     def cleanup(self):

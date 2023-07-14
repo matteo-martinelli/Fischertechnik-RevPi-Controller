@@ -18,6 +18,7 @@ from datetime import datetime
 import time
 import json
 
+
 class RevPiReferenceSensor(GenericRevPiSensor):
     """Reference Switch class for reference switch objects."""
     def __init__(self, rpi, name: str, pin: int, parent_topic: str, 

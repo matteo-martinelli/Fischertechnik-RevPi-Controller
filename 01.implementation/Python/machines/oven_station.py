@@ -12,6 +12,7 @@ This class is composed by the following objects:
     6. process light O_9. 
 """
 
+
 from components.revpi_light_barrier_sensor import RevPiLightBarrierSensor
 from components.revpi_double_motion_actuator import RevPiDoubleMotionActuator
 from components.revpi_reference_sensor import RevPiReferenceSensor
@@ -57,7 +58,9 @@ class OvenStation(object):
         self.mqtt_publisher = mqtt_publisher
         self.topic = self._dept + '/' + self._station
 
-        self.mqtt_conf_listener = MqttConfListener('multiproc_dept/oven-station/conf', self.configuration.__class__)
+        self.mqtt_conf_listener = \
+            MqttConfListener('multiproc_dept/oven-station/conf', 
+                             self.configuration.__class__)
         self.mqtt_conf_listener.open_connection()
         self.read_conf()
         #self.configuration = self.mqtt_conf_listener.configuration # TODO: Change using the function that checks

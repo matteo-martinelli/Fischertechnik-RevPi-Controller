@@ -1,5 +1,14 @@
+#!/usr/bin/env python
+
+"""
+mqtt_conf_pub.py: mqtt_publisher testing file
+
+Published the mutliproc_dept configuration into the MQTT broker
+"""
+
+
 from mqtt_publisher import MqttPublisher
-import json
+
 
 mqtt_publisher = MqttPublisher()
 
@@ -40,12 +49,19 @@ conveyor_conf = '{"none"}'
 
 mqtt_publisher.open_connection()
 
-mqtt_publisher.publish_telemetry_data(dept_conf_topic,dept_conf)
-mqtt_publisher.publish_telemetry_data(compressor_conf_topic,compressor_conf)
-mqtt_publisher.publish_telemetry_data(oven_station_conf_topic, oven_station_conf)
-mqtt_publisher.publish_telemetry_data(vacuum_carrier_conf_topic, vacuum_carrier_conf)
-mqtt_publisher.publish_telemetry_data(turntable_carrier_conf_topic,turntable_carrier_conf)
-mqtt_publisher.publish_telemetry_data(saw_station_conf_topic,saw_conf)
-mqtt_publisher.publish_telemetry_data(conveyor_carrier_conf_topic,conveyor_conf)
+mqtt_publisher.publish_telemetry_data(dept_conf_topic,
+                                      dept_conf, True)
+mqtt_publisher.publish_telemetry_data(compressor_conf_topic,
+                                      compressor_conf, True)
+mqtt_publisher.publish_telemetry_data(oven_station_conf_topic, 
+                                      oven_station_conf, True)
+mqtt_publisher.publish_telemetry_data(vacuum_carrier_conf_topic, 
+                                      vacuum_carrier_conf, True)
+mqtt_publisher.publish_telemetry_data(turntable_carrier_conf_topic,
+                                      turntable_carrier_conf, True)
+mqtt_publisher.publish_telemetry_data(saw_station_conf_topic,
+                                      saw_conf, True)
+mqtt_publisher.publish_telemetry_data(conveyor_carrier_conf_topic,
+                                      conveyor_conf, True)
 
 mqtt_publisher.close_connection()

@@ -7,10 +7,6 @@ Contains and represents the vacuum carrier configuration
 """
 
 
-from conf.mqtt_conf_parameters import MqttConfiguratorParameter
-import paho.mqtt.client as mqtt
-import json
-
 class VacuumCarrierConf(object):
     def __init__(self, vacuum_carrier_speed: int):
         self._vacuum_carrier_speed = vacuum_carrier_speed

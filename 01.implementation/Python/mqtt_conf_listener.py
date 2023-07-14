@@ -5,10 +5,8 @@ mqtt_listener.py: MqttListener class
 """
 
 
-from collections import namedtuple
 import traceback
 from conf.mqtt_conf_parameters import MqttConfiguratorParameter
-from conf.multiproc_dept_conf import MultiProcDeptConf
 import paho.mqtt.client as mqtt
 import json
 import logging

@@ -7,10 +7,6 @@ Contains and represents the turntable carrier configuration
 """
 
 
-from conf.mqtt_conf_parameters import MqttConfiguratorParameter
-import paho.mqtt.client as mqtt
-import json
-
 class TurntableCarrierConf(object):
     def __init__(self, turntable_carrier_speed: int):
         self._turntable_carrier_speed = turntable_carrier_speed

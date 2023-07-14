@@ -11,6 +11,7 @@ This class is composed by the following objects:
     5. vacuum actuated pusher O_14;
 """
 
+
 from components.revpi_reference_sensor import RevPiReferenceSensor
 from components.revpi_double_motion_actuator import RevPiDoubleMotionActuator
 from components.revpi_vacuum_actuator import RevPiVacuumActuator
@@ -336,7 +337,6 @@ class TurntableCarrier(object):
     def read_all_actuators(self) -> None: 
         self.read_motor_state()
         self.read_pusher_state()
-
 
     # MQTT 
     def read_conf(self) -> None: 

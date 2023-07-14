@@ -7,10 +7,6 @@ Contains and represents the saw station configuration
 """
 
 
-from conf.mqtt_conf_parameters import MqttConfiguratorParameter
-import paho.mqtt.client as mqtt
-import json
-
 class SawStationConf(object):
     def __init__(self, saw_processing_time: int):
         self._saw_processing_time = saw_processing_time
