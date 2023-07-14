@@ -49,7 +49,6 @@ class MqttPublisher(object):
         self.mqtt_client.loop_stop()
         self.logger.info('Mqtt publisher client Loop stopped')
 
-    # TODO: set the configuration retain flag
     def publish_telemetry_data(self, topic: str, target_payload: str, 
                                retain_flag: bool):
         if (MqttConfiguratorParameter.ACTIVE_MQTT == True):
