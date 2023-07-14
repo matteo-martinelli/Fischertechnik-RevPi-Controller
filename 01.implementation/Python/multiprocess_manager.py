@@ -122,7 +122,7 @@ class MultiprocessManager():
         print('Cleaning the system state')
 
         # Switch of LED and outputs before exit program
-        self.rpi.core.a1green.value = False
+        self.rpi.core.a1green.value = False                                     # type: ignore
 
         # Closing the MQTT connection
         self.mqtt_publisher.close_connection()
@@ -159,7 +159,7 @@ class MultiprocessManager():
         self.rpi.mainloop(blocking=False)
 
         # Sets the Rpi a1 light: switch on / off green part of LED A1
-        self.rpi.core.a1green.value = not self.rpi.core.a1green.value
+        self.rpi.core.a1green.value = not self.rpi.core.a1green.value           # type: ignore
 
         # Connecting to the MQTT broker 
         # With the publisher
