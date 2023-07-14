@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-cmpressor_service_conf.py: CompressorServiceConf class
+compressor_service_conf.py: CompressorServiceConf class
 
 Contains and represents the compressor service configuration
 """
@@ -10,6 +10,7 @@ Contains and represents the compressor service configuration
 from conf.mqtt_conf_parameters import MqttConfiguratorParameter
 import paho.mqtt.client as mqtt
 import json
+
 
 class CompressorServiceConf(object):
     def __init__(self, compressor_behaviour: str):

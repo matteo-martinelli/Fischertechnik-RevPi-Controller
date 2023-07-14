@@ -51,5 +51,5 @@ class MqttPublisher(object):
             mqtt_configured_user = MqttConfiguratorParameter.MQTT_USER
             target_topic = 'user:{0}/{1}/'.format(mqtt_configured_user, topic)
             #target_payload = payload.to_json()
-            self.mqtt_client.publish(target_topic, target_payload, 0, True)
+            self.mqtt_client.publish(target_topic, target_payload, 0, retain=True)
             #print(f"Info Published: Topic: {target_topic} Payload: {target_payload}")

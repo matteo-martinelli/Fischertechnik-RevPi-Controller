@@ -23,7 +23,7 @@ dept_conf_alternative = \
     }'
 
 dept_conf = \
-    '{"pieces_to_produce": 1,\
+    '{"pieces_to_produce": 4,\
         "compressor_behaviour": "always_on",\
         "oven_processing_time": 3,\
         "saw_processing_time": 2,\
