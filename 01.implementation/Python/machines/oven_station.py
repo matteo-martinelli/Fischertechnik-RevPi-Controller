@@ -25,6 +25,7 @@ from datetime import datetime
 import time
 import json
 
+import oven_station_temperature_control as ostc
 
 OVEN_PROCESSING_TIME = 1
 
@@ -44,6 +45,17 @@ class OvenStation(object):
         self._prod_on_carrier = False
         self._process_completed = False
         self._light_barrier_state = False
+        
+        # numbers from real product sheet
+        # TODO: add them to your initialisiation
+        # //https://www.gpline.com.tw/productdetail_en.php?id=427
+        self.room_temperature = 24.0
+        self.temperature_inside = self.room_temperature
+        self.set_temperature = 300.0
+        self.insulation = None
+        self.fluctuation = 3.0
+        self.max_temperature = 400.0
+        self.min_set_temperature = 100.0
 
         self.configuration = OvenStationConf(OVEN_PROCESSING_TIME)
         
@@ -236,18 +248,48 @@ class OvenStation(object):
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json())
     
-    def oven_process_start(self, proc_time: int) -> None:
+    def oven_process_start(self, proc_time: int, target_temperature = 300.0) -> None:
         self.read_conf()
+        # target temperature
+        self.set_temperature = target_temperature
+
+        # for each product, start producing ...
         self.move_carrier_inward()
 
-        self.activate_proc_light()
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
-        # Time in seconds
-        time.sleep(self.configuration.oven_processing_time) # TODO: change into time.sleep(configuration.proc_time)
-        self.deactivate_proc_light()
+        #self.activate_proc_light()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
         
+        # heating up
+        while self.temperature_inside + self.fluctuation < self.set_temperature:
+            self.activate_proc_light()
+            self.temperature_inside, _ = ostc.update_temperature(self.room_temperature, self.temperature_inside, self.set_temperature, self.fluctuation, self.min_set_temperature, self.max_temperature, 1)
+            time.sleep(1)
+
+        # during processing
+        for i in range(self.configuration.oven_processing_time):
+            self.temperature_inside, state = ostc.update_temperature(self.room_temperature, self.temperature_inside, self.set_temperature, self.fluctuation, self.min_set_temperature, self.max_temperature, 1)
+            if state == "heating" or state == "warming":
+                self.activate_proc_light()
+            if state == "cooling":
+                self.deactivate_proc_light()
+            time.sleep(1)
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        #time.sleep(self.configuration.oven_processing_time) # TODO: change into time.sleep(configuration.proc_time)
         self.move_carrier_outward()
+        # end for, done producing ...
+
+        # done processing, cooling down
+        self.set_temperature = self.room_temperature
+
+        self.deactivate_proc_light()
+        #publish data
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+
+        
+        while self.temperature_inside - self.fluctuation > self.set_temperature:
+            self.temperature_inside = ostc.update_temperature(self.room_temperature, self.temperature_inside, self.set_temperature, self.fluctuation, self.min_set_temperature, self.max_temperature, 1)
+            time.sleep(1)
+
         self.set_process_completed(True)
 
     def deactivate_station(self) -> None: 
@@ -350,7 +392,7 @@ class OvenStation(object):
     # MQTT 
     def read_conf(self) -> None: 
         oven_proc_time_conf = self.mqtt_conf_listener.configuration 
-        if (oven_proc_time_conf != self.configuration.oven_processing_time 
+        if (oven_proc_time_conf != self.configuration._oven_processing_time 
             and oven_proc_time_conf != None):
             self.configuration = oven_proc_time_conf
             print('New configuration received for oven station process time ',\
