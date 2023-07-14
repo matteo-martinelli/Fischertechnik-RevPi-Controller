@@ -15,8 +15,8 @@ import json
 from machines.configurations.saw_station_conf import SawStationConf
 from mqtt_conf_listener import MqttConfListener
 
-
-SAW_PROCESSING_TIME = 1
+from machines.configurations.default_station_configs \
+    import DefaultStationsConfigs
 
 class SawStation(object):
     """Saw class for saw objects."""
@@ -29,7 +29,8 @@ class SawStation(object):
         self._prod_under_saw = False
         self._process_completed = False
         
-        self.configuration = SawStationConf(SAW_PROCESSING_TIME)
+        self.configuration = SawStationConf(DefaultStationsConfigs.\
+                                            SAW_PROCESSING_TIME)
 
         # MQTT
         self.mqtt_publisher = mqtt_publisher
@@ -151,8 +152,11 @@ class SawStation(object):
         if (saw_proc_time_conf != self.configuration.saw_processing_time 
             and saw_proc_time_conf != None):
             self.configuration = saw_proc_time_conf
-            print('New configuration received for saw station process time ',\
+            print('New configuration received for saw station process time',\
                   self.configuration.saw_proc_time_conf)
+        else: 
+            print('No conf updated, proceeding with the last configuration'\
+                  'for', self.station)
 
     def to_dto(self):
         timestamp = time.time()

@@ -15,8 +15,9 @@ import json
 from machines.configurations.compressor_service_conf import CompressorServiceConf
 from mqtt_conf_listener import MqttConfListener
 
+from machines.configurations.default_station_configs \
+    import DefaultStationsConfigs
 
-COMPRESSOR_BEHAVIOUR = 'always_on'
 
 class CompressorService(object):
     """Compressor class for compressor objects."""
@@ -27,7 +28,8 @@ class CompressorService(object):
         self._station = station
         self._motor_state = False
 
-        self.configuration = CompressorServiceConf(COMPRESSOR_BEHAVIOUR)        
+        self.configuration = CompressorServiceConf(DefaultStationsConfigs.\
+                                                   COMPRESSOR_BEHAVIOUR)        
         
         # MQTT
         self.mqtt_pub = mqtt_pub
@@ -46,10 +48,26 @@ class CompressorService(object):
 
     # Getters
     @property
+    def dept(self) -> str: 
+        return self._dept
+    
+    @property
+    def station(self) -> str: 
+        return self._station
+
+    @property
     def motor_state(self) -> bool:
         return self._motor_state
     
     # Setters
+    @dept.setter
+    def dept(self, value: str) -> None: 
+        self._dept = value
+    
+    @station.setter
+    def station(self, value: str) -> None: 
+        self._station = value
+
     @motor_state.setter
     def motor_state(self, value: bool) -> None: 
         #value = self.motor.get_state()
@@ -86,8 +104,11 @@ class CompressorService(object):
         if (compressor_behaviour_conf != self.configuration.compressor_behaviour 
             and compressor_behaviour_conf != None):
             self.configuration = compressor_behaviour_conf
-            print('New configuration received for compressor service behaviour ',\
-                  self.configuration.compressor_behaviour)
+            print('New configuration received for compressor service'\
+                  'behaviour', self.configuration.compressor_behaviour)
+        else: 
+            print('No conf updated, proceeding with the last configuration'\
+                  'for', self.station)
     
     def to_dto(self):
         timestamp = time.time()

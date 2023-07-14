@@ -25,8 +25,9 @@ from datetime import datetime
 import time
 import json
 
+from machines.configurations.default_station_configs \
+    import DefaultStationsConfigs
 
-OVEN_PROCESSING_TIME = 1
 
 class OvenStation(object):
     """Oven class for oven objects."""
@@ -45,7 +46,8 @@ class OvenStation(object):
         self._process_completed = False
         self._light_barrier_state = False
 
-        self.configuration = OvenStationConf(OVEN_PROCESSING_TIME)
+        self.configuration = OvenStationConf(DefaultStationsConfigs.\
+                                             OVEN_PROCESSING_TIME)
         
         # MQTT
         self.mqtt_publisher = mqtt_publisher
@@ -353,8 +355,11 @@ class OvenStation(object):
         if (oven_proc_time_conf != self.configuration.oven_processing_time 
             and oven_proc_time_conf != None):
             self.configuration = oven_proc_time_conf
-            print('New configuration received for oven station process time ',\
+            print('New configuration received for oven station process time',\
                   self.configuration.oven_processing_time)
+        else: 
+            print('No conf updated, proceeding with the last configuration'\
+                  'for', self.station)
         
     def to_dto(self):   # Data Transfer Objet
         timestamp = time.time()

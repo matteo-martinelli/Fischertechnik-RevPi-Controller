@@ -11,10 +11,8 @@ The loop is managed via the RevPi event manager, that is set for being not
 blocking, with a personalised while loop next to the event system. 
 """
 
-# TODO: aggiungi pubblicazione dei sensori solo se è cambiato dall'ultimo valore.
-# TODO: move config reading inside each class when the process start is called 
-# TODO: aggiungi campo status: online/offline dentro a ogni classe, pubblica dentro al relativo topic + momento quando è cambiato 
-# TODO: aggiungi inferimento informazione da parte del dt dove: se proc complete false e prod on carrier true = in lavorazione else waiting else completed
+# TODO: add sensors pubblication only if the last value changed
+# TODO: on DT, infer workign status as follows: if proc_complete=false and prod_on_carrier=true -> working else waiting else completed
 import revpimodio2
 import time
 
@@ -29,12 +27,9 @@ from machines.saw_station import SawStation
 from machines.conveyor_carrier import ConveyorCarrier
 from conf.multiproc_dept_conf import MultiProcDeptConf
 
-PIECES_TO_PRODUCE = 3
-COMPRESSOR_BEHAVIOUR = 'always_on'
-OVEN_PROCESSING_TIME = 3
-SAW_PROCESSING_TIME = 1
-VACUUM_CARRIER_SPEED = 1
-TURNTABLE_CARRIER_SPEED = 1
+from machines.configurations.default_station_configs \
+    import DefaultStationsConfigs
+
 
 # TODO: add logging
 class MultiprocessManager():
@@ -50,17 +45,18 @@ class MultiprocessManager():
         # Process config
         self.process_conf = \
             MultiProcDeptConf(
-            pieces_to_produce=PIECES_TO_PRODUCE, 
-            compressor_behaviour=COMPRESSOR_BEHAVIOUR,
-            oven_processing_time=OVEN_PROCESSING_TIME,      # Time in seconds
-            saw_processing_time=SAW_PROCESSING_TIME,        # Time in seconds
-            vacuum_carrier_speed=VACUUM_CARRIER_SPEED,      # TBD
-            turntable_carrier_speed=TURNTABLE_CARRIER_SPEED # TBD
+            pieces_to_produce=DefaultStationsConfigs.PIECES_TO_PRODUCE, 
+            compressor_behaviour=DefaultStationsConfigs.COMPRESSOR_BEHAVIOUR,
+            oven_processing_time=DefaultStationsConfigs.OVEN_PROCESSING_TIME,      # Time in seconds
+            saw_processing_time=DefaultStationsConfigs.SAW_PROCESSING_TIME,        # Time in seconds
+            vacuum_carrier_speed=DefaultStationsConfigs.VACUUM_CARRIER_SPEED,      # TBD
+            turntable_carrier_speed=DefaultStationsConfigs.TURNTABLE_CARRIER_SPEED # TBD
             )
 
         # Instantiating the MQTT publisher
         self.mqtt_publisher = MqttPublisher('user:dept_manager/multiproc_dept')
-        self.mqtt_conf_listener = MqttConfListener('multiproc_dept/dept_conf', self.process_conf.__class__)
+        self.mqtt_conf_listener = MqttConfListener('multiproc_dept/conf',\
+                                                   self.process_conf.__class__)
         self.dept_name = dept_name  # Dept mqtt root topic
         
         # My aggregated objects
@@ -83,17 +79,6 @@ class MultiprocessManager():
         self.compressor_service = \
             CompressorService(self.rpi, self.dept_name, 'compressor-service', 
                               10, self.mqtt_publisher)
-
-        # Process config
-        self.process_conf = \
-            MultiProcDeptConf(
-            pieces_to_produce=PIECES_TO_PRODUCE, 
-            compressor_behaviour=COMPRESSOR_BEHAVIOUR,
-            oven_processing_time=OVEN_PROCESSING_TIME,      # Time in seconds
-            saw_processing_time=SAW_PROCESSING_TIME,        # Time in seconds
-            vacuum_carrier_speed=VACUUM_CARRIER_SPEED,      # TBD
-            turntable_carrier_speed=TURNTABLE_CARRIER_SPEED # TBD
-            )
 
         # Process fileds
         self.pieces_counter = 0
@@ -145,7 +130,8 @@ class MultiprocessManager():
     
     def reset_station_states_and_restart(self):
         # Turning off all the system actuators and resetting stations states
-        self.oven_station.deactivate_station()          # TODO: change all those methods into restarts; into the deactivate methods add the mqtt conf listener close connection
+        # TODO: change all those methods into restarts; into the deactivate methods add the mqtt conf listener close connection
+        self.oven_station.deactivate_station()
         self.vacuum_gripper_carrier.deactivate_carrier()
         self.turntable_carrier.deactivate_carrier()
         self.saw_station.deactivate_station()
@@ -167,11 +153,14 @@ class MultiprocessManager():
         # With the configuration listener
         self.mqtt_conf_listener.open_connection()
         time.sleep(0.5)
+        print(self.mqtt_conf_listener.configuration)
         if(self.mqtt_conf_listener.configuration != None):
             self.set_received_configuration(
                 self.mqtt_conf_listener.configuration)
+            print('New conf saved found for', self.dept_name, ', uploaded')
         else: 
-            print('No conf saved found, proceeding the standard conf')
+            print('No conf saved found, proceeding the standard conf for', 
+                  self.dept_name)
         
         # Activating the process services - i.e. the compressor_service
         self.compressor_service.activate_service()
@@ -186,7 +175,7 @@ class MultiprocessManager():
         # The cycle is set in ... .exitsignal.wait(0.05) every 0.05s
         while (self.rpi.exitsignal.wait(0.05) == False):
             # TODO: simplify the process loop
-            # TODO: move "process complete check" and various positioning checks inside classes -> To do so you have to perform one check of all sensors at the end of each process
+            # TODO: move "process complete check" and various positioning checks inside classes -> To do so you have to perform one check of all sensors at the end of each process -> though to do as is necessary to associte "near machines classes"
             # First things first: reading all the sensors states
             self.read_all_sensors()
             # Follows the process description #################################

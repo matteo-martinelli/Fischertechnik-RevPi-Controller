@@ -21,8 +21,9 @@ import json
 from machines.configurations.vacuum_carrier_conf import VacuumCarrierConf
 from mqtt_conf_listener import MqttConfListener
 
+from machines.configurations.default_station_configs \
+    import DefaultStationsConfigs
 
-VACUUM_CARRIER_SPEED = 1
 
 class VacuumCarrier(object):
     """Vacuum Carrier class for oven objects."""
@@ -40,7 +41,8 @@ class VacuumCarrier(object):
         self._prod_on_carrier = False
         self._process_completed = False
 
-        self.configuration = VacuumCarrierConf(VACUUM_CARRIER_SPEED)
+        self.configuration = VacuumCarrierConf(DefaultStationsConfigs.\
+                                               VACUUM_CARRIER_SPEED)
 
         # MQTT
         self.mqtt_publisher = mqtt_publisher
@@ -336,8 +338,11 @@ class VacuumCarrier(object):
         if (vaccum_carrier_speed != self.configuration.vacuum_carrier_speed 
             and vaccum_carrier_speed != None):
             self.configuration = vaccum_carrier_speed
-            print('New configuration received for vacuum carrier speed ',\
+            print('New configuration received for vacuum carrier speed',\
                   self.configuration.vacuum_carrier_speed)
+        else: 
+            print('No conf updated, proceeding with the last configuration'\
+                  'for', self.station)
 
     def to_dto(self):
         timestamp = time.time()

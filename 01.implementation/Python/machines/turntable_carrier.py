@@ -21,8 +21,9 @@ import json
 from machines.configurations.turntable_carrier_conf import TurntableCarrierConf
 from mqtt_conf_listener import MqttConfListener
 
+from machines.configurations.default_station_configs \
+    import DefaultStationsConfigs
 
-TURNTABLE_CARRIER_SPEED = 1
 
 class TurntableCarrier(object):
     """Turntable Carrier class for turntable objects."""
@@ -41,7 +42,8 @@ class TurntableCarrier(object):
         self._prod_on_carrier = False
         self._process_completed = False
         
-        self.configuration = TurntableCarrierConf(TURNTABLE_CARRIER_SPEED)
+        self.configuration = TurntableCarrierConf(DefaultStationsConfigs.\
+                                                  TURNTABLE_CARRIER_SPEED)
 
         # MQTT
         self.mqtt_publisher = mqtt_publisher
@@ -336,8 +338,11 @@ class TurntableCarrier(object):
         if (turntable_carrier_speed_conf != self.configuration.turntable_carrier_speed 
             and turntable_carrier_speed_conf != None):
             self.configuration = turntable_carrier_speed_conf
-            print('New configuration received for turntable carrier speed ',\
+            print('New configuration received for turntable carrier speed',\
                   self.configuration.turntable_carrier_speed_conf)
+        else: 
+            print('No conf updated, proceeding with the last configuration'\
+                  'fors', self.station)
 
     def to_dto(self):
         timestamp = time.time()

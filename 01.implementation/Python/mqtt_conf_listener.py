@@ -27,7 +27,7 @@ class MqttConfListener(object):
     def on_message(self, client, userdata, msg):
         decoded_message = str(msg.payload.decode("utf-8"))
         json_message = json.loads(decoded_message)
-        print('Received a conf message')
+        print('Received a conf message for', self.conf_class)
         self.manually_decode_conf(json_message)
         # TODO: check if the message has the needed format
 
@@ -69,7 +69,7 @@ class MqttConfListener(object):
                 setattr(multiproc_conf, key, conf_dict[key])
             
             self.configuration = self.conf_class(multiproc_conf) 
-            print('Received MQTT configuration saved')
+            print('Received MQTT configuration saved for', self.conf_class)
         except Exception as exc: 
             print('an error occured! Error: ', exc)
             # printing stack trace
