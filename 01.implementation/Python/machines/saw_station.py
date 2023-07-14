@@ -7,7 +7,6 @@ This class is composed by the following objects:
     1. single activation motor O_4; 
 """
 
-
 from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
 from datetime import datetime
 import time

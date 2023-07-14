@@ -12,7 +12,6 @@ This class is composed by the following objects:
     6. process light O_9. 
 """
 
-
 from components.revpi_light_barrier_sensor import RevPiLightBarrierSensor
 from components.revpi_double_motion_actuator import RevPiDoubleMotionActuator
 from components.revpi_reference_sensor import RevPiReferenceSensor

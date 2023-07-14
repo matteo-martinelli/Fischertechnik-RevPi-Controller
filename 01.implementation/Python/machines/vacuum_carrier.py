@@ -11,7 +11,6 @@ This class is composed by the following objects:
     5. vacuum gripper O_11; 
 """
 
-
 from components.revpi_reference_sensor import RevPiReferenceSensor
 from components.revpi_double_motion_actuator import RevPiDoubleMotionActuator
 from components.revpi_vacuum_actuator import RevPiVacuumActuator

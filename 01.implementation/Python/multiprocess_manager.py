@@ -11,7 +11,6 @@ The loop is managed via the RevPi event manager, that is set for being not
 blocking, with a personalised while loop next to the event system. 
 """
 
-
 # TODO: add sensors pubblication only if the last value changed
 # TODO: on DT, infer workign status as follows: if proc_complete=false and prod_on_carrier=true -> working else waiting else completed
 import revpimodio2

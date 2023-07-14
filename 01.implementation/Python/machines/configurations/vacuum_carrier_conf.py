@@ -6,7 +6,6 @@ vacuum_carrier_conf.py: VacuumCarrierConf class
 Contains and represents the vacuum carrier configuration
 """
 
-
 class VacuumCarrierConf(object):
     def __init__(self, vacuum_carrier_speed: int):
         self._vacuum_carrier_speed = vacuum_carrier_speed

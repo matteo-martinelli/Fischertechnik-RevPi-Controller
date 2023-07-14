@@ -6,7 +6,6 @@ default_station_configs.py: DefaultStationsConfigs class
 Contains constants for initialising machine stations configurations
 """
 
-
 class DefaultStationsConfigs(object):
     PIECES_TO_PRODUCE = 4
     COMPRESSOR_BEHAVIOUR = 'always_on'

@@ -7,7 +7,6 @@ This is the root class for every sensor used in the simulation.
 It collects all the common fields and methods of any simulation sensor.  
 """
 
-
 class GenericRevPiSensor(object):
     """Reference Switch class for reference switch objects."""
     def __init__(self, rpi, pin: int):

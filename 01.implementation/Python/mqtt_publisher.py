@@ -7,8 +7,6 @@ For following pins:
 O_10: compressor.
 """
 
-
-import time
 from conf.mqtt_conf_parameters import MqttConfiguratorParameter
 import paho.mqtt.client as mqtt
 import json

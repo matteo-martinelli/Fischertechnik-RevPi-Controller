@@ -6,7 +6,6 @@ mqtt_conf_pub.py: mqtt_publisher testing file
 Published the mutliproc_dept configuration into the MQTT broker
 """
 
-
 from mqtt_publisher import MqttPublisher
 
 
