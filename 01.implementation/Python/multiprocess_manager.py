@@ -27,8 +27,8 @@ from machines.vacuum_carrier import VacuumCarrier
 from machines.turntable_carrier import TurntableCarrier
 from machines.saw_station import SawStation
 from machines.conveyor_carrier import ConveyorCarrier
-from conf.multiproc_dept_conf import MultiProcDeptConf
 
+from machines.configurations.multiproc_dept_conf import MultiProcDeptConf
 from machines.configurations.default_station_configs \
     import DefaultStationsConfigs
 
@@ -92,7 +92,8 @@ class MultiprocessManager():
         self.to_reset = False
 
     def set_received_configuration(self, conf):
-        self.logger.info('a configuration have been saved')
+        self.logger.info('A configuration have been saved for {} have been '
+                         'saved'.format(self.dept_name))
         self.multiproc_dept_conf.pieces_to_produce = conf.pieces_to_produce
         #self.multiproc_dept_conf.compressor_behaviour = conf.compressor_behaviour
         #self.multiproc_dept_conf.oven_processing_time = conf.oven_processing_time
@@ -110,38 +111,36 @@ class MultiprocessManager():
     
     def cleanup(self):
         """Cleanup function to leave the RevPi in a defined state."""
-        self.logger.info('Cleaning the system state')
+        self.logger.info('\nCleaning the system state')
 
         # Switch of LED and outputs before exit program
         self.rpi.core.a1green.value = False                                     # type: ignore
 
-        # Closing the MQTT connection
-        self.mqtt_publisher.close_connection()
-        self.mqtt_conf_listener.close_connection()
-
-        # Turning off all the system actuators and resetting stations states
+        # - Turning off all the system actuators 
+        # - Resetting stations states and 
+        # - Closing MQTT connections
         self.compressor_service.deactivate_service()
         self.oven_station.deactivate_station()
         self.vacuum_gripper_carrier.deactivate_carrier()
         self.turntable_carrier.deactivate_carrier()
         self.saw_station.deactivate_station()
-        self.conveyor_carrier.deactivate_carrier()
+        self.conveyor_carrier.deativate_carrier()
 
-        # Cleaning the object support states
-        self.reset_station_states_and_stop()
+        # Closing the publisher MQTT connection
+        self.mqtt_publisher.close_connection()
     
     def reset_station_states_and_stop(self):
         self.reset_station_states_and_restart
-        self.compressor_service.deactivate_service()
+        self.compressor_service.turn_off_all_actuators()
     
-    def reset_station_states_and_restart(self):
-        # Turning off all the system actuators and resetting stations states
-        # TODO: change all those methods into restarts; into the deactivate methods add the mqtt conf listener close connection
-        self.oven_station.deactivate_station()
-        self.vacuum_gripper_carrier.deactivate_carrier()
-        self.turntable_carrier.deactivate_carrier()
-        self.saw_station.deactivate_station()
-        self.conveyor_carrier.deactivate_carrier()
+    def reset_station_states_and_restart(self): 
+        # - turning off all station actuators method;
+        # - resetting station states method; 
+        self.oven_station.reset_station()
+        self.vacuum_gripper_carrier.reset_carrier()
+        self.turntable_carrier.reset_carrier()
+        self.saw_station.reset_station()
+        self.conveyor_carrier.reset_carrier()
 
     def start(self):        
         """Start event system and own cyclic loop."""
@@ -182,7 +181,6 @@ class MultiprocessManager():
         # The cycle is set in ... .exitsignal.wait(0.05) every 0.05s
         while (self.rpi.exitsignal.wait(0.05) == False):
             # TODO: simplify the process loop
-            # TODO: move "process complete check" and various positioning checks inside classes -> To do so you have to perform one check of all sensors at the end of each process -> though to do as is necessary to associte "near machines classes"
             # First things first: reading all the sensors states
             self.read_all_sensors()
             # Follows the process description #################################

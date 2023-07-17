@@ -125,15 +125,29 @@ class ConveyorCarrier(object):
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(),
                                                    True)
 
-    def deactivate_carrier(self) -> None: 
+    def turn_off_all_actuators(self) -> None: 
         self.motor.turn_off()
         self.read_motor_state()
-        
-        self._prod_on_conveyor = False
-        self._process_completed = False
-        # MQTT Publish
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(),
                                                    True)
+
+    def reset_process_states(self) -> None: 
+        self._prod_on_conveyor = False
+        self._process_completed = False
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(),
+                                                   True)
+
+    def closing_connections(self) -> None: 
+        pass
+
+    def reset_carrier(self) -> None: 
+        self.turn_off_all_actuators()
+        self.reset_process_states()
+        
+    def deativate_carrier(self) -> None: 
+        self.turn_off_all_actuators()
+        self.reset_process_states()
+        #self.mqtt_conf_listener.close_connection                               -> actually not present
 
     # Reading underlying sensors/actuators
     def read_motor_state(self) -> None: # QUESTA E' UNA LETTURA

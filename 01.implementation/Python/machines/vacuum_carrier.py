@@ -269,7 +269,7 @@ class VacuumCarrier(object):
         self.release_product()
         self.process_completed = True
 
-    def deactivate_carrier(self) -> None: 
+    def turn_off_all_actuators(self) -> None: 
         self.motor.turn_off()
         self.read_motor_state()
 
@@ -279,10 +279,26 @@ class VacuumCarrier(object):
         self.gripper_lowering.turn_off()
         self.read_gripper_lowering_state()
 
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
+                                                   True)
+
+    def reset_process_states(self) -> None: 
         self._prod_on_carrier = False
         self._process_completed = False
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
                                                    True)
+
+    def close_connections(self) -> None: 
+        self.mqtt_conf_listener.close_connection()
+
+    def reset_carrier(self) -> None: 
+        self.turn_off_all_actuators()
+        self.reset_process_states()        
+        
+    def deactivate_carrier(self) -> None: 
+        self.turn_off_all_actuators()
+        self.reset_process_states()           
+        self.close_connections()
     
     # Reading underlying sensors/actuators
     def read_carrier_position(self) -> None:

@@ -87,20 +87,27 @@ class CompressorService(object):
         self._motor_state = True
         self.logger.info('compressor activated')
         self.mqtt_pub.publish_telemetry_data(self.topic, self.to_json(), True)
-        
-    def deactivate_service(self):
+    
+    def turn_off_all_actuators(self) -> None: 
         self.motor.turn_off()
         self._motor_state = False
         self.logger.info('compressor deactivated')
         self.mqtt_pub.publish_telemetry_data(self.topic, self.to_json(), True)
+
+    def close_connections(self) -> None: 
+        self.mqtt_conf_listener.close_connection()
+
+    def deactivate_service(self):
+        self.turn_off_all_actuators()
+        self.close_connections()
 
     # Reading underlying sensors/actuators
     def read_motor_state(self) -> None: 
         value = self.motor.state
         if(value != self._motor_state):
             self._motor_state = value
-            self.mqtt_pub.publish_telemetry_data(self.topic, 
-                                                       self.to_json(), True)
+            self.mqtt_pub.publish_telemetry_data(self.topic, self.to_json(), 
+                                                 True)
 
     def read_all_actuators(self) -> None: 
         self.read_motor_state
@@ -122,15 +129,15 @@ class CompressorService(object):
             else: 
                 self.logger.info('No conf updated, proceeding with the last '
                                  'compressor_behaviour of {} for {}'\
-                                 .format(self.configuration.\
-                                         compressor_behaviour, 
+                                 .format(self.configuration\
+                                         .compressor_behaviour, 
                                          self.station))
         else: 
             self.logger.info('No conf updated, proceeding with the last '
                             'oven_proc_time of {} for {}'\
                             .format(self.configuration.oven_processing_time, 
                                     self.station))
-    
+
     def to_dto(self):
         timestamp = time.time()
         current_moment = \

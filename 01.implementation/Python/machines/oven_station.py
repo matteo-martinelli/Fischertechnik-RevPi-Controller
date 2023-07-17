@@ -62,7 +62,6 @@ class OvenStation(object):
                              self.configuration.__class__, self.configuration.to_object)
         self.mqtt_conf_listener.open_connection()
         self.read_conf()
-        #self.configuration = self.mqtt_conf_listener.configuration # TODO: Change using the function that checks
 
         # Class actuators
         # pin 5, 6
@@ -260,15 +259,15 @@ class OvenStation(object):
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(),
                                                    True)
         # Time in seconds
-        time.sleep(self.configuration.oven_processing_time) # TODO: change into time.sleep(configuration.proc_time)
+        time.sleep(self.configuration.oven_processing_time)
         self.deactivate_proc_light()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(),
                                                    True)
         
         self.move_carrier_outward()
         self.set_process_completed(True)
-
-    def deactivate_station(self) -> None: 
+    
+    def turn_off_all_actuators(self) -> None: 
         self.oven_carrier.turn_off()
         self.read_carrier_position()
 
@@ -278,10 +277,26 @@ class OvenStation(object):
         self.oven_door_opening.turn_off()
         self.read_door_pos()
 
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(),
+                                                   True)
+
+    def reset_process_states(self) -> None: 
         self.set_process_completed(False)
         self.set_prod_on_carrier(False)
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(),
                                                    True)
+
+    def close_connections(self) -> None: 
+        self.mqtt_conf_listener.close_connection()
+
+    def reset_station(self) -> None: 
+        self.turn_off_all_actuators()
+        self.reset_process_states()
+        
+    def deactivate_station(self) -> None: 
+        self.turn_off_all_actuators()
+        self.reset_process_states()
+        self.close_connections()
 
     def set_prod_on_carrier(self, value: bool) -> None:
         if(value != self._prod_on_carrier):

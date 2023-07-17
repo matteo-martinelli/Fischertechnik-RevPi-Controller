@@ -35,12 +35,10 @@ class MqttConfListener(object):
                          .format(self.conf_class))
         try: 
             decoded_message = str(msg.payload.decode("utf-8"))
-            json_message = json.loads(decoded_message,  # TODO: improve variables naming; shortner the code
+            self.configuration = json.loads(decoded_message,
                                     object_hook=self.deserialize_function)
-            self.logger.info('DECODED json message {}; {}'.format(json_message, vars(json_message)))
-            self.configuration = json_message
-            #self.manually_decode_conf(json_message)
-            # TODO: check if the message has the needed format
+            self.logger.info('Decoded json message in coinfiguration '
+                             'object {}'.format(self.configuration))
         except Exception as exc: 
             self.logger.info('an error occured! Error: {}'.format(exc))
             # printing stack trace
