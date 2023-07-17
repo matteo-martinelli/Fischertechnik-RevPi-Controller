@@ -17,3 +17,8 @@ class SawStationConf(object):
     @saw_processing_time.setter
     def saw_processing_time(self, value: int): 
         self._saw_processing_time = value
+
+    @staticmethod
+    def to_object(d):
+        inst = SawStationConf(d['saw_processing_time'])
+        return inst

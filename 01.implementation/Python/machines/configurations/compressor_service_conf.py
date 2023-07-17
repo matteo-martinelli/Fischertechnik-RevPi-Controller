@@ -11,9 +11,14 @@ class CompressorServiceConf(object):
         self._compressor_behaviour = compressor_behaviour
         
     @property
-    def compressor_behaviour(self): 
+    def compressor_behaviour(self) -> str: 
         return self._compressor_behaviour
     
     @compressor_behaviour.setter
-    def oven_processing_time(self, value: str): 
+    def oven_processing_time(self, value:str) -> None: 
         self._compressor_behaviour = value
+
+    @staticmethod
+    def to_object(d):
+        inst = CompressorServiceConf(d['motor_behaviour'])
+        return inst

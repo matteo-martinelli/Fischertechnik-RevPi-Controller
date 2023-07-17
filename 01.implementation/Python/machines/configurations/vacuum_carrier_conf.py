@@ -17,3 +17,8 @@ class VacuumCarrierConf(object):
     @vacuum_carrier_speed.setter
     def vacuum_carrier_speed(self, value: int): 
         self._vacuum_carrier_speed = value
+
+    @staticmethod
+    def to_object(d):
+        inst = VacuumCarrierConf(d['vacuum_carrier_speed_pwm'])
+        return inst

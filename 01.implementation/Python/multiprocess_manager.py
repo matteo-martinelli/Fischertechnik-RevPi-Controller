@@ -11,8 +11,9 @@ The loop is managed via the RevPi event manager, that is set for being not
 blocking, with a personalised while loop next to the event system. 
 """
 
+# TODO: restructure the codebase file tree
 # TODO: add sensors pubblication only if the last value changed
-# TODO: on DT, infer workign status as follows: if proc_complete=false and prod_on_carrier=true -> working else waiting else completed
+# TODO: on DT, infer working status as follows: if proc_complete=false and prod_on_carrier=true -> working else waiting else completed
 import revpimodio2
 import time
 import logging
@@ -47,20 +48,21 @@ class MultiprocessManager():
         self.logger = logging.getLogger('multiproc_dept_logger')
 
         # Process config
-        self.process_conf = \
+        self.multiproc_dept_conf = \
             MultiProcDeptConf(
             pieces_to_produce=DefaultStationsConfigs.PIECES_TO_PRODUCE, 
-            compressor_behaviour=DefaultStationsConfigs.COMPRESSOR_BEHAVIOUR,
-            oven_processing_time=DefaultStationsConfigs.OVEN_PROCESSING_TIME,      # Time in seconds
-            saw_processing_time=DefaultStationsConfigs.SAW_PROCESSING_TIME,        # Time in seconds
-            vacuum_carrier_speed=DefaultStationsConfigs.VACUUM_CARRIER_SPEED,      # TBD
-            turntable_carrier_speed=DefaultStationsConfigs.TURNTABLE_CARRIER_SPEED # TBD
+            #compressor_behaviour=DefaultStationsConfigs.COMPRESSOR_BEHAVIOUR,
+            #oven_processing_time=DefaultStationsConfigs.OVEN_PROCESSING_TIME,      # Time in seconds
+            #saw_processing_time=DefaultStationsConfigs.SAW_PROCESSING_TIME,        # Time in seconds
+            #vacuum_carrier_speed=DefaultStationsConfigs.VACUUM_CARRIER_SPEED,      # TBD
+            #turntable_carrier_speed=DefaultStationsConfigs.TURNTABLE_CARRIER_SPEED # TBD
             )
 
         # Instantiating the MQTT publisher
         self.mqtt_publisher = MqttPublisher('user:dept_manager/multiproc_dept')
         self.mqtt_conf_listener = MqttConfListener('multiproc_dept/conf',\
-                                                   self.process_conf.__class__)
+                                                   MultiProcDeptConf, 
+                                                   self.multiproc_dept_conf.to_object)
         self.dept_name = dept_name  # Dept mqtt root topic
         
         # My aggregated objects
@@ -91,13 +93,13 @@ class MultiprocessManager():
 
     def set_received_configuration(self, conf):
         self.logger.info('a configuration have been saved')
-        self.process_conf.pieces_to_produce = conf.pieces_to_produce
-        self.process_conf.compressor_behaviour = conf.compressor_behaviour
-        self.process_conf.oven_processing_time = conf.oven_processing_time
-        self.process_conf.saw_processing_time = conf.saw_processing_time
-        self.process_conf.vacuum_carrier_speed = conf.vacuum_carrier_speed
-        self.process_conf.turntable_carrier_speed = \
-            conf.turntable_carrier_speed
+        self.multiproc_dept_conf.pieces_to_produce = conf.pieces_to_produce
+        #self.multiproc_dept_conf.compressor_behaviour = conf.compressor_behaviour
+        #self.multiproc_dept_conf.oven_processing_time = conf.oven_processing_time
+        #self.multiproc_dept_conf.saw_processing_time = conf.saw_processing_time
+        #self.multiproc_dept_conf.vacuum_carrier_speed = conf.vacuum_carrier_speed
+        #self.multiproc_dept_conf.turntable_carrier_speed = \
+        #    conf.turntable_carrier_speed
     
     def read_all_sensors(self):
         self.oven_station.read_all_sensors()            # Oven station
@@ -197,8 +199,7 @@ class MultiprocessManager():
             if (self.oven_station.process_completed == False and
                 self.oven_station.prod_on_carrier == True and 
                 self.vacuum_gripper_carrier.carrier_position == 'oven'):
-                    self.oven_station.oven_process_start(self.process_conf.\
-                                                         oven_processing_time)
+                    self.oven_station.oven_process_start()
 
             # Check that the turntable is rotated towards the vacuum_carrier, 
             # then transfer the product with the vacuum_carrier
@@ -228,8 +229,7 @@ class MultiprocessManager():
                 # Activate the saw for the designed processing time
                 if (self.turntable_carrier.turntable_pos == 'saw' and 
                     self.saw_station.process_completed == False):
-                    self.saw_station.processing(self.process_conf.\
-                                                saw_processing_time)
+                    self.saw_station.processing()
             
                 # Activate the turntable until it reaches the conveyor                
                 if (self.saw_station.process_completed == True and
@@ -262,7 +262,7 @@ class MultiprocessManager():
                 # Print the process completion message
                 self.logger.info('piece completed')
                 pieces_left = \
-                    self.process_conf.pieces_to_produce - self.pieces_counter
+                    self.multiproc_dept_conf.pieces_to_produce - self.pieces_counter
                 self.logger.info('{} pieces left to be produced'\
                              .format(pieces_left))
 
@@ -272,7 +272,7 @@ class MultiprocessManager():
             if(self.conveyor_carrier.light_barrier_state == True 
                and self.process_completed == True
                and self.to_reset == True):
-                if(self.pieces_counter == self.process_conf.pieces_to_produce):
+                if(self.pieces_counter == self.multiproc_dept_conf.pieces_to_produce):
                     # Print the process completion message
                     self.logger.info('production completed,'
                                      'terminating the program cycle')

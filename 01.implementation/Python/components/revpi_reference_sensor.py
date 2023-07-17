@@ -58,7 +58,7 @@ class RevPiReferenceSensor(GenericRevPiSensor):
         if(self.state != self.previous_state):
             self.previous_state = self.state
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                    self.to_json())
+                                                    self.to_json(), True)
         return self.state
 
     # MQTT 

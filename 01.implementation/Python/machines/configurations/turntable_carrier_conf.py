@@ -17,3 +17,8 @@ class TurntableCarrierConf(object):
     @turntable_carrier_speed.setter
     def turntable_carrier_speed(self, value: int): 
         self._turntable_carrier_speed = value
+
+    @staticmethod
+    def to_object(d):
+        inst = TurntableCarrierConf(d['turntable_carrier_speed_pwm'])
+        return inst

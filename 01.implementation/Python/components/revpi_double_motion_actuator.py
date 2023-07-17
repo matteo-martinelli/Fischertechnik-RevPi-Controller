@@ -60,7 +60,7 @@ class RevPiDoubleMotionActuator(GenericRevPiActuator):
         if(self.state != self._previous_state):
             self.previous_state = self.state
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
         return self._state
 
     def turn_on(self, activation_pin: int) -> None: # TODO: write it better
@@ -82,7 +82,7 @@ class RevPiDoubleMotionActuator(GenericRevPiActuator):
             for i in range(len(self._pin_tuple)):
                 self.rpi.io['O_' + str(self._pin_tuple[i])].value = False
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
 
     # MQTT 
     def to_dto(self):

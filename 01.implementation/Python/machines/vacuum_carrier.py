@@ -54,7 +54,7 @@ class VacuumCarrier(object):
 
         self.mqtt_conf_listener = \
             MqttConfListener('multiproc_dept/vacuum-carrier/conf',\
-                              self.configuration.__class__)
+                              self.configuration.__class__, self.configuration.to_object)
         self.mqtt_conf_listener.open_connection()
         self.read_conf()
         # Class actuators
@@ -162,14 +162,14 @@ class VacuumCarrier(object):
         if (value != self._prod_on_carrier):
             self._prod_on_carrier = value
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
 
     @process_completed.setter
     def process_completed(self, value: bool) -> None: 
         if (value != self._process_completed):
             self._process_completed = value
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
 
     # Class Methods
     def activate_gripper(self) -> None: 
@@ -178,7 +178,7 @@ class VacuumCarrier(object):
             self._gripper_activation_state = True
             self.logger.info('vacuum carrier gripper activated')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
 
     def deactivate_gripper(self) -> None: 
         if(self._gripper_activation_state == True):
@@ -188,7 +188,7 @@ class VacuumCarrier(object):
             self.read_gripper_activation_state()
             self.logger.info('vacuum carrier gripper deactivated')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
 
     def lower_gripper(self) -> None:  
         if(self._gripper_lowering_state == False):
@@ -197,7 +197,7 @@ class VacuumCarrier(object):
             self.read_gripper_lowering_state()
             self.logger.info('vacuum carrier gripper lowered')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
     
     def higher_gripper(self) -> None: 
         if(self._gripper_lowering_state == True):
@@ -206,7 +206,7 @@ class VacuumCarrier(object):
             self.read_gripper_lowering_state()
             self.logger.info('vacuum carrier gripper highered')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
 
     def grip_product(self):
         self.lower_gripper()
@@ -221,13 +221,14 @@ class VacuumCarrier(object):
         self.prod_on_carrier = False
 
     def move_carrier_towards_oven(self) -> None:
+        self.read_conf()
         if(self.at_oven.state == False):
             self.motor.turn_on(self.motor._pin_tuple[0])
             self.logger.info('vacuum carrier activated')
             self._motor_state = (True, False)
             self.read_carrier_position()
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
 
         # Wait until the at_oven sensor turns into True
         while (self.at_oven.read_state() == False):
@@ -238,16 +239,17 @@ class VacuumCarrier(object):
         self.read_motor_state()
         self.logger.info('vacuum carrier deactivated')
         self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                   self.to_json())
+                                                   self.to_json(), True)
 
     def move_carrier_towards_turntable(self) -> None:
+        self.read_conf()
         if(self.at_turntable.state == False):
             self.motor.turn_on(self.motor._pin_tuple[1])
             self.read_motor_state()
             self.read_carrier_position()
             self.logger.info('vacuum carrier activated')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
 
         # Wait until the at_turntable sensor turns into True
         while (self.at_turntable.read_state() == False):
@@ -257,9 +259,11 @@ class VacuumCarrier(object):
         self.read_carrier_position()
         self.read_motor_state()
         self.logger.info('vacuum carrier deactivated')
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
+                                                   True)
 
     def transfer_product_from_oven_to_turntable(self):
+        self.read_conf()
         self.grip_product()
         self.move_carrier_towards_turntable()
         self.release_product()
@@ -277,7 +281,8 @@ class VacuumCarrier(object):
 
         self._prod_on_carrier = False
         self._process_completed = False
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
+                                                   True)
     
     # Reading underlying sensors/actuators
     def read_carrier_position(self) -> None:
@@ -288,7 +293,8 @@ class VacuumCarrier(object):
             if(self._carrier_position != 'turntable'):
                 self._carrier_position = 'turntable'
                 self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                           self.to_json())
+                                                           self.to_json(), 
+                                                           True)
         elif (self.at_turntable.read_state() == False and
             self.at_oven.read_state() == True and 
             self.motor.state[0] == False and
@@ -296,39 +302,45 @@ class VacuumCarrier(object):
             if(self._carrier_position != 'oven'):
                 self._carrier_position = 'oven'
                 self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                               self.to_json())
+                                                               self.to_json(), 
+                                                               True)
         elif(self.motor.state[0] == True or 
              self.motor.state[1] == True):
             if(self._carrier_position != 'moving'):
                 self._carrier_position = 'moving'
                 self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                            self.to_json())
+                                                            self.to_json(), 
+                                                            True)
         else:
             if(self._carrier_position != 'position error'):
                 self._carrier_position = 'position error'
                 self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                               self.to_json())
+                                                               self.to_json(), 
+                                                               True)
 
     def read_gripper_lowering_state(self) -> None:
         value = self.gripper_lowering.read_state()
         if (value != self._gripper_lowering_state):
             self._gripper_lowering_state = value
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                           self.to_json())
+                                                           self.to_json(), 
+                                                           True)
 
     def read_gripper_activation_state(self) -> None: 
         value = self.gripper_activation.read_state()
         if (value != self._gripper_activation_state):
             self._gripper_activation_state = value
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                           self.to_json())
+                                                           self.to_json(), 
+                                                           True)
 
     def read_motor_state(self) -> None: 
         value = self.motor.read_state()
         if (value != self._motor_state):
             self._motor_state = value
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                           self.to_json())
+                                                           self.to_json(), 
+                                                           True)
 
     def read_all_sensors(self) -> None:
         self.read_carrier_position()
@@ -340,15 +352,29 @@ class VacuumCarrier(object):
 
     # MQTT 
     def read_conf(self) -> None: 
-        vaccum_carrier_speed = self.mqtt_conf_listener.configuration 
-        if (vaccum_carrier_speed != self.configuration.vacuum_carrier_speed 
-            and vaccum_carrier_speed != None):
-            self.configuration = vaccum_carrier_speed
-            self.logger.info('New configuration received for vacuum carrier speed '
-                        '{}'.format(self.configuration.vacuum_carrier_speed))
+        new_vaccum_carrier_speed_conf = self.mqtt_conf_listener.configuration 
+        if (new_vaccum_carrier_speed_conf != None):
+            if (new_vaccum_carrier_speed_conf.vacuum_carrier_speed != 
+                self.configuration.vacuum_carrier_speed):
+                self.logger.info('New configuration received for vacuum '
+                                 'carrier speed - old value {}; new value {};'
+                                 ' overriding'\
+                                 .format(self.configuration\
+                                         .vacuum_carrier_speed, 
+                                         new_vaccum_carrier_speed_conf\
+                                         .vacuum_carrier_speed))
+                self.configuration.vacuum_carrier_speed = \
+                new_vaccum_carrier_speed_conf.vacuum_carrier_speed
+            else: 
+                self.logger.info('No conf updated, proceeding with the last '
+                            'vacuum carrier speed of {} for {}'\
+                            .format(self.configuration.vacuum_carrier_speed, 
+                                    self.station))
         else: 
             self.logger.info('No conf updated, proceeding with the last '
-                        'configuration for {}'.format(self.station))
+                        'vacuum carrier speed of {} for {}'\
+                        .format(self.configuration.vacuum_carrier_speed, 
+                                self.station))
 
     def to_dto(self):
         timestamp = time.time()

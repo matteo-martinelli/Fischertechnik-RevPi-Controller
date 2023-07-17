@@ -41,7 +41,9 @@ class SawStation(object):
         self.mqtt_publisher = mqtt_publisher
         self.topic = self.dept + '/' + self.station
 
-        self.mqtt_conf_listener = MqttConfListener('multiproc_dept/saw-station/conf', self.configuration.__class__)
+        self.mqtt_conf_listener = \
+              MqttConfListener('multiproc_dept/saw-station/conf', 
+                               self.configuration.__class__, self.configuration.to_object)
         self.mqtt_conf_listener.open_connection()
         self.read_conf()
        
@@ -92,14 +94,14 @@ class SawStation(object):
         if(value != self._prod_under_saw):
             self._prod_under_saw = value
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
 
     @process_completed.setter
     def process_completed(self, value: bool) -> None: 
         if (value != self._process_completed):
             self._process_completed = value
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
     # Actuator
     @motor_state.setter
     def motor_state(self) -> None: 
@@ -113,7 +115,7 @@ class SawStation(object):
             self.motor.turn_on()
             self._motor_state = True
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
     
 
     def deactivate_saw(self) -> None: 
@@ -121,14 +123,15 @@ class SawStation(object):
             self.motor.turn_off()
             self._motor_state = False
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
 
-    def processing(self, proc_time) -> None: 
+    def processing(self) -> None: 
+        self.read_conf()
         if(self.motor.state == False):
             self.activate_saw()
             self.logger.info('saw activated')
             # Time in seconds
-            time.sleep(proc_time)
+            time.sleep(self.configuration.saw_processing_time)
             self.deactivate_saw()
             self.logger.info('saw deactivated')
             self.process_completed = True
@@ -138,7 +141,8 @@ class SawStation(object):
         self._motor_state = False
         self._prod_under_saw = False
         self._process_completed = False
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
+                                                   True)
 
     # Reading underlying sensors/actuators
     def read_motor_state(self) -> None: 
@@ -146,23 +150,38 @@ class SawStation(object):
         if (value != self._motor_state):
             self._motor_state = value
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                           self.to_json())
+                                                           self.to_json(), 
+                                                           True)
 
     def read_all_actuators(self) -> None: 
         self.read_motor_state()
 
-    # MQTT 
+    # MQTT
     def read_conf(self) -> None: 
-        saw_proc_time_conf = self.mqtt_conf_listener.configuration 
-        if (saw_proc_time_conf != self.configuration.saw_processing_time 
-            and saw_proc_time_conf != None):
-            self.configuration = saw_proc_time_conf
-            self.logger.info('New configuration received for saw station '
-                             'process time {}'\
-                             .format(self.configuration.saw_proc_time_conf))
+        new_saw_proc_time_conf = self.mqtt_conf_listener.configuration 
+        if (new_saw_proc_time_conf != None):
+            if (new_saw_proc_time_conf.saw_processing_time != 
+                self.configuration.saw_processing_time):
+                self.logger.info('New configuration received for saw station '
+                                'process time - old value {}; new value {}; '
+                                'overriding'\
+                                .format(self.configuration.saw_processing_time,
+                                        new_saw_proc_time_conf\
+                                        .saw_processing_time))
+                self.configuration.saw_processing_time = \
+                    new_saw_proc_time_conf.saw_processing_time
+            else: 
+                self.logger.info('No conf updated, proceeding with the last '
+                                 'oven_proc_time of {} for {}'\
+                                 .format(self.configuration.\
+                                         saw_processing_time, 
+                                         self.station))
         else: 
             self.logger.info('No conf updated, proceeding with the last '
-                             'configuration {} for'.format(self.station))
+                                'oven_proc_time of {} for {}'\
+                                .format(self.configuration.\
+                                        saw_processing_time, 
+                                        self.station))
 
     def to_dto(self):
         timestamp = time.time()

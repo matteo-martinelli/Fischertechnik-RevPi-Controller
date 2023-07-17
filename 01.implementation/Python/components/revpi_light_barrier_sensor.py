@@ -53,7 +53,7 @@ class RevPiLightBarrierSensor(GenericRevPiSensor):
         if(self._state != self._previous_state):
             self._previous_state = self._state
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
         return self.state
 
     # MQTT 

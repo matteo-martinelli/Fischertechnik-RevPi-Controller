@@ -54,8 +54,8 @@ class TurntableCarrier(object):
         self.topic = self.dept + '/' + self.station
         
         self.mqtt_conf_listener = \
-            MqttConfListener('multiproc_dept/turntable-carrier/conf', \
-                             self.configuration.__class__)
+            MqttConfListener('multiproc_dept/turntable-carrier/conf',
+                             self.configuration.__class__, self.configuration.to_object)
         self.mqtt_conf_listener.open_connection()
         self.read_conf()
 
@@ -156,20 +156,20 @@ class TurntableCarrier(object):
         if (value != self._process_completed):
             self._process_completed = value
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
 
     # Class Methods
     def set_prod_on_carrier(self, value: bool) -> None:
         if(value != self._prod_on_carrier):
             self._prod_on_carrier = value
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
     
     def set_process_completed(self, value: bool) -> None:
         if(value != self._process_completed):
             self._process_completed = value
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
 
     def push_product(self) -> None: 
         self.activate_pusher()
@@ -182,7 +182,7 @@ class TurntableCarrier(object):
             time.sleep(0.8)
             self.read_pusher_state()
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
             
     def deactivate_pusher(self) -> None: 
         if(self.pusher_activation.state == True):
@@ -191,23 +191,24 @@ class TurntableCarrier(object):
             time.sleep(0.4)
             self.read_pusher_state()
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
     
     def rotate_towards_saw(self) -> None:
+        #self.read_conf()
         if(self.at_vacuum_carrier.state == True):
             self.motor.turn_on(self.motor._pin_tuple[0]) # Clockwise
             self.read_motor_state()
             self.read_turntable_pos()
             self.logger.info('turntable activated')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
         elif(self.at_conveyor.state == True):
             self.motor.turn_on(self.motor._pin_tuple[1]) # Counter-clockwise
             self.read_motor_state()
             self.read_turntable_pos()
             self.logger.info('turntable activated')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
         
         # Wait until the turntable reaches the at_saw sensor
         while(self.at_saw.read_state() == False):
@@ -217,14 +218,17 @@ class TurntableCarrier(object):
         self.read_motor_state()
         self.read_turntable_pos()
         self.logger.info('turntable deactivated')
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
+                                                   True)
 
     def rotate_towards_conveyor(self) -> None:
+        #self.read_conf()
         self.motor.turn_on(self.motor._pin_tuple[0])     # Clockwise
         self.read_motor_state()
         self.read_turntable_pos()
         self.logger.info('turntable activated')
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
+                                                   True)
         
         # Wait until the turntable reaches the at_conveyor sensor
         while (self.at_conveyor.read_state() == False):
@@ -234,14 +238,17 @@ class TurntableCarrier(object):
         self.read_turntable_pos()
         self.read_motor_state()
         self.logger.info('turntable deactivated')
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
+                                                   True)
 
     def rotate_towards_vacuum_carrier(self) -> None:
+        #self.read_conf()
         self.motor.turn_on(self.motor._pin_tuple[1])     # Counter-clockwise
         self.read_motor_state()
         self.read_turntable_pos()
         self.logger.info('turntable activated')
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
+                                                   True)
         
         # Wait until the turntable reaches the at_vacuum_carrier sensor
         while (self.at_vacuum_carrier.read_state() == False):
@@ -251,12 +258,15 @@ class TurntableCarrier(object):
         self.read_motor_state()
         self.read_turntable_pos()
         self.logger.info('turntable deactivated')
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
+                                                   True)
 
     def transfer_product_to_saw(self):
-        pass
-
+        self.read_conf()
+        self.rotate_towards_saw()
+        
     def transfer_product_to_conveyor(self):
+        self.read_conf()
         self.rotate_towards_conveyor()
         self.push_product()
         self.prod_on_carrier = False
@@ -272,7 +282,8 @@ class TurntableCarrier(object):
         
         self.set_prod_on_carrier(False)
         self.set_process_completed(False)
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
+                                                   True)
 
     # Reading underlying sensors/actuators
     # Actuator
@@ -281,7 +292,8 @@ class TurntableCarrier(object):
         if (value != self._motor_state):
             self._motor_state = value
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                           self.to_json())
+                                                           self.to_json(), 
+                                                           True)
 
     # Actuator
     def read_pusher_state(self) -> None: 
@@ -289,7 +301,8 @@ class TurntableCarrier(object):
         if (value != self._pusher_state):
             self._pusher_state = value
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                           self.to_json())
+                                                           self.to_json(), 
+                                                           True)
                 
     # Sensor
     def read_turntable_pos(self) -> None:
@@ -303,32 +316,37 @@ class TurntableCarrier(object):
             if (self._turntable_pos != 'vacuum carrier'):
                 self._turntable_pos = 'vacuum carrier'
                 self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                           self.to_json())
+                                                           self.to_json(), 
+                                                           True)
         elif (at_saw == True
             and self.motor.state[0] == False 
             and self.motor.state[1] == False): 
             if (self._turntable_pos != 'saw'):
                 self._turntable_pos = 'saw'
                 self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                            self.to_json())
+                                                            self.to_json(), 
+                                                            True)
         elif (at_conveyor == True
             and self.motor.state[0] == False 
             and self.motor.state[1] == False): 
             if (self._turntable_pos != 'conveyor'):
                 self._turntable_pos = 'conveyor'
                 self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                            self.to_json())
+                                                            self.to_json(), 
+                                                            True)
         elif (self.motor.state[0] == True or 
             self.motor.state[1] == True): 
             if (self._turntable_pos != 'moving'):
                 self._turntable_pos = 'moving'
                 self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                            self.to_json())
+                                                            self.to_json(), 
+                                                            True)
         else: 
             if (self._turntable_pos != 'position error'):
                 self._turntable_pos = 'position error'
                 self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                            self.to_json())
+                                                            self.to_json(), 
+                                                            True)
 
     def read_all_sensors(self) -> None: 
         self.read_turntable_pos()
@@ -339,17 +357,31 @@ class TurntableCarrier(object):
 
     # MQTT 
     def read_conf(self) -> None: 
-        turntable_carrier_speed_conf = self.mqtt_conf_listener.configuration 
-        if (turntable_carrier_speed_conf != self.configuration.turntable_carrier_speed 
-            and turntable_carrier_speed_conf != None):
-            self.configuration = turntable_carrier_speed_conf
-            self.logger.info('New configuration received for turntable '
-                             'carrier speed {}'\
-                             .format(self.configuration\
-                                     .turntable_carrier_speed_conf))
+        new_turntable_carrier_speed_conf = self.mqtt_conf_listener.configuration 
+        if (new_turntable_carrier_speed_conf != None):
+            if (new_turntable_carrier_speed_conf.turntable_carrier_speed != 
+                self.configuration.turntable_carrier_speed):
+                self.logger.info('New configuration received for turntable '
+                                'carrier speed - old value {}; new value {}; '
+                                'overriding'\
+                                .format(self.configuration\
+                                        .turntable_carrier_speed, 
+                                        new_turntable_carrier_speed_conf\
+                                        .turntable_carrier_speed))
+                self.configuration.turntable_carrier_speed = \
+                    new_turntable_carrier_speed_conf.turntable_carrier_speed
+            else: 
+                self.logger.info('No conf updated, proceeding with the last '
+                                 'carrier speed of {} for {}'\
+                                 .format(self.configuration.\
+                                         turntable_carrier_speed, 
+                                         self.station))
         else: 
-            self.logger.info('No conf updated, proceeding with the last '
-                             'configuration for {}'.format(self.station))
+                self.logger.info('No conf updated, proceeding with the last '
+                                 'carrier speed of {} for {}'\
+                                 .format(self.configuration.\
+                                         turntable_carrier_speed, 
+                                         self.station))
 
     def to_dto(self):
         timestamp = time.time()

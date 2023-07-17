@@ -96,14 +96,14 @@ class ConveyorCarrier(object):
         if(value != self._prod_on_conveyor):
             self._prod_on_conveyor = value
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
 
     @process_completed.setter
     def process_completed(self, value: bool) -> None: 
         if(value != self._process_completed):
             self._process_completed = value
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
 
     # Class Methods
     # Processes methods
@@ -111,7 +111,8 @@ class ConveyorCarrier(object):
         self.motor.turn_on()
         self.read_motor_state()
         self.logger.info('conveyor activated')
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(),
+                                                   True)
         
         # Wait until a product reaches the light_barrier sensor
         while (self.light_barrier.read_state() != False):
@@ -121,7 +122,8 @@ class ConveyorCarrier(object):
         self.read_motor_state()
         self.logger.info('conveyor deactivated')
         self.process_completed = True
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(),
+                                                   True)
 
     def deactivate_carrier(self) -> None: 
         self.motor.turn_off()
@@ -130,22 +132,23 @@ class ConveyorCarrier(object):
         self._prod_on_conveyor = False
         self._process_completed = False
         # MQTT Publish
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(),
+                                                   True)
 
     # Reading underlying sensors/actuators
     def read_motor_state(self) -> None: # QUESTA E' UNA LETTURA
         value = self.motor.read_state()
         if (value != self._motor_state):
             self._motor_state = value
-            self.mqtt_publisher.publish_telemetry_data(self.topic, \
-                                                       self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic,
+                                                       self.to_json(), True)
 
     def read_light_barrier_state(self) -> None: # QUESTA E' UNA LETTURA 
         value = self.light_barrier.read_state()
         if (value != self._light_barrier_state):
             self._light_barrier_state = value
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                       self.to_json())
+                                                       self.to_json(), True)
     
     # Read all sensors and actuators
     def read_all_sensors(self) -> None: 

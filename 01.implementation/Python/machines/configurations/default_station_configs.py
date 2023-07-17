@@ -8,7 +8,7 @@ Contains constants for initialising machine stations configurations
 
 class DefaultStationsConfigs(object):
     PIECES_TO_PRODUCE = 4
-    COMPRESSOR_BEHAVIOUR = 'always_on'
+    COMPRESSOR_BEHAVIOUR = 'something_else'
     OVEN_PROCESSING_TIME = 1
     SAW_PROCESSING_TIME = 1
     VACUUM_CARRIER_SPEED = 1

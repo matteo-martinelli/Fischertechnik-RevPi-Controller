@@ -10,16 +10,19 @@ import traceback
 import json
 import logging
 
+from types import SimpleNamespace
+
 
 class MqttConfListener(object):
     """Mqtt publisher class to publish mqtt topics."""
-    def __init__(self, topic_to_subscribe, conf_class):
+    def __init__(self, topic_to_subscribe, conf_class, deserialize_function):
         
         self.logger = logging.getLogger('multiproc_dept_logger')
         
         self.mqtt_client = mqtt.Client()
         self.topic_to_subscribe = topic_to_subscribe
-        self.conf_class = conf_class
+        self.conf_class = conf_class    # TODO: delete this field as is unnecessary
+        self.deserialize_function = deserialize_function
         self.configuration = None
 
     def on_connect(self, client , userdata , flags , rc):
@@ -28,12 +31,20 @@ class MqttConfListener(object):
         self.subscribe_multiproc_dept_configuration(self.topic_to_subscribe)
 
     def on_message(self, client, userdata, msg):
-        decoded_message = str(msg.payload.decode("utf-8"))
-        json_message = json.loads(decoded_message)
-        self.logger.info('Received a conf message for {}'\
+        self.logger.info('HERE Received a conf message for {}'\
                          .format(self.conf_class))
-        self.manually_decode_conf(json_message)
-        # TODO: check if the message has the needed format
+        try: 
+            decoded_message = str(msg.payload.decode("utf-8"))
+            json_message = json.loads(decoded_message,  # TODO: improve variables naming; shortner the code
+                                    object_hook=self.deserialize_function)
+            self.logger.info('DECODED json message {}; {}'.format(json_message, vars(json_message)))
+            self.configuration = json_message
+            #self.manually_decode_conf(json_message)
+            # TODO: check if the message has the needed format
+        except Exception as exc: 
+            self.logger.info('an error occured! Error: {}'.format(exc))
+            # printing stack trace
+            self.logger.info(traceback.print_exc())
 
     def on_subscribe(self, client, userdata, mid, granted_qos):
         self.logger.info('Succesfully subscribed with mid {}'.format(mid))
@@ -66,17 +77,17 @@ class MqttConfListener(object):
             self.logger.info('Subscribing tentative to {}'\
                              .format(target_topic, ' ...'))
 
-    def manually_decode_conf(self, conf_dict: dict):
-        try:
-            multiproc_conf = self.conf_class
-            self.logger.info('Decoding ...')
-            for key in conf_dict:
-                setattr(multiproc_conf, key, conf_dict[key])
-            
-            self.configuration = self.conf_class(multiproc_conf) 
-            self.logger.info('Received MQTT configuration saved for {}'\
-                             .format(self.conf_class))
-        except Exception as exc: 
-            self.logger.info('an error occured! Error: {}'.format(exc))
-            # printing stack trace
-            self.logger.info(traceback.print_exc())
+    #def manually_decode_conf(self, conf_dict: dict):
+    #    try:
+    #        multiproc_conf = self.conf_class
+    #        self.logger.info('Decoding ...')
+    #        for key in conf_dict:
+    #            setattr(multiproc_conf, key, conf_dict[key])
+    #        
+    #        self.configuration = self.conf_class(multiproc_conf) 
+    #        self.logger.info('Received MQTT configuration saved for {}'\
+    #                         .format(self.conf_class))
+    #    except Exception as exc: 
+    #        self.logger.info('an error occured! Error: {}'.format(exc))
+    #        # printing stack trace
+    #        self.logger.info(traceback.print_exc())

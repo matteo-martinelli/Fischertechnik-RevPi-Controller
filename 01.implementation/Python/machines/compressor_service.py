@@ -40,8 +40,8 @@ class CompressorService(object):
         self.topic = self._dept + '/' + self._station 
         
         self.mqtt_conf_listener = \
-            MqttConfListener('multiproc_dept/compressor-service/conf', \
-                             self.configuration.__class__)        
+            MqttConfListener('multiproc_dept/compressor-service/conf',
+                             self.configuration.__class__, self.configuration.to_object)        
         self.mqtt_conf_listener.open_connection()
         self.read_conf()
         
@@ -82,40 +82,54 @@ class CompressorService(object):
     
     # Class methods
     def activate_service(self):
+        self.read_conf()
         self.motor.turn_on()
         self._motor_state = True
         self.logger.info('compressor activated')
-        self.mqtt_pub.publish_telemetry_data(self.topic, self.to_json())
+        self.mqtt_pub.publish_telemetry_data(self.topic, self.to_json(), True)
         
     def deactivate_service(self):
         self.motor.turn_off()
         self._motor_state = False
         self.logger.info('compressor deactivated')
-        self.mqtt_pub.publish_telemetry_data(self.topic, self.to_json())
+        self.mqtt_pub.publish_telemetry_data(self.topic, self.to_json(), True)
 
     # Reading underlying sensors/actuators
     def read_motor_state(self) -> None: 
         value = self.motor.state
         if(value != self._motor_state):
             self._motor_state = value
-            self.mqtt_pub.publish_telemetry_data(self.topic, \
-                                                       self.to_json())
+            self.mqtt_pub.publish_telemetry_data(self.topic, 
+                                                       self.to_json(), True)
 
     def read_all_actuators(self) -> None: 
         self.read_motor_state
     
     # MQTT 
     def read_conf(self) -> None: 
-        compressor_behaviour_conf = self.mqtt_conf_listener.configuration 
-        if (compressor_behaviour_conf != self.configuration.compressor_behaviour 
-            and compressor_behaviour_conf != None):
-            self.configuration = compressor_behaviour_conf
-            self.logger.info('New configuration received for compressor '
-                             'service behaviour {}'\
-                             .format(self.configuration.compressor_behaviour))
+        new_compressor_behaviour_conf = self.mqtt_conf_listener.configuration 
+        if (new_compressor_behaviour_conf != None):
+            if(new_compressor_behaviour_conf.compressor_behaviour != 
+               self.configuration.compressor_behaviour):
+                self.logger.info('New configuration received for compressor '
+                                'service behaviour - old value {}; '
+                                'new value {}; overriding the whole object'\
+                                .format(self.configuration\
+                                        .compressor_behaviour,
+                                        new_compressor_behaviour_conf\
+                                        .compressor_behaviour))
+                self.configuration = new_compressor_behaviour_conf
+            else: 
+                self.logger.info('No conf updated, proceeding with the last '
+                                 'compressor_behaviour of {} for {}'\
+                                 .format(self.configuration.\
+                                         compressor_behaviour, 
+                                         self.station))
         else: 
             self.logger.info('No conf updated, proceeding with the last '
-                             'configuration for'.format(self.station))
+                            'oven_proc_time of {} for {}'\
+                            .format(self.configuration.oven_processing_time, 
+                                    self.station))
     
     def to_dto(self):
         timestamp = time.time()
