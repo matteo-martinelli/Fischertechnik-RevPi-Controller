@@ -4,7 +4,7 @@
 mqtt_listener.py: MqttListener class
 """
 
-from conf.mqtt_conf_parameters import MqttConfiguratorParameter
+from mqtt.mqtt_conf.mqtt_conf_parameters import MqttConfiguratorParameter
 import paho.mqtt.client as mqtt
 import traceback
 import json

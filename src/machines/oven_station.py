@@ -19,7 +19,7 @@ from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
 from components.revpi_vacuum_actuator import RevPiVacuumActuator
 
 from machines.configurations.oven_station_conf import OvenStationConf
-from mqtt_conf_listener import MqttConfListener
+from mqtt.mqtt_conf_listener import MqttConfListener
 
 from datetime import datetime 
 import time

@@ -11,15 +11,15 @@ The loop is managed via the RevPi event manager, that is set for being not
 blocking, with a personalised while loop next to the event system. 
 """
 
-# TODO: restructure the codebase file tree
+
 # TODO: add sensors pubblication only if the last value changed
 # TODO: on DT, infer working status as follows: if proc_complete=false and prod_on_carrier=true -> working else waiting else completed
 import revpimodio2
 import time
 import logging
 
-from mqtt_publisher import MqttPublisher
-from mqtt_conf_listener import MqttConfListener
+from mqtt.mqtt_publisher import MqttPublisher
+from mqtt.mqtt_conf_listener import MqttConfListener
 
 from machines.compressor_service import CompressorService
 from machines.oven_station import OvenStation

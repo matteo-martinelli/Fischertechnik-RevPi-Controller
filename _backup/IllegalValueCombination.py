@@ -1,2 +1,0 @@
-class IllegalValueCombination(Exception):
-    pass

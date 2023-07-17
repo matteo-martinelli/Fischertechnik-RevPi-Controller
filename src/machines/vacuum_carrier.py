@@ -20,7 +20,7 @@ import json
 import logging
 
 from machines.configurations.vacuum_carrier_conf import VacuumCarrierConf
-from mqtt_conf_listener import MqttConfListener
+from mqtt.mqtt_conf_listener import MqttConfListener
 
 from machines.configurations.default_station_configs \
     import DefaultStationsConfigs

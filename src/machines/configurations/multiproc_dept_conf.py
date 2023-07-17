@@ -4,10 +4,6 @@
 multiproc_dept_conf.py: MultiProcDeptConf class
 """
 
-from conf.mqtt_conf_parameters import MqttConfiguratorParameter
-import paho.mqtt.client as mqtt
-import json
-
 
 class MultiProcDeptConf(object):
     """Configuration class storing information about the department 

@@ -20,7 +20,7 @@ import json
 import logging
 
 from machines.configurations.turntable_carrier_conf import TurntableCarrierConf
-from mqtt_conf_listener import MqttConfListener
+from mqtt.mqtt_conf_listener import MqttConfListener
 
 from machines.configurations.default_station_configs \
     import DefaultStationsConfigs

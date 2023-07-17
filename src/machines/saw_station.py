@@ -14,7 +14,7 @@ import json
 import logging
 
 from machines.configurations.saw_station_conf import SawStationConf
-from mqtt_conf_listener import MqttConfListener
+from mqtt.mqtt_conf_listener import MqttConfListener
 
 from machines.configurations.default_station_configs \
     import DefaultStationsConfigs

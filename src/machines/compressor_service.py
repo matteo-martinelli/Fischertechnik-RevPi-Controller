@@ -14,7 +14,7 @@ import json
 import logging
 
 from machines.configurations.compressor_service_conf import CompressorServiceConf
-from mqtt_conf_listener import MqttConfListener
+from mqtt.mqtt_conf_listener import MqttConfListener
 
 from machines.configurations.default_station_configs \
     import DefaultStationsConfigs

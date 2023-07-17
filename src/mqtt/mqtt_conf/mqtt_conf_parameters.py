@@ -7,7 +7,7 @@ Stores the mqtt broker connection global variables
 """
 
 
-class MqttConfiguratorParameter(object):
+class MqttConfiguratorParameter(object):    # TODO: rename in MqttConnectionParameters
     BROKER_ADDRESS = '10.0.0.6'
     BROKER_PORT = 1883
     MQTT_USER = 'dept_manager'
