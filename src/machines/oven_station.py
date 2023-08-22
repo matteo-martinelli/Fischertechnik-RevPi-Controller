@@ -28,7 +28,8 @@ import logging
 
 from machines.configurations.default_station_configs \
     import DefaultStationsConfigs   #TODO: eventually change it
-import oven_station_temperature_control as ostc
+from machines.oven_station_temperature_control import calc_state 
+from machines.oven_station_temperature_control import update_temperature 
 
 
 class OvenStation(object):
@@ -54,13 +55,13 @@ class OvenStation(object):
         # numbers from real product sheet
         # TODO: add them to your initialisiation
         # //https://www.gpline.com.tw/productdetail_en.php?id=427
-        self.room_temperature = 24.0
-        self.temperature_inside = self.room_temperature
-        self.set_temperature = 300.0
-        self.insulation = None
-        self.fluctuation = 3.0
-        self.max_temperature = 400.0
-        self.min_set_temperature = 100.0
+        self.room_temperature = 24.0                    # Physical
+        self.temperature_inside = self.room_temperature # Physical
+        self.set_temperature = 60.0                     # Conf - 300 from prod
+        self.insulation = None                          # Physical
+        self.fluctuation = 3.0                          # Physical
+        self.max_temperature = 100.0                    # Conf - 400 from prod
+        self.min_set_temperature = 100.0                # Conf
 
         self.configuration = OvenStationConf(DefaultStationsConfigs.\
                                              OVEN_PROCESSING_TIME)
@@ -263,7 +264,8 @@ class OvenStation(object):
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json(), True)
     
-    def oven_process_start(self, proc_time: int, target_temperature = 300.0) -> None:
+    #def oven_process_start(self, proc_time, target_temperature = 300.0) -> None:
+    def oven_process_start(self, target_temperature = 300.0) -> None:
         self.read_conf()
         # target temperature
         self.set_temperature = target_temperature
@@ -272,24 +274,50 @@ class OvenStation(object):
         self.move_carrier_inward()
 
         #self.activate_proc_light()
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
+                                                   True)
         
         # heating up
         while self.temperature_inside + self.fluctuation < self.set_temperature:
+            self.logger.info('oven activated')
             self.activate_proc_light()
-            self.temperature_inside, _ = ostc.update_temperature(self.room_temperature, self.temperature_inside, self.set_temperature, self.fluctuation, self.min_set_temperature, self.max_temperature, 1, 'unknown')
+            self.temperature_inside, _ = \
+                update_temperature(self.room_temperature, 
+                                    self.temperature_inside, 
+                                    self.set_temperature, 
+                                    self.fluctuation, 
+                                    self.min_set_temperature, 
+                                    self.max_temperature, 1, 'unknown')
+            self.logger.info('heating up, temp {}°C'.\
+                             format(self.temperature_inside))
             time.sleep(1)
+
+        self.logger.info('target temp reached, temp {}°C'.\
+                         format(self.temperature_inside))
 
         # during processing
         for i in range(self.configuration.oven_processing_time):
-            self.temperature_inside, state = ostc.update_temperature(self.room_temperature, self.temperature_inside, self.set_temperature, self.fluctuation, self.min_set_temperature, self.max_temperature, 1, 'unknown')
+            self.temperature_inside, state = \
+                update_temperature(self.room_temperature, 
+                                    self.temperature_inside, 
+                                    self.set_temperature, 
+                                    self.fluctuation, 
+                                    self.min_set_temperature, 
+                                    self.max_temperature, 1, 'unknown')
             if state == "heating" or state == "warming":
                 self.activate_proc_light()
             if state == "cooling":
                 self.deactivate_proc_light()
+            self.logger.info('Processing the product: oven state {},' 
+                             ' oven temp {}°C'.\
+                             format(state, self.temperature_inside))
             time.sleep(1)
-            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                    self.to_json(), True)
         #time.sleep(self.configuration.oven_processing_time) # TODO: change into time.sleep(configuration.proc_time)
+        
+        self.logger.info('oven processing complete')
+        
         self.move_carrier_outward()
         # end for, done producing ...
 
@@ -298,11 +326,20 @@ class OvenStation(object):
 
         self.deactivate_proc_light()
         #publish data
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json())
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
+                                                   True)
 
         
         while self.temperature_inside - self.fluctuation > self.set_temperature:
-            self.temperature_inside, state = ostc.update_temperature(self.room_temperature, self.temperature_inside, self.set_temperature, self.fluctuation, self.min_set_temperature, self.max_temperature, 1, 'unknown')
+            self.temperature_inside, state = \
+                update_temperature(self.room_temperature, 
+                                    self.temperature_inside, 
+                                    self.set_temperature, 
+                                    self.fluctuation, 
+                                    self.min_set_temperature, 
+                                    self.max_temperature, 1, 'unknown')
+            self.logger.info('cooling down, temp {}°C'.\
+                             format(self.temperature_inside))
             time.sleep(1)
 
         self.set_process_completed(True)
@@ -376,7 +413,7 @@ class OvenStation(object):
             if (self._carrier_pos != 'inside'):
                 self._carrier_pos = 'inside'
                 self.mqtt_publisher.publish_telemetry_data(self.topic, 
-                                                           self.to_json(),
+                                                            self.to_json(),
                                                             True)
         elif (self.outside_oven_switch.read_state() == True
             and self.oven_carrier.state[0] == False
@@ -428,7 +465,7 @@ class OvenStation(object):
         self.read_proc_light_state()
 
     # MQTT 
-    def read_conf(self) -> None: 
+    def read_conf(self) -> None: # TODO: why it has been changed?
     #    new_oven_proc_time_conf = self.mqtt_conf_listener.configuration
     #    if (new_oven_proc_time_conf != None):
     #        if (new_oven_proc_time_conf.oven_processing_time != 
