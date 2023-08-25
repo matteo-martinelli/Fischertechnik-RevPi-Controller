@@ -12,6 +12,7 @@ blocking, with a personalised while loop next to the event system.
 """
 
 
+# TODO: move the configuration check and change at the very beginning of each cycle
 # TODO: add sensors pubblication only if the last value changed
 # TODO: on DT, infer working status as follows: if proc_complete=false and prod_on_carrier=true -> working else waiting else completed
 import revpimodio2
