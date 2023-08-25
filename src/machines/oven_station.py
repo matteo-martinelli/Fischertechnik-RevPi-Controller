@@ -12,6 +12,7 @@ This class is composed by the following objects:
     6. process light O_9. 
 """
 
+import threading
 from components.revpi_light_barrier_sensor import RevPiLightBarrierSensor
 from components.revpi_double_motion_actuator import RevPiDoubleMotionActuator
 from components.revpi_reference_sensor import RevPiReferenceSensor
@@ -21,6 +22,8 @@ from components.revpi_vacuum_actuator import RevPiVacuumActuator
 from machines.configurations.oven_station_conf import OvenStationConf
 from mqtt.mqtt_conf_listener import MqttConfListener
 
+import multiprocessing
+#import threading
 from datetime import datetime 
 import time
 import json
@@ -55,11 +58,14 @@ class OvenStation(object):
         # numbers from real product sheet
         # TODO: add them to your initialisiation
         # //https://www.gpline.com.tw/productdetail_en.php?id=427
+        self.oven_state = None                          # Oven state
+        self.stop_event = multiprocessing.Event()       # Cool down stop flag   # TODO: change into threading.Event
+        self.cooling_oven_process = None                # Cooling process field
         self.room_temperature = 24.0                    # Physical
         self.temperature_inside = self.room_temperature # Physical
         self.set_temperature = 60.0                     # Conf - 300 from prod
         self.insulation = None                          # Physical
-        self.fluctuation = 3.0                          # Physical
+        self.fluctuation = 5.0                          # Physical - 3.0 from prod
         self.max_temperature = 100.0                    # Conf - 400 from prod
         self.min_set_temperature = 100.0                # Conf
 
@@ -265,10 +271,8 @@ class OvenStation(object):
                                                        self.to_json(), True)
     
     #def oven_process_start(self, proc_time, target_temperature = 300.0) -> None:
-    def oven_process_start(self, target_temperature = 300.0) -> None:
+    def oven_process_start(self, target_temperature = 200.0) -> None:
         self.read_conf()
-        # target temperature
-        self.set_temperature = target_temperature
 
         # for each product, start producing ...
         self.move_carrier_inward()
@@ -278,72 +282,123 @@ class OvenStation(object):
                                                    True)
         
         # heating up
+        self.heat_oven_up(target_temperature)
+
+        # process the piece
+        self.oven_keep_temp(self.configuration.oven_processing_time)
+        
+        # done processing, preparing the cooling down thread
+        self.cooling_oven_process = threading.Thread(name="oven_cooling_process", 
+                                                 target=self.cool_oven_down, 
+                                                 args=(self.room_temperature,))
+        # cooling down                          # When not deamon, the main thread cannot exit - Not necessary here
+        self.cooling_oven_process.start()
+                
+        self.move_carrier_outward()
+        self.set_process_completed(True)
+
+    def check_oven_if_cooling(self):
+        if (self.cooling_oven_process is not None):
+            logging.debug("Oven cooling process is running. Stopping it")
+            self.stop_event.set()
+            self.cooling_oven_process.join()
+            self.cooling_oven_process = None
+            logging.debug("Oven cooling process stopped")
+        else: 
+            logging.debug("Oven is not cooling down, heating it up")
+
+    def heat_oven_up(self, target_temp):
+        self.check_oven_if_cooling()
+        
+        self.set_temperature = target_temp
+        self.logger.info('Oven activated')
+        
+        # publish data
+        self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                    self.to_json(), True)
+
         while self.temperature_inside + self.fluctuation < self.set_temperature:
-            self.logger.info('oven activated')
             self.activate_proc_light()
-            self.temperature_inside, _ = \
+            self.temperature_inside, self.oven_state = \
                 update_temperature(self.room_temperature, 
                                     self.temperature_inside, 
                                     self.set_temperature, 
                                     self.fluctuation, 
                                     self.min_set_temperature, 
                                     self.max_temperature, 1, 'unknown')
-            self.logger.info('heating up, temp {}°C'.\
-                             format(self.temperature_inside))
+            self.logger.info('Heating up, oven state {}, temp {}°C'.\
+                             format(self.oven_state, self.temperature_inside))
             time.sleep(1)
-
-        self.logger.info('target temp reached, temp {}°C'.\
-                         format(self.temperature_inside))
-
-        # during processing
-        for i in range(self.configuration.oven_processing_time):
-            self.temperature_inside, state = \
-                update_temperature(self.room_temperature, 
-                                    self.temperature_inside, 
-                                    self.set_temperature, 
-                                    self.fluctuation, 
-                                    self.min_set_temperature, 
-                                    self.max_temperature, 1, 'unknown')
-            if state == "heating" or state == "warming":
-                self.activate_proc_light()
-            if state == "cooling":
-                self.deactivate_proc_light()
-            self.logger.info('Processing the product: oven state {},' 
-                             ' oven temp {}°C'.\
-                             format(state, self.temperature_inside))
-            time.sleep(1)
+            # publish data
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                     self.to_json(), True)
-        #time.sleep(self.configuration.oven_processing_time) # TODO: change into time.sleep(configuration.proc_time)
-        
-        self.logger.info('oven processing complete')
-        
-        self.move_carrier_outward()
-        # end for, done producing ...
 
-        # done processing, cooling down
-        self.set_temperature = self.room_temperature
-
-        self.deactivate_proc_light()
-        #publish data
-        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
-                                                   True)
-
+        self.logger.info('Target temp reached, oven state {}, temp {}°C'.\
+                         format(self.oven_state, self.temperature_inside))
         
-        while self.temperature_inside - self.fluctuation > self.set_temperature:
-            self.temperature_inside, state = \
+    def oven_keep_temp(self, processing_time):
+        for i in range(processing_time):
+            self.temperature_inside, self.oven_state = \
                 update_temperature(self.room_temperature, 
                                     self.temperature_inside, 
                                     self.set_temperature, 
                                     self.fluctuation, 
                                     self.min_set_temperature, 
                                     self.max_temperature, 1, 'unknown')
-            self.logger.info('cooling down, temp {}°C'.\
-                             format(self.temperature_inside))
-            time.sleep(1)
+            
+            if self.oven_state == "heating" or self.oven_state == "warming":
+                self.activate_proc_light()
+            if self.oven_state == "cooling":
+                self.deactivate_proc_light()
 
-        self.set_process_completed(True)
-    
+            self.logger.info('Processing the product: oven state {},' 
+                             ' oven temp {}°C'.\
+                             format(self.oven_state, self.temperature_inside))
+            
+            time.sleep(1)
+            #time.sleep(self.configuration.oven_processing_time) # TODO: eventually change into time.sleep(configuration.proc_time)
+            
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                    self.to_json(), True)
+        
+        # end for, done producing ...
+        self.logger.info('Oven processing complete')
+        
+        # deactivating processing light
+        self.deactivate_proc_light()
+
+    def cool_oven_down(self, target_temperature: float):
+        # publish data
+        self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
+                                                   True)
+        
+        # updating the temperature
+        while self.temperature_inside - self.fluctuation > target_temperature:
+            self.temperature_inside, self.oven_state = \
+                update_temperature(self.room_temperature, 
+                                    self.temperature_inside, 
+                                    target_temperature, 
+                                    self.fluctuation, 
+                                    self.min_set_temperature, 
+                                    self.max_temperature, 1, 'unknown')
+            
+            self.logger.info('cooling down, oven state {}, temp {}°C'.\
+                             format(self.oven_state, self.temperature_inside))
+            
+            time.sleep(1)
+            
+            # publish data
+            self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json(), True)
+            
+            # thread stop flag check
+            if self.stop_event.is_set(): 
+                self.stop_event.clear()
+                logging.debug("Cooling phase interrupted."\
+                              " Last temperature: {}"\
+                                .format(self.temperature_inside))
+                break
+
     def turn_off_all_actuators(self) -> None: 
         self.oven_carrier.turn_off()
         self.read_carrier_position()
