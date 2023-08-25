@@ -27,11 +27,13 @@ def update_temperature(outside_temperature, current_inside_temperature,
             state_oven = "cooling"
         if state == "warming":
             # insert fluctuation function sin/cos here
+            random.seed(42)
             flucutation_range = random.random()
-            pos_neg_random = random.randint(0, 2)
+            pos_neg_random = random.randint(0, 1)
             # negative fluctuation
             if (pos_neg_random == 0): 
-                inside_temp = inside_temp - flucutation*flucutation_range
+                inside_temp = \
+                    round(inside_temp - flucutation*flucutation_range, 2)
             # positive fluctuation
             elif(pos_neg_random == 1):
                 inside_temp = inside_temp + flucutation*flucutation_range
@@ -51,6 +53,7 @@ def calc_state(current_inside_temperature, wanted_temperature,
     elif wanted_temperature <= room_temperature: 
         return "idle"
     elif current_inside_temperature > wanted_temperature - fluctuation and current_inside_temperature < wanted_temperature + fluctuation: 
+        #                       204 > 200 - 3                                                     204 < 200 + 3           
         return "warming"
     elif wanted_temperature > maximum_set_temperature: 
         return "illegal"
