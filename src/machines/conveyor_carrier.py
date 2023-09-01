@@ -183,8 +183,8 @@ class ConveyorCarrier(object):
             'layer': 'machine',
             'conveyor_motor': self._motor_state,
             'light-barrier': self._light_barrier_state,
-            'prod_on_conv:': self._prod_on_conveyor,
-            'process_complete:': self._process_completed,
+            'prod-on-carrier': self._prod_on_conveyor,
+            'proc-completed': self._process_completed,
             
             'timestamp': timestamp,
             'current-time': current_moment
