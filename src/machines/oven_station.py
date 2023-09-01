@@ -10,9 +10,10 @@ This class is composed by the following objects:
     4. inward reference switch I_6;
     5. outward reference switch I_7;
     6. process light O_9. 
+
 """
 
-import threading
+
 from components.revpi_light_barrier_sensor import RevPiLightBarrierSensor
 from components.revpi_double_motion_actuator import RevPiDoubleMotionActuator
 from components.revpi_reference_sensor import RevPiReferenceSensor
@@ -22,8 +23,7 @@ from components.revpi_vacuum_actuator import RevPiVacuumActuator
 from machines.configurations.oven_station_conf import OvenStationConf
 from mqtt.mqtt_conf_listener import MqttConfListener
 
-import multiprocessing
-#import threading
+import threading
 from datetime import datetime 
 import time
 import json
@@ -59,7 +59,7 @@ class OvenStation(object):
         # TODO: add them to your initialisiation
         # //https://www.gpline.com.tw/productdetail_en.php?id=427
         self.oven_state = None                          # Oven state
-        self.stop_event = multiprocessing.Event()       # Cool down stop flag   # TODO: change into threading.Event
+        self.stop_event = threading.Event()             # Cool down stop flag 
         self.cooling_oven_process = None                # Cooling process field
         self.room_temperature = 24.0                    # Physical
         self.temperature_inside = self.room_temperature # Physical
@@ -288,7 +288,7 @@ class OvenStation(object):
         self.oven_keep_temp(self.configuration.oven_processing_time)
         
         # done processing, preparing the cooling down thread
-        self.cooling_oven_process = threading.Thread(name="oven_cooling_process", 
+        self.cooling_oven_process = threading.Thread(name="oven_cooling_process", # TODO: add the process termination at ctrl + C in the right method
                                                  target=self.cool_oven_down, 
                                                  args=(self.room_temperature,))
         # cooling down                          # When not deamon, the main thread cannot exit - Not necessary here
