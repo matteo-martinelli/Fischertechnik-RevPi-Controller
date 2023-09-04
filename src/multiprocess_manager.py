@@ -87,7 +87,7 @@ class MultiprocessManager():
             CompressorService(self.rpi, self.dept_name, 'compressor-service', 
                               10, self.mqtt_publisher)
 
-        # Process fileds
+        # Process fields
         self.pieces_counter = 0
         self.process_completed = False
         self.to_reset = False

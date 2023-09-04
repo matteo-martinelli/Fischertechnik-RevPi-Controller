@@ -429,6 +429,7 @@ class OvenStation(object):
         self.turn_off_all_actuators()
         self.reset_process_states()
         self.close_connections()
+        self.stop_event.set()
 
     def set_prod_on_carrier(self, value: bool) -> None:
         if(value != self._prod_on_carrier):
