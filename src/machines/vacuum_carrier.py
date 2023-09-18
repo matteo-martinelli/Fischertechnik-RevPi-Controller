@@ -33,8 +33,8 @@ class VacuumCarrier(object):
                  grip_lower_act_pin: int, at_turntable_sens_pin: int, 
                  at_oven_sens_pin: int, mqtt_publisher):
         
-        self.logger = logging.getLogger('multiproc_dept_logger')     
-        
+        self.logger = logging.getLogger('multiproc_dept_logger')
+
         # Class fields
         self._dept = dept
         self._station = station
@@ -53,8 +53,9 @@ class VacuumCarrier(object):
         self.topic = self._dept + '/' + self._station
 
         self.mqtt_conf_listener = \
-            MqttConfListener('multiproc_dept/vacuum-carrier/conf',\
-                              self.configuration.__class__, self.configuration.to_object)
+            MqttConfListener('multiproc_dept/vacuum-carrier/conf',
+                              self.configuration.__class__, 
+                              self.configuration.to_object)
         self.mqtt_conf_listener.open_connection()
         self.read_conf()
         # Class actuators
@@ -243,15 +244,36 @@ class VacuumCarrier(object):
 
     def move_carrier_towards_turntable(self) -> None:
         self.read_conf()
+        start_time = 0
         if(self.at_turntable.state == False):
             self.motor.turn_on(self.motor._pin_tuple[1])
+            start_time = time.time()
             self.read_motor_state()
             self.read_carrier_position()
             self.logger.info('vacuum carrier activated')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json(), True)
-
+        
+        # TODO: implement here the carrier speed variation   
+        carrier_speed = self.configuration.vacuum_carrier_speed 
         # Wait until the at_turntable sensor turns into True
+        if (start_time != 0):
+            while (time.time() - start_time < 2):
+                pass
+        
+        self.motor.turn_off()
+        if (self.configuration.vacuum_carrier_speed == "Low"):
+            time.sleep(5)
+        elif (self.configuration.vacuum_carrier_speed == "Medium"): 
+            time.sleep(3)
+        elif (self.configuration.vacuum_carrier_speed == "High"): 
+            pass
+        else:
+            logging.error('Illegal vacuum speed configuration received; ' + 
+                          'expected \"Low\" or \"Medium\" or \"High\", got {}', 
+                          self.configuration.vacuum_carrier_speed) 
+        self.motor.turn_on(self.motor._pin_tuple[1])   
+    
         while (self.at_turntable.read_state() == False):
             pass
 
@@ -406,6 +428,7 @@ class VacuumCarrier(object):
             'grip-low-state': self._gripper_lowering_state, 
             'grip-state': self._gripper_activation_state,
             'motor': self._motor_state,
+            'carrier-speed': self.configuration.vacuum_carrier_speed,
             'prod-on-carrier': self._prod_on_carrier,
             'proc-completed': self._process_completed,
             

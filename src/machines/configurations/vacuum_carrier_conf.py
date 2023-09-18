@@ -7,7 +7,7 @@ Contains and represents the vacuum carrier configuration
 """
 
 class VacuumCarrierConf(object):
-    def __init__(self, vacuum_carrier_speed: int):
+    def __init__(self, vacuum_carrier_speed: str):
         self._vacuum_carrier_speed = vacuum_carrier_speed
         
     @property
@@ -15,10 +15,10 @@ class VacuumCarrierConf(object):
         return self._vacuum_carrier_speed
     
     @vacuum_carrier_speed.setter
-    def vacuum_carrier_speed(self, value: int): 
+    def vacuum_carrier_speed(self, value: str): 
         self._vacuum_carrier_speed = value
 
     @staticmethod
     def to_object(d):
-        inst = VacuumCarrierConf(d['vacuum_carrier_speed_pwm'])
+        inst = VacuumCarrierConf(d['vacuum_carrier_speed'])
         return inst
