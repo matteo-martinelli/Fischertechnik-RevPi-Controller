@@ -254,26 +254,28 @@ class VacuumCarrier(object):
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json(), True)
         
-        # TODO: implement here the carrier speed variation   
-        carrier_speed = self.configuration.vacuum_carrier_speed 
+        # Carrier speed variation system # Start #
         # Wait until the at_turntable sensor turns into True
         if (start_time != 0):
             while (time.time() - start_time < 2):
                 pass
         
         self.motor.turn_off()
-        if (self.configuration.vacuum_carrier_speed == "Low"):
+        carrier_speed = self.configuration.vacuum_carrier_speed 
+        if (carrier_speed == "Low"):
             time.sleep(5)
-        elif (self.configuration.vacuum_carrier_speed == "Medium"): 
+        elif (carrier_speed  == "Medium"): 
             time.sleep(3)
-        elif (self.configuration.vacuum_carrier_speed == "High"): 
+        elif (carrier_speed == "High"): 
             pass
         else:
-            logging.error('Illegal vacuum speed configuration received; ' + 
+            self.logger.error('Illegal vacuum speed configuration received; ' + 
                           'expected \"Low\" or \"Medium\" or \"High\", got {}', 
-                          self.configuration.vacuum_carrier_speed) 
-        self.motor.turn_on(self.motor._pin_tuple[1])   
-    
+                          carrier_speed) 
+        self.motor.turn_on(self.motor._pin_tuple[1])  
+        # Carrier speed variation system ## End ##
+
+        
         while (self.at_turntable.read_state() == False):
             pass
 

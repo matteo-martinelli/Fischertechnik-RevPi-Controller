@@ -55,7 +55,8 @@ class TurntableCarrier(object):
         
         self.mqtt_conf_listener = \
             MqttConfListener('multiproc_dept/turntable-carrier/conf',
-                             self.configuration.__class__, self.configuration.to_object)
+                             self.configuration.__class__, 
+                             self.configuration.to_object)
         self.mqtt_conf_listener.open_connection()
         self.read_conf()
 
@@ -194,14 +195,38 @@ class TurntableCarrier(object):
                                                        self.to_json(), True)
     
     def rotate_towards_saw(self) -> None:
-        #self.read_conf()
         if(self.at_vacuum_carrier.state == True):
             self.motor.turn_on(self.motor._pin_tuple[0]) # Clockwise
+            start_time = time.time()
             self.read_motor_state()
             self.read_turntable_pos()
             self.logger.info('turntable activated')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json(), True)
+            # Carrier speed variation system # Start #
+            # Wait until the at_turntable sensor turns into True
+            if (start_time != 0):
+                while (time.time() - start_time < 0.5):
+                    #self.logger.info('delta time is %s', time.time() - start_time)
+                    pass
+            
+            self.motor.turn_off()
+            carrier_speed = self.configuration.turntable_carrier_speed
+            if (carrier_speed == "Low"):
+                time.sleep(5)
+            elif (carrier_speed  == "Medium"): 
+                time.sleep(3)
+            elif (carrier_speed == "High"): 
+                time.sleep(2)
+                #pass
+            else:
+                self.logger.error('Illegal turntable speed configuration ' +
+                            ' received in moving turntable towards saw;' + 
+                            ' expected \"Low\" or \"Medium\" or' +
+                            ' \"High\", got %s', carrier_speed) 
+            #self.motor.turn_on(self.motor._pin_tuple[0])
+            # Carrier speed variation system ## End ##
+
         elif(self.at_conveyor.state == True):
             self.motor.turn_on(self.motor._pin_tuple[1]) # Counter-clockwise
             self.read_motor_state()
@@ -210,10 +235,11 @@ class TurntableCarrier(object):
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json(), True)
         
+        self.motor.turn_on(self.motor._pin_tuple[0])
         # Wait until the turntable reaches the at_saw sensor
         while(self.at_saw.read_state() == False):
             pass
-
+            
         self.motor.turn_off()
         self.read_motor_state()
         self.read_turntable_pos()
@@ -222,13 +248,38 @@ class TurntableCarrier(object):
                                                    True)
 
     def rotate_towards_conveyor(self) -> None:
-        #self.read_conf()
         self.motor.turn_on(self.motor._pin_tuple[0])     # Clockwise
+        start_time = time.time()
         self.read_motor_state()
         self.read_turntable_pos()
         self.logger.info('turntable activated')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
                                                    True)
+        
+        # Carrier speed variation system # Start #
+        # Wait until the at_turntable sensor turns into True
+        if (start_time != 0):
+            while (time.time() - start_time < 0.3):
+                #self.logger.info('Delta time is %s', time.time() - start_time)
+                pass
+        
+        self.motor.turn_off()
+        carrier_speed = self.configuration.turntable_carrier_speed 
+        if (carrier_speed == "Low"):
+            time.sleep(5)
+        elif (carrier_speed  == "Medium"): 
+            time.sleep(3)
+        elif (carrier_speed == "High"): 
+            time.sleep(2)
+            #pass
+        else:
+            self.logger.error('Illegal turntable speed configuration ' +
+                            ' received in moving turntable towards conveyor;' +
+                            ' received; expected \"Low\" or \"Medium\" or' +
+                            ' \"High\", got %s', carrier_speed)  
+        
+        self.motor.turn_on(self.motor._pin_tuple[0])
+        # Carrier speed variation system ## End ##
         
         # Wait until the turntable reaches the at_conveyor sensor
         while (self.at_conveyor.read_state() == False):
@@ -262,10 +313,12 @@ class TurntableCarrier(object):
                                                    True)
 
     def transfer_product_to_saw(self):
+        self.logger.info('Reading configuration on the MQTT broker')
         self.read_conf()
         self.rotate_towards_saw()
         
     def transfer_product_to_conveyor(self):
+        self.logger.info('Reading configuration on the MQTT broker')
         self.read_conf()
         self.rotate_towards_conveyor()
         self.push_product()

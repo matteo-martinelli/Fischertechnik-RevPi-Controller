@@ -16,6 +16,7 @@ class VacuumCarrierConf(object):
     
     @vacuum_carrier_speed.setter
     def vacuum_carrier_speed(self, value: str): 
+        # TODO: insert check about the str passed; it should be "Low" or "Medium" or "High"
         self._vacuum_carrier_speed = value
 
     @staticmethod
