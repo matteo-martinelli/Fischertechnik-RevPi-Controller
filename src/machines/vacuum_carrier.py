@@ -263,10 +263,15 @@ class VacuumCarrier(object):
         self.motor.turn_off()
         carrier_speed = self.configuration.vacuum_carrier_speed 
         if (carrier_speed == "Low"):
+            self.logger.info('Stopping for 5 seconds')
             time.sleep(5)
+            self.logger.info('Stopped for 5 seconds')
         elif (carrier_speed  == "Medium"): 
+            self.logger.info('Stopping for 3 seconds')
             time.sleep(3)
+            self.logger.info('Stopped for 3 seconds')
         elif (carrier_speed == "High"): 
+            self.logger.info('No stop planned')
             pass
         else:
             self.logger.error('Illegal vacuum speed configuration received; ' + 
@@ -396,6 +401,7 @@ class VacuumCarrier(object):
         if (new_vaccum_carrier_speed_conf != None):
             if (new_vaccum_carrier_speed_conf.vacuum_carrier_speed != 
                 self.configuration.vacuum_carrier_speed):
+                # TODO: add here message check to understand if there are some errors
                 self.logger.info('New configuration received for vacuum '
                                  'carrier speed - old value {}; new value {};'
                                  ' overriding'\

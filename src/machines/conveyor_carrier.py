@@ -143,11 +143,17 @@ class ConveyorCarrier(object):
         self.motor.turn_off()
         carrier_speed = self.configuration.conveyor_carrier_speed
         if (carrier_speed == "Low"):
+            self.logger.info('Stopping for 5 seconds')
             time.sleep(5)
+            self.logger.info('Stopped for 5 seconds')
         elif (carrier_speed == "Medium"):
+            self.logger.info('Stopping for 3 seconds')
             time.sleep(3)
+            self.logger.info('Stopped for 3 seconds')
         elif (carrier_speed == "High"):
+            self.logger.info('Stopping for 2 seconds')
             time.sleep(2)    
+            self.logger.info('Stopped for 2 seconds')
             #pass
         else: 
             self.logger.error('Illegal conveyor speed configuration ' +
