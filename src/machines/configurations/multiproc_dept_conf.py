@@ -29,6 +29,7 @@ class MultiProcDeptConf(object):
     def pieces_to_produce(self, value: int):
         self._pieces_to_produce = value
     
+    """
     @property
     def compressor_behaviour(self): 
         return self._compressor_behaviour
@@ -68,7 +69,8 @@ class MultiProcDeptConf(object):
     @turntable_carrier_speed.setter
     def turntable_carrier_speed(self, value: int):
         self._turntable_carrier_speed = value
-
+    """    
+    
     @staticmethod
     def to_object(d):
         inst = MultiProcDeptConf(d['pieces_to_produce']#, 

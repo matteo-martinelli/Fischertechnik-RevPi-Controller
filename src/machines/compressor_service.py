@@ -134,7 +134,7 @@ class CompressorService(object):
                                          self.station))
         else: 
             self.logger.info('No conf updated, proceeding with the last '
-                            'oven_proc_time of {} for {}'\
+                            'compressor_behaviour of {} for {}'\
                             .format(self.configuration.oven_processing_time, 
                                     self.station))
 

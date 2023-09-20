@@ -188,13 +188,13 @@ class SawStation(object):
                     new_saw_proc_time_conf.saw_processing_time
             else: 
                 self.logger.info('No conf updated, proceeding with the last '
-                                 'oven_proc_time of {} for {}'\
+                                 'saw processing time of {} for {}'\
                                  .format(self.configuration.\
                                          saw_processing_time, 
                                          self.station))
         else: 
             self.logger.info('No conf updated, proceeding with the last '
-                                'oven_proc_time of {} for {}'\
+                                'saw processing time of {} for {}'\
                                 .format(self.configuration.\
                                         saw_processing_time, 
                                         self.station))

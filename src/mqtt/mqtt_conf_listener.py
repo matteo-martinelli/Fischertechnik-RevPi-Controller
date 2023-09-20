@@ -10,8 +10,6 @@ import traceback
 import json
 import logging
 
-from types import SimpleNamespace
-
 
 class MqttConfListener(object):
     """Mqtt publisher class to publish mqtt topics."""
@@ -37,8 +35,10 @@ class MqttConfListener(object):
             decoded_message = str(msg.payload.decode("utf-8"))
             self.configuration = json.loads(decoded_message,
                                     object_hook=self.deserialize_function)
-            self.logger.info('Decoded json message in coinfiguration '
-                             'object {}'.format(self.configuration))
+            self.logger.info('Decoded json message in configuration '
+                             'object {} from topic {}'
+                             .format(self.configuration, 
+                                     self.topic_to_subscribe))
         except Exception as exc: 
             self.logger.info('an error occured! Error: {}'.format(exc))
             # printing stack trace

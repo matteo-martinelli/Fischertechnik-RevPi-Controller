@@ -125,7 +125,7 @@ class MultiprocessManager():
         self.vacuum_gripper_carrier.deactivate_carrier()
         self.turntable_carrier.deactivate_carrier()
         self.saw_station.deactivate_station()
-        self.conveyor_carrier.deativate_carrier()
+        self.conveyor_carrier.deactivate_carrier()
 
         # Closing the publisher MQTT connection
         self.mqtt_publisher.close_connection()
@@ -222,7 +222,7 @@ class MultiprocessManager():
                 # Activate the turntable until it reaches the saw
                 if (self.turntable_carrier.turntable_pos != 'saw' and
                     self.saw_station.process_completed == False):
-                    self.turntable_carrier.rotate_towards_saw()
+                    self.turntable_carrier.transfer_product_to_saw()
                     self.saw_station.prod_under_saw = True
 
                 # Activate the saw for the designed processing time

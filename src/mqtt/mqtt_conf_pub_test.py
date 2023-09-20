@@ -46,7 +46,7 @@ dept_conf = \
 compressor_conf = '{"motor_behaviour": "always_on"}'
 oven_station_conf = '{"oven_processing_time": 3}'
 vacuum_carrier_conf = '{"vacuum_carrier_speed": "High"}'
-turntable_carrier_conf = '{"turntable_carrier_speed_pwm": 1}'
+turntable_carrier_conf = '{"turntable_carrier_speed": 1}'
 saw_conf = '{"saw_processing_time": 2}'
 conveyor_conf = '{"none"}'
 logger.info('JSONs set')
