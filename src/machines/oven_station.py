@@ -58,7 +58,7 @@ class OvenStation(object):
         # numbers from real product sheet
         # TODO: add them to your initialisiation
         # //https://www.gpline.com.tw/productdetail_en.php?id=427
-        self.oven_state = None                          # Oven state
+        self.oven_state ='warming'                      # Oven state
         self.stop_event = threading.Event()             # Cool down stop flag 
         self.cooling_oven_process = None                # Cooling process field
         self.room_temperature = 24.0                    # Physical
@@ -565,6 +565,8 @@ class OvenStation(object):
             'oven-carrier': self._carrier_pos,
             'oven-door': self._door_pos,
             'proc-light': self._proc_light_state,
+            'oven-temp': self.temperature_inside,
+            'oven-heating-state': self.oven_state,
             'light-barrier': self._light_barrier_state,
             'prod-on-carrier': self._prod_on_carrier,
             'proc-completed': self._process_completed,
