@@ -21,12 +21,13 @@ class ConveyorCarrierConf(object):
     
     @conveyor_carrier_speed.setter
     def conveyor_carrier_speed(self, value: str): 
-        if(value != "Low" or value != "Medium" or value != "High"):
-            self.logger.error('Illegal value passed to the conveyor ' +
-                              'configuration. Expected a string, ' +
-                              'got %s of value %s', value, type(value))
-        else: 
+        if(value == "Low" or value == "Medium" or value == "High"):
             self._conveyor_carrier_speed = value
+        else: 
+            self.logger.error('Illegal value passed to the conveyor ' +
+                              'configuration. Expected \"High\", \"Medium\" ' + 
+                              'or \"Low\", got %s of type %s', 
+                              value, type(value))
 
     @staticmethod
     def to_object(d):

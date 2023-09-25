@@ -21,12 +21,13 @@ class TurntableCarrierConf(object):
     
     @turntable_carrier_speed.setter
     def turntable_carrier_speed(self, value: str): 
-        if(value != "Low" or value != "Medium" or value != "High"):
-            self.logger.error('Illegal value passed to the turntable ' +
-                              'configuration. Expected a string, ' +
-                              'got %s of value %s', value, type(value))
-        else: 
+        if(value == "Low" or value == "Medium" or value == "High"):
             self._turntable_carrier_speed = value
+        else: 
+            self.logger.error('Illegal value passed to the turntable ' +
+                              'configuration. Expected \"High\", \"Medium\" ' + 
+                              'or \"Low\", got %s of type %s', 
+                              value, type(value))
 
     @staticmethod
     def to_object(d):

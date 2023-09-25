@@ -16,8 +16,13 @@ class VacuumCarrierConf(object):
     
     @vacuum_carrier_speed.setter
     def vacuum_carrier_speed(self, value: str): 
-        # TODO: insert check about the str passed; it should be "Low" or "Medium" or "High"
-        self._vacuum_carrier_speed = value
+        if(value == "Low" or value == "Medium" or value == "High"):
+            self._vacuum_carrier_speed = value
+        else: 
+            self.logger.error('Illegal value passed to the vacuum carrier ' +
+                              'configuration. Expected \"High\", \"Medium\" ' + 
+                              'or \"Low\", got %s of type %s', 
+                              value, type(value))
 
     @staticmethod
     def to_object(d):
