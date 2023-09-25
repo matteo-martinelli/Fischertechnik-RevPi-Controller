@@ -157,7 +157,7 @@ class ConveyorCarrier(object):
             #pass
         else: 
             self.logger.error('Illegal conveyor speed configuration ' +
-                            ' received in moving turntable towards saw;' + 
+                            ' received in transfering product to the exit;' + 
                             ' expected \"Low\" or \"Medium\" or' +
                             ' \"High\", got %s', carrier_speed)
         self.motor.turn_on() 
