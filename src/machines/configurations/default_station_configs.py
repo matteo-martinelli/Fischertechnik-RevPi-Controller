@@ -34,7 +34,7 @@ class DefaultStationsConfigs(object):
     COMPRESSOR_BEHAVIOUR = 'something_else'     # string
     OVEN_PROCESSING_TIME = 1                    # seconds
     SAW_PROCESSING_TIME = 1                     # seconds
-    VACUUM_CARRIER_SPEED = "Low"                # string
+    VACUUM_CARRIER_SPEED = "High"                # string
     TURNTABLE_CARRIER_SPEED = "High"            # string
     CONVEYOR_CARRIER_SPEED = "High"             # string
 
