@@ -16,7 +16,13 @@ class CompressorServiceConf(object):
     
     @compressor_behaviour.setter
     def oven_processing_time(self, value:str) -> None: 
-        self._compressor_behaviour = value
+        if(value == "always_on" or value == "when_needed"):
+            self._compressor_behaviour = value
+        else: 
+            self.logger.error('Illegal value passed to the conveyor ' +
+                              'configuration. Expected \"always_on\" ' + 
+                              'or \"when_needed\", got %s of type %s', 
+                              value, type(value))
 
     @staticmethod
     def to_object(d):
