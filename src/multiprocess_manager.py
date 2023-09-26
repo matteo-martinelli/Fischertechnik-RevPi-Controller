@@ -50,20 +50,14 @@ class MultiprocessManager():
 
         # Process config
         self.multiproc_dept_conf = \
-            MultiProcDeptConf(
-            pieces_to_produce=DefaultStationsConfigs.PIECES_TO_PRODUCE, 
-            #compressor_behaviour=DefaultStationsConfigs.COMPRESSOR_BEHAVIOUR,
-            #oven_processing_time=DefaultStationsConfigs.OVEN_PROCESSING_TIME,      # Time in seconds
-            #saw_processing_time=DefaultStationsConfigs.SAW_PROCESSING_TIME,        # Time in seconds
-            #vacuum_carrier_speed=DefaultStationsConfigs.VACUUM_CARRIER_SPEED,      # TBD
-            #turntable_carrier_speed=DefaultStationsConfigs.TURNTABLE_CARRIER_SPEED # TBD
-            )
+            MultiProcDeptConf(DefaultStationsConfigs.PIECES_TO_PRODUCE)
 
-        # Instantiating the MQTT publisher
+        # Instantiating MQTT objects
         self.mqtt_publisher = MqttPublisher('user:dept_manager/multiproc_dept')
         self.mqtt_conf_listener = MqttConfListener('multiproc_dept/conf',
                                                    MultiProcDeptConf, 
-                                                   self.multiproc_dept_conf.to_object)
+                                                   self.multiproc_dept_conf\
+                                                    .to_object)
         self.dept_name = dept_name  # Dept mqtt root topic
         
         # My aggregated objects
@@ -88,20 +82,18 @@ class MultiprocessManager():
                               10, self.mqtt_publisher)
 
         # Process fields
-        self.pieces_counter = 0
+        self.pieces_to_produce = DefaultStationsConfigs.PIECES_TO_PRODUCE
+        self.pieces_completed = 0
+        self.pieces_left = self.pieces_to_produce - self.pieces_completed
         self.process_completed = False
         self.to_reset = False
 
     def set_received_configuration(self, conf):
-        self.logger.info('A configuration have been saved for {} have been '
-                         'saved'.format(self.dept_name))
+        self.logger.info('Saving the new configuration for {}'\
+                         .format(self.dept_name))
         self.multiproc_dept_conf.pieces_to_produce = conf.pieces_to_produce
-        #self.multiproc_dept_conf.compressor_behaviour = conf.compressor_behaviour
-        #self.multiproc_dept_conf.oven_processing_time = conf.oven_processing_time
-        #self.multiproc_dept_conf.saw_processing_time = conf.saw_processing_time
-        #self.multiproc_dept_conf.vacuum_carrier_speed = conf.vacuum_carrier_speed
-        #self.multiproc_dept_conf.turntable_carrier_speed = \
-        #    conf.turntable_carrier_speed
+        self.pieces_to_produce = self.multiproc_dept_conf.pieces_to_produce
+        self.pieces_left = self.pieces_to_produce - self.pieces_completed
     
     def read_all_sensors(self):
         self.oven_station.read_all_sensors()            # Oven station
@@ -161,10 +153,10 @@ class MultiprocessManager():
         self.mqtt_conf_listener.open_connection()
         time.sleep(0.5)
         if(self.mqtt_conf_listener.configuration != None):
-            self.set_received_configuration(
-                self.mqtt_conf_listener.configuration)
-            self.logger.info('New conf saved found for {}, '
-                             'uploaded '.format(self.dept_name))
+            self.set_received_configuration(self.mqtt_conf_listener\
+                                            .configuration)
+            self.logger.info('New {} conf uploaded'\
+                             .format(self.dept_name))
         else: 
             self.logger.info('No conf saved found, proceeding the standard '    
                              'conf for {}'.format(self.dept_name))
@@ -172,7 +164,13 @@ class MultiprocessManager():
         # Activating the process services - i.e. the compressor_service
         self.compressor_service.activate_service()
 
-        self.logger.info('Waiting for the first piece to process')
+        self.logger.info('Pieces to produce: {};'\
+                         .format(self.pieces_to_produce))
+        self.logger.info('Pieces completed {};'\
+                         .format(self.pieces_completed))
+        self.logger.info('Pieces left {};'\
+                         .format(self.pieces_left))
+        self.logger.info('Waiting for the first piece to process ...')
 
         # My own loop to do some work next to the event system. We will stay
         # here till self.rpi.exitsignal.wait returns True after SIGINT/SIGTERM
@@ -254,16 +252,20 @@ class MultiprocessManager():
                and self.oven_station.process_completed == True
                and self.process_completed == False):
                 # Add 1 to the piece counter
-                self.pieces_counter += 1
+                self.pieces_completed += 1
                 # Setting the process as completed
                 self.process_completed = True
                 self.to_reset = True
                 # Print the process completion message
                 self.logger.info('piece completed')
-                pieces_left = \
-                    self.multiproc_dept_conf.pieces_to_produce - self.pieces_counter
-                self.logger.info('{} pieces left to be produced'\
-                             .format(pieces_left))
+                self.pieces_left = self.pieces_to_produce - \
+                    self.pieces_completed
+                self.logger.info('{} pieces to be produced'\
+                                 .format(self.pieces_to_produce))
+                self.logger.info('{} pieces produced'\
+                                 .format(self.pieces_completed))
+                self.logger.info('{} pieces left to produce'\
+                                 .format(self.pieces_left))
 
             ###################################################################
             # If the product is in moved from the conveyor light barrier, reset
@@ -271,7 +273,7 @@ class MultiprocessManager():
             if(self.conveyor_carrier.light_barrier_state == True 
                and self.process_completed == True
                and self.to_reset == True):
-                if(self.pieces_counter == self.multiproc_dept_conf.pieces_to_produce):
+                if(self.pieces_completed == self.pieces_to_produce):
                     # Print the process completion message
                     self.logger.info('production completed,'
                                      'terminating the program cycle')
@@ -284,7 +286,7 @@ class MultiprocessManager():
                     self.reset_station_states_and_restart()
                     self.to_reset = False
                     self.process_completed = False
-                    ('Waiting')
+                    ('Waiting ...')
 
 if __name__ == "__main__":
     # Instantiating the controlling class
