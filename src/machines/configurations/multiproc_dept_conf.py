@@ -4,12 +4,13 @@
 multiproc_dept_conf.py: MultiProcDeptConf class
 """
 
+import logging
+
 
 class MultiProcDeptConf(object):
     """Configuration class storing information about the department 
     configuration setting.    
     """
-
     #def __init__(self, pieces_to_produce=0, compressor_behaviour="always_on",
     #             oven_processing_time=0, saw_processing_time=0, 
     #             vacuum_carrier_speed=0, turntable_carrier_speed=0):
@@ -20,6 +21,7 @@ class MultiProcDeptConf(object):
         #self._saw_processing_time = saw_processing_time
         #self._vacuum_carrier_speed = vacuum_carrier_speed
         #self._turntable_carrier_speed = turntable_carrier_speed
+        self.logger = logging.getLogger('multiproc_dept_logger')
 
     @property
     def pieces_to_produce(self):
@@ -27,7 +29,12 @@ class MultiProcDeptConf(object):
     
     @pieces_to_produce.setter
     def pieces_to_produce(self, value: int):
-        self._pieces_to_produce = value
+        if (value > 0):
+            self._pieces_to_produce = value
+        else: 
+            self.logger.error('Wron pieces to produce value; expected a ' + 
+                              'positive int, got %s of type %s', 
+                              value, type(value))
     
     """
     @property
