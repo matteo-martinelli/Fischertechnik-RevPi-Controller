@@ -267,9 +267,9 @@ class VacuumCarrier(object):
             time.sleep(5)
             self.logger.info('Stopped for 5 seconds')
         elif (carrier_speed  == "Medium"): 
-            self.logger.info('Stopping for 3 seconds')
+            self.logger.info('Stopping for 2 seconds')
             time.sleep(3)
-            self.logger.info('Stopped for 3 seconds')
+            self.logger.info('Stopped for 2 seconds')
         elif (carrier_speed == "High"): 
             self.logger.info('No stop planned')
             pass

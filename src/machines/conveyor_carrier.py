@@ -147,14 +147,11 @@ class ConveyorCarrier(object):
             time.sleep(5)
             self.logger.info('Stopped for 5 seconds')
         elif (carrier_speed == "Medium"):
-            self.logger.info('Stopping for 3 seconds')
-            time.sleep(3)
-            self.logger.info('Stopped for 3 seconds')
-        elif (carrier_speed == "High"):
             self.logger.info('Stopping for 2 seconds')
-            time.sleep(2)    
+            time.sleep(3)
             self.logger.info('Stopped for 2 seconds')
-            #pass
+        elif (carrier_speed == "High"):
+            self.logger.info('No stop planned')
         else: 
             self.logger.error('Illegal conveyor speed configuration ' +
                             ' received in transfering product to the exit;' + 
