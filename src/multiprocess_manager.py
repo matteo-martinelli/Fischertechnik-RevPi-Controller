@@ -61,7 +61,7 @@ class MultiprocessManager():
 
         # Instantiating the MQTT publisher
         self.mqtt_publisher = MqttPublisher('user:dept_manager/multiproc_dept')
-        self.mqtt_conf_listener = MqttConfListener('multiproc_dept/conf',\
+        self.mqtt_conf_listener = MqttConfListener('multiproc_dept/conf',
                                                    MultiProcDeptConf, 
                                                    self.multiproc_dept_conf.to_object)
         self.dept_name = dept_name  # Dept mqtt root topic
@@ -212,8 +212,8 @@ class MultiprocessManager():
 
                 # Grip the product
                 self.oven_station.prod_on_carrier = False
-                self.vacuum_gripper_carrier.\
-                    transfer_product_from_oven_to_turntable()
+                self.vacuum_gripper_carrier\
+                    .transfer_product_from_oven_to_turntable()
                 self.turntable_carrier.prod_on_carrier = True
                     
             # Turn the turntable towards the saw
