@@ -298,12 +298,14 @@ class OvenStation(object):
         self.set_process_completed(True)
 
     def check_oven_if_cooling(self):
-        if (self.cooling_oven_process is not None):
+        if (self.cooling_oven_process != None):
             logging.debug("Oven cooling process is running. Stopping it")
             self.stop_event.set()
             self.cooling_oven_process.join()
+            logging.debug("Oven cooling process thread terminated. " + 
+                          "Cooling process stopped")
             self.cooling_oven_process = None
-            logging.debug("Oven cooling process stopped")
+            self.stop_event.clear()
         else: 
             logging.debug("Oven is not cooling down, heating it up")
 
@@ -390,10 +392,9 @@ class OvenStation(object):
             # publish data
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json(), True)
-            
             # thread stop flag check
-            if self.stop_event.is_set(): 
-                self.stop_event.clear()
+            if self.stop_event.is_set():
+                #self.stop_event.clear()
                 logging.debug("Cooling phase interrupted."\
                               " Last temperature: {}"\
                                 .format(self.temperature_inside))
