@@ -6,9 +6,14 @@ compressor_service_conf.py: CompressorServiceConf class
 Contains and represents the compressor service configuration
 """
 
+import logging
+
+
 class CompressorServiceConf(object):
     def __init__(self, compressor_behaviour: str):
         self._compressor_behaviour = compressor_behaviour
+        
+        self.logger = logging.getLogger('multiproc_dept_logger')
         
     @property
     def compressor_behaviour(self) -> str: 

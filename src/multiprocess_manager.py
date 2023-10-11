@@ -12,9 +12,6 @@ blocking, with a personalised while loop next to the event system.
 """
 
 
-# TODO: move the configuration check and change at the very beginning of each cycle
-# TODO: add sensors pubblication only if the last value changed
-# TODO: on DT, infer working status as follows: if proc_complete=false and prod_on_carrier=true -> working else waiting else completed
 import revpimodio2
 import time
 import logging
@@ -54,8 +51,7 @@ class MultiprocessManager():
 
         # Instantiating MQTT objects
         self.mqtt_publisher = MqttPublisher('user:dept_manager/multiproc_dept')
-        self.mqtt_conf_listener = MqttConfListener('multiproc_dept/conf',
-                                                   MultiProcDeptConf, 
+        self.mqtt_conf_listener = MqttConfListener('multiproc_dept/conf', 
                                                    self.multiproc_dept_conf\
                                                     .to_object)
         self.dept_name = dept_name  # Dept mqtt root topic
@@ -186,7 +182,6 @@ class MultiprocessManager():
         #   2. Follows the process description
         # The cycle is set in ... .exitsignal.wait(0.05) every 0.05s
         while (self.rpi.exitsignal.wait(0.05) == False):
-            # TODO: simplify the process loop
             # First things first: reading all the sensors states
             self.read_all_sensors()
             # Follows the process description #################################

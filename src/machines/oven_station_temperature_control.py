@@ -1,9 +1,6 @@
 import random
 
 # currently function is a linear function with linear clutuations
-# TODO: for future demonstration use a sin/cos function to smoothen the fluctuation curve
-# TODO: implement a function for a heatup curve, by default it is exponential form 1 degree per minute to 12 per minute
-# TODO: insulation not yet used, could be considered if oven model is not the "ideal" oven
 def update_temperature(outside_temperature, current_inside_temperature, 
                        wanted_temperature, flucutation, 
                        min_oven_set_temperature, max_oven_set_temperature, 

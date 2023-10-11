@@ -55,7 +55,6 @@ class TurntableCarrier(object):
         
         self.mqtt_conf_listener = \
             MqttConfListener('multiproc_dept/turntable-carrier/conf',
-                             self.configuration.__class__, 
                              self.configuration.to_object)
         self.mqtt_conf_listener.open_connection()
         self.read_conf()
@@ -175,6 +174,7 @@ class TurntableCarrier(object):
     def push_product(self) -> None: 
         self.activate_pusher()
         self.deactivate_pusher()
+        self.process_completed = True
     
     def activate_pusher(self) -> None: 
         if(self.pusher_activation.state == False):
@@ -328,14 +328,13 @@ class TurntableCarrier(object):
         self.read_conf()
         self.rotate_towards_conveyor()
         self.push_product()
+        
         self.prod_on_carrier = False
         self.rotate_towards_vacuum_carrier()
-        self.process_completed = True   # TODO: move the process completed flag when the prod is pushed out of the turntable
 
     def turn_off_all_actuators(self) -> None: 
         self.motor.turn_off()
         self.read_motor_state()
-
         self.pusher_activation.turn_off()
         self.read_pusher_state()
 

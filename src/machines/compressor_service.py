@@ -40,8 +40,8 @@ class CompressorService(object):
         self.topic = self._dept + '/' + self._station 
         
         self.mqtt_conf_listener = \
-            MqttConfListener('multiproc_dept/compressor-service/conf',
-                             self.configuration.__class__, self.configuration.to_object)        
+            MqttConfListener('multiproc_dept/compressor-service/conf', 
+                             self.configuration.to_object)        
         self.mqtt_conf_listener.open_connection()
         self.read_conf()
         

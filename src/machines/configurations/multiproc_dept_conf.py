@@ -31,11 +31,5 @@ class MultiProcDeptConf(object):
     
     @staticmethod
     def to_object(d):
-        inst = MultiProcDeptConf(d['pieces_to_produce']#, 
-                                 #d['compressor_behaviour'], 
-                                 #d['oven_processing_time'], 
-                                 #d['saw_processing_time'], 
-                                 #d['vacuum_carrier_speed_pwm'], 
-                                 #d['turntable_carrier_speed_pwm']
-                                )
+        inst = MultiProcDeptConf(d['pieces_to_produce'])
         return inst

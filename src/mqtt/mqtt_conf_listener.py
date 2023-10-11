@@ -13,13 +13,12 @@ import logging
 
 class MqttConfListener(object):
     """Mqtt publisher class to publish mqtt topics."""
-    def __init__(self, topic_to_subscribe, conf_class, deserialize_function):
+    def __init__(self, topic_to_subscribe, deserialize_function):
         
         self.logger = logging.getLogger('multiproc_dept_logger')
         
         self.mqtt_client = mqtt.Client()
         self.topic_to_subscribe = topic_to_subscribe
-        self.conf_class = conf_class    # TODO: delete this field as is unnecessary
         self.deserialize_function = deserialize_function
         self.configuration = None
 
@@ -29,16 +28,13 @@ class MqttConfListener(object):
         self.subscribe_multiproc_dept_configuration(self.topic_to_subscribe)
 
     def on_message(self, client, userdata, msg):
-        self.logger.info('HERE Received a conf message for {}'\
-                         .format(self.conf_class))
         try: 
             decoded_message = str(msg.payload.decode("utf-8"))
             self.configuration = json.loads(decoded_message,
                                     object_hook=self.deserialize_function)
-            self.logger.info('Decoded json message in configuration '
-                             'object {} from topic {}'
+            self.logger.info('Received and decoded json message from topic {}'
                              .format(self.configuration, 
-                                     self.topic_to_subscribe))
+                                    self.topic_to_subscribe))
         except Exception as exc: 
             self.logger.info('an error occured! Error: {}'.format(exc))
             # printing stack trace
@@ -66,26 +62,10 @@ class MqttConfListener(object):
         self.mqtt_client.loop_stop()
         self.logger.info('Mqtt listener client Loop stopped')
 
-    # TODO: set the configuration retain flag
-    def subscribe_multiproc_dept_configuration(self, topic):
+    def subscribe_multiproc_dept_configuration(self, topic: str):
         if (MqttConfiguratorParameter.ACTIVE_MQTT == True):
             mqtt_configured_user = MqttConfiguratorParameter.MQTT_USER
             target_topic = 'user:{0}/{1}/'.format(mqtt_configured_user, topic)
             self.mqtt_client.subscribe(target_topic)
             self.logger.info('Subscribing tentative to {}'\
                              .format(target_topic, ' ...'))
-
-    #def manually_decode_conf(self, conf_dict: dict):
-    #    try:
-    #        multiproc_conf = self.conf_class
-    #        self.logger.info('Decoding ...')
-    #        for key in conf_dict:
-    #            setattr(multiproc_conf, key, conf_dict[key])
-    #        
-    #        self.configuration = self.conf_class(multiproc_conf) 
-    #        self.logger.info('Received MQTT configuration saved for {}'\
-    #                         .format(self.conf_class))
-    #    except Exception as exc: 
-    #        self.logger.info('an error occured! Error: {}'.format(exc))
-    #        # printing stack trace
-    #        self.logger.info(traceback.print_exc())

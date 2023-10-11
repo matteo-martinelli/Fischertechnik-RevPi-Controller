@@ -43,7 +43,7 @@ class SawStation(object):
 
         self.mqtt_conf_listener = \
               MqttConfListener('multiproc_dept/saw-station/conf', 
-                               self.configuration.__class__, self.configuration.to_object)
+                               self.configuration.to_object)
         self.mqtt_conf_listener.open_connection()
         self.read_conf()
        

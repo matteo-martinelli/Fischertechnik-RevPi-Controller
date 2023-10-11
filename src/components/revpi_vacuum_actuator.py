@@ -24,7 +24,6 @@ class RevPiVacuumActuator(GenericRevPiActuator):
         super().__init__(rpi)
         self._name = name
         self._pin = pin
-        # self.compressor = ... TODO: add compressor check
         # MQTT
         self.topic = parent_topic + '/actuators/' + name
         self.mqtt_publisher = mqtt_publisher

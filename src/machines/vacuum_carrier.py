@@ -54,7 +54,6 @@ class VacuumCarrier(object):
 
         self.mqtt_conf_listener = \
             MqttConfListener('multiproc_dept/vacuum-carrier/conf',
-                              self.configuration.__class__, 
                               self.configuration.to_object)
         self.mqtt_conf_listener.open_connection()
         self.read_conf()
@@ -401,7 +400,6 @@ class VacuumCarrier(object):
         if (new_vaccum_carrier_speed_conf != None):
             if (new_vaccum_carrier_speed_conf.vacuum_carrier_speed != 
                 self.configuration.vacuum_carrier_speed):
-                # TODO: add here message check to understand if there are some errors
                 self.logger.info('New configuration received for vacuum '
                                  'carrier speed - old value {}; new value {};'
                                  ' overriding'\

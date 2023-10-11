@@ -13,6 +13,5 @@ class GenericRevPiActuator(object):
     def __init__(self, rpi):
         # Instantiate RevPiModIO controlling library
         self.rpi = rpi
-        # TODO: eventually assign directly here the state from revpimodio
         self._state = False
         self._previous_state = False

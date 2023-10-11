@@ -12,10 +12,7 @@ class GenericRevPiSensor(object):
     def __init__(self, rpi, pin: int):
         # Instantiate RevPiModIO controlling library
         self.rpi = rpi
-        # TODO: eventually assign directly here the pin from revpimodio
-        # TODO: put pin feasibility check
         self._pin = pin
-        # TODO: eventually assign directly here the state from revpimodio
         self._state = False
         self._previous_state = False
 

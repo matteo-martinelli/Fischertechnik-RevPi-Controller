@@ -6,9 +6,14 @@ vacuum_carrier_conf.py: VacuumCarrierConf class
 Contains and represents the vacuum carrier configuration
 """
 
+import logging
+
+
 class VacuumCarrierConf(object):
     def __init__(self, vacuum_carrier_speed: str):
         self._vacuum_carrier_speed = vacuum_carrier_speed
+
+        self.logger = logging.getLogger('multiproc_dept_logger')
         
     @property
     def vacuum_carrier_speed(self): 

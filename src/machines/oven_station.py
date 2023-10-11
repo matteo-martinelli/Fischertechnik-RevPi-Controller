@@ -30,7 +30,7 @@ import json
 import logging
 
 from machines.configurations.default_station_configs \
-    import DefaultStationsConfigs   #TODO: eventually change it
+    import DefaultStationsConfigs
 from machines.oven_station_temperature_control import calc_state 
 from machines.oven_station_temperature_control import update_temperature 
 
@@ -55,9 +55,9 @@ class OvenStation(object):
         self._process_completed = False
         self._light_barrier_state = False
         
-        # numbers from real product sheet
-        # TODO: add them to your initialisiation
-        # //https://www.gpline.com.tw/productdetail_en.php?id=427
+        # Oven emulation data configuration
+        # Eventually change in numbers from real product sheet
+        # https://www.gpline.com.tw/productdetail_en.php?id=427
         self.oven_state ='warming'                      # Oven state
         self.stop_event = threading.Event()             # Cool down stop flag 
         self.cooling_oven_process = None                # Cooling process field
@@ -78,7 +78,7 @@ class OvenStation(object):
 
         self.mqtt_conf_listener = \
             MqttConfListener('multiproc_dept/oven-station/conf', 
-                             self.configuration.__class__, self.configuration.to_object)
+                             self.configuration.to_object)
         self.mqtt_conf_listener.open_connection()
         self.read_conf()
 
@@ -288,10 +288,12 @@ class OvenStation(object):
         self.oven_keep_temp(self.configuration.oven_processing_time)
         
         # done processing, preparing the cooling down thread
-        self.cooling_oven_process = threading.Thread(name="oven_cooling_process", # TODO: add the process termination at ctrl + C in the right method
-                                                 target=self.cool_oven_down, 
-                                                 args=(self.room_temperature,))
-        # cooling down                          # When not deamon, the main thread cannot exit - Not necessary here
+        self.cooling_oven_process = \
+            threading.Thread(name="oven_cooling_process",
+                             target=self.cool_oven_down, 
+                             args=(self.room_temperature,)) 
+        # (When not deamon, the main thread cannot exit - Not necessary here)
+        # cooling down
         self.cooling_oven_process.start()
                 
         self.move_carrier_outward()
@@ -358,7 +360,7 @@ class OvenStation(object):
                              format(self.oven_state, self.temperature_inside))
             
             time.sleep(1)
-            #time.sleep(self.configuration.oven_processing_time) # TODO: eventually change into time.sleep(configuration.proc_time)
+            #time.sleep(self.configuration.oven_processing_time) - Alternative, for "real simulation" purposes
             
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                     self.to_json(), True)
@@ -522,30 +524,7 @@ class OvenStation(object):
         self.read_proc_light_state()
 
     # MQTT 
-    def read_conf(self) -> None: # TODO: why it has been changed?
-    #    new_oven_proc_time_conf = self.mqtt_conf_listener.configuration
-    #    if (new_oven_proc_time_conf != None):
-    #        if (new_oven_proc_time_conf.oven_processing_time != 
-    #            self.configuration.oven_processing_time):
-    #            self.logger.info('New configuration received for oven station '
-    #                         'process time - old value {}; new value {}; '
-    #                         'overriding'\
-    #                         .format(self.configuration.oven_processing_time, 
-    #                                new_oven_proc_time_conf\
-    #                                .oven_processing_time))
-    #            self.configuration.oven_processing_time = \
-    #            new_oven_proc_time_conf.oven_processing_time
-    #        else: 
-    #            self.logger.info('No conf updated, proceeding with the last '
-    #                             'oven_proc_time of {} for {}'\
-    #                             .format(self.configuration.\
-    #                                     oven_processing_time, 
-    #                                     self.station))
-    #    else: 
-    #        self.logger.info('No conf updated, proceeding with the last '
-    #                         'oven_proc_time of {} for {}'\
-    #                         .format(self.configuration.oven_processing_time, 
-    #                                 self.station))
+    def read_conf(self) -> None:
         oven_proc_time_conf = self.mqtt_conf_listener.configuration 
         if (oven_proc_time_conf != self.configuration._oven_processing_time 
             and oven_proc_time_conf != None):

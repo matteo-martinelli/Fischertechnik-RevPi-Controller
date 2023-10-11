@@ -44,7 +44,6 @@ class ConveyorCarrier(object):
 
         self.mqtt_conf_listener = \
             MqttConfListener('multiproc_dept/conveyor-carrier/conf',
-                             self.configuration.__class__, 
                              self.configuration.to_object)
         self.mqtt_conf_listener.open_connection()
         self.read_conf()
