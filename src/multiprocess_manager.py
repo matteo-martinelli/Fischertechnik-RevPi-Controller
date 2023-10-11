@@ -104,7 +104,7 @@ class MultiprocessManager():
     
     def cleanup(self):
         """Cleanup function to leave the RevPi in a defined state."""
-        self.logger.info('\nCleaning the system state')
+        self.logger.info('Cleaning the system state')
 
         # Switch of LED and outputs before exit program
         self.rpi.core.a1green.value = False                                     # type: ignore
@@ -123,8 +123,15 @@ class MultiprocessManager():
         self.mqtt_publisher.close_connection()
     
     def reset_station_states_and_stop(self):
-        self.reset_station_states_and_restart
+        # - turning off all station actuators method;
+        # - resetting station states method; 
+        self.oven_station.reset_station()
+        self.vacuum_gripper_carrier.reset_carrier()
+        self.turntable_carrier.reset_carrier()
+        self.saw_station.reset_station()
+        self.conveyor_carrier.reset_carrier()
         self.compressor_service.turn_off_all_actuators()
+        self.cleanup()
     
     def reset_station_states_and_restart(self): 
         # - turning off all station actuators method;
