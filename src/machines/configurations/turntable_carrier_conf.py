@@ -30,6 +30,6 @@ class TurntableCarrierConf(object):
                               value, type(value))
 
     @staticmethod
-    def to_object(d) -> "TurntableCarrierConf":
+    def to_object(d: dict) -> "TurntableCarrierConf":
         inst = TurntableCarrierConf(d['turntable_carrier_speed'])
         return inst

@@ -7,6 +7,8 @@ For following pins:
 O_10: compressor.
 """
 
+from mqtt.mqtt_publisher import MqttPublisher
+import revpimodio2
 from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
 from datetime import datetime
 import time
@@ -22,8 +24,8 @@ from machines.configurations.default_station_configs \
 
 class CompressorService(object):
     """Compressor class for compressor objects."""
-    def __init__(self, rpi, dept: str, station: str, motor_act_pin: int, 
-                 mqtt_pub):
+    def __init__(self, rpi: revpimodio2.RevPiModIO, dept: str, station: str, 
+                 motor_act_pin: int, mqtt_pub: MqttPublisher):
         
         self.logger = logging.getLogger('multiproc_dept_logger')
 

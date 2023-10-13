@@ -10,6 +10,8 @@ O_9: processing light;
 O_10: compressor.
 """
 
+from mqtt.mqtt_publisher import MqttPublisher
+import revpimodio2
 from components.basic_components.generic_revpi_actuator import \
     GenericRevPiActuator
 from datetime import datetime
@@ -19,8 +21,8 @@ import json
 
 class RevPiSingleMotionActuator(GenericRevPiActuator):
     """Single Motion Actuator class for single motion actuated objects."""
-    def __init__(self, rpi, name: str, pin: int, parent_topic: str, 
-                 mqtt_publisher):
+    def __init__(self, rpi: revpimodio2.RevPiModIO, name: str, pin: int, 
+                 parent_topic: str, mqtt_publisher: MqttPublisher):
         super().__init__(rpi)
         # MQTT
         self.topic = parent_topic + '/actuators/' + name

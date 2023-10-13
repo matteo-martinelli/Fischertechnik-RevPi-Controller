@@ -30,6 +30,6 @@ class VacuumCarrierConf(object):
                               value, type(value))
 
     @staticmethod
-    def to_object(d) -> "VacuumCarrierConf":
+    def to_object(d: dict) -> "VacuumCarrierConf":
         inst = VacuumCarrierConf(d['vacuum_carrier_speed'])
         return inst

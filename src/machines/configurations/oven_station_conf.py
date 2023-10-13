@@ -19,6 +19,6 @@ class OvenStationConf(object):
         self._oven_processing_time = value
 
     @staticmethod
-    def to_object(d) -> "OvenStationConf":
+    def to_object(d: dict) -> "OvenStationConf":
         inst = OvenStationConf(d['oven_processing_time'])
         return inst

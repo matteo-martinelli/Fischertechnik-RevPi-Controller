@@ -35,7 +35,7 @@ class MultiprocessManager():
     """Entry point for Fischertechnik Multiprocess Station with Oven control 
     over RevPi."""
 
-    def __init__(self, dept_name):
+    def __init__(self, dept_name: str):
         # Instantiate RevPiModIO controlling library
         self.rpi = revpimodio2.RevPiModIO(autorefresh=True)
         # Handle SIGINT / SIGTERM to exit program cleanly
@@ -84,7 +84,7 @@ class MultiprocessManager():
         self.process_completed = False
         self.to_reset = False
 
-    def set_received_configuration(self, conf) -> None:
+    def set_received_configuration(self, conf: MultiProcDeptConf) -> None:
         self.logger.info('Saving the new configuration for {}'\
                          .format(self.dept_name))
         self.multiproc_dept_conf.pieces_to_produce = conf.pieces_to_produce

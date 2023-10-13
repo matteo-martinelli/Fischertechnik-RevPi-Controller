@@ -8,6 +8,8 @@ This class is composed by the following objects:
     2. light barrier sensor I_3;
 """
 
+import revpimodio2
+from mqtt.mqtt_publisher import MqttPublisher
 from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
 from components.revpi_light_barrier_sensor import RevPiLightBarrierSensor
 from datetime import datetime
@@ -21,10 +23,12 @@ from mqtt.mqtt_conf_listener import MqttConfListener
 from machines.configurations.default_station_configs \
     import DefaultStationsConfigs
 
+
 class ConveyorCarrier(object):
     """Conveyor Carrier class for conveyor objects."""
-    def __init__(self, rpi, dept: str, station: str, motor_act_pin: int, 
-                 barrier_sens_pin: int, mqtt_publisher):
+    def __init__(self, rpi: revpimodio2.RevPiModIO, dept: str, station: str, 
+                 motor_act_pin: int, barrier_sens_pin: int, 
+                 mqtt_publisher: MqttPublisher):
         
         self.logger = logging.getLogger('multiproc_dept_logger')
         

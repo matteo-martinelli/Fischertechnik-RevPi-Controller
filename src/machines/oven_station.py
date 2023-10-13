@@ -14,6 +14,8 @@ This class is composed by the following objects:
 """
 
 
+import revpimodio2
+from mqtt.mqtt_publisher import MqttPublisher
 from components.revpi_light_barrier_sensor import RevPiLightBarrierSensor
 from components.revpi_double_motion_actuator import RevPiDoubleMotionActuator
 from components.revpi_reference_sensor import RevPiReferenceSensor
@@ -37,11 +39,11 @@ from machines.oven_station_temperature_control import update_temperature
 
 class OvenStation(object):
     """Oven class for oven objects."""
-    def __init__(self, rpi, dept: str, station: str, 
+    def __init__(self, rpi: revpimodio2.RevPiModIO, dept: str, station: str, 
                  carrier_in_act_pin: int, carrier_out_act_pin: int, 
                  proc_light_act_pin: int, vacuum_door_act_pin: int, 
                  in_oven_sens_pin, out_oven_sens_pin: int, 
-                 light_barrier_sens_pin: int, mqtt_publisher):
+                 light_barrier_sens_pin: int, mqtt_publisher: MqttPublisher):
         
         self.logger = logging.getLogger('multiproc_dept_logger')     
 
@@ -270,8 +272,8 @@ class OvenStation(object):
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json(), True)
     
-    #def oven_process_start(self, proc_time, target_temperature = 300.0) -> None:
-    def oven_process_start(self, target_temperature = 200.0) -> None:
+    #def oven_process_start(self, proc_time, target_temperature: float = 300.0) -> None:
+    def oven_process_start(self, target_temperature: float = 200.0) -> None:
         self.read_conf()
 
         # for each product, start producing ...
@@ -311,7 +313,7 @@ class OvenStation(object):
         else: 
             logging.debug("Oven is not cooling down, heating it up")
 
-    def heat_oven_up(self, target_temp) -> None:
+    def heat_oven_up(self, target_temp: float) -> None:
         self.check_oven_if_cooling()
         
         self.set_temperature = target_temp

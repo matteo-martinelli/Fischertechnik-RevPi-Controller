@@ -7,6 +7,8 @@ This class is composed by the following objects:
     1. single activation motor O_4; 
 """
 
+import revpimodio2
+from mqtt.mqtt_publisher import MqttPublisher
 from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
 from datetime import datetime
 import time
@@ -22,8 +24,8 @@ from machines.configurations.default_station_configs \
 
 class SawStation(object):
     """Saw class for saw objects."""
-    def __init__(self, rpi, dept: str, station:str, saw_motor_act_pin: int, 
-                 mqtt_publisher):
+    def __init__(self, rpi: revpimodio2.RevPiModIO, dept: str, station:str, 
+                 saw_motor_act_pin: int, mqtt_publisher: MqttPublisher):
         
         self.logger = logging.getLogger('multiproc_dept_logger')
         

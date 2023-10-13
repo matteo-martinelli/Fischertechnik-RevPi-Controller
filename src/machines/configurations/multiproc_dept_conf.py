@@ -12,7 +12,7 @@ class MultiProcDeptConf(object):
     configuration setting.    
     """
 
-    def __init__(self, pieces_to_produce=0):
+    def __init__(self, pieces_to_produce: int = 0):
         self._pieces_to_produce = pieces_to_produce
         self.logger = logging.getLogger('multiproc_dept_logger')
 
@@ -30,6 +30,6 @@ class MultiProcDeptConf(object):
                               value, type(value))
     
     @staticmethod
-    def to_object(d) -> "MultiProcDeptConf":
+    def to_object(d: dict) -> "MultiProcDeptConf":
         inst = MultiProcDeptConf(d['pieces_to_produce'])
         return inst

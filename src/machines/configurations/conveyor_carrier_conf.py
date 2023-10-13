@@ -29,6 +29,6 @@ class ConveyorCarrierConf(object):
                               value, type(value))
 
     @staticmethod
-    def to_object(d) -> "ConveyorCarrierConf":
+    def to_object(d: dict) -> "ConveyorCarrierConf":
         inst = ConveyorCarrierConf(d['conveyor_carrier_speed'])
         return inst

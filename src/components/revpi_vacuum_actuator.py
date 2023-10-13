@@ -10,6 +10,8 @@ O_13: vacuum activated oven doors opening;
 O_14: turntable vacuum pusher activation.
 """
 
+import revpimodio2
+from mqtt.mqtt_publisher import MqttPublisher
 from components.basic_components.generic_revpi_actuator import \
     GenericRevPiActuator
 from datetime import datetime
@@ -19,8 +21,8 @@ import json
 
 class RevPiVacuumActuator(GenericRevPiActuator):
     """Vacuum Actuator class for vacuum activated objects."""
-    def __init__(self, rpi, name: str, pin: int, parent_topic: str, 
-                 mqtt_publisher):
+    def __init__(self, rpi: revpimodio2.RevPiModIO, name: str, pin: int, 
+                 parent_topic: str, mqtt_publisher: MqttPublisher):
         super().__init__(rpi)
         self._name = name
         self._pin = pin

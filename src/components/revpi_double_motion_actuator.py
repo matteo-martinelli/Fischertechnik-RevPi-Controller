@@ -12,6 +12,8 @@ O_7: vacuum carrier towards oven
 O_8: vacuum carrier towards turntable
 """
 
+import revpimodio2
+from mqtt.mqtt_publisher import MqttPublisher
 from components.basic_components.generic_revpi_actuator import GenericRevPiActuator
 from datetime import datetime
 import time
@@ -20,8 +22,8 @@ import json
 
 class RevPiDoubleMotionActuator(GenericRevPiActuator):
     """Double Activation Motor class for double motor actuated objects."""
-    def __init__(self, rpi, name: str, pin_A: int, pin_B: 
-                 int, parent_topic: str, mqtt_publisher):
+    def __init__(self, rpi: revpimodio2.RevPiModIO, name: str, pin_A: 
+                 int, pin_B: int, parent_topic: str, mqtt_publisher: MqttPublisher):
         super().__init__(rpi)
         # MQTT
         self.topic = parent_topic + '/actuators/' + name

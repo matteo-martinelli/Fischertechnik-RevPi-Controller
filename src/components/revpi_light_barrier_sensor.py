@@ -8,6 +8,8 @@ I_9: Oven;
 I_3: Conveyor.
 """
 
+import revpimodio2
+from mqtt.mqtt_publisher import MqttPublisher
 from components.basic_components.generic_revpi_sensor import GenericRevPiSensor
 from datetime import datetime
 import time
@@ -16,8 +18,8 @@ import json
 
 class RevPiLightBarrierSensor(GenericRevPiSensor):
     """Light Barrier class for light barrier objects."""
-    def __init__(self, rpi, name: str, pin: int, parent_topic: str, 
-                 mqtt_publisher):
+    def __init__(self, rpi: revpimodio2.RevPiModIO, name: str, pin: int, 
+                 parent_topic: str, mqtt_publisher: MqttPublisher):
         super().__init__(rpi, pin)
         # MQTT
         self.topic = parent_topic + '/sensors/' + name

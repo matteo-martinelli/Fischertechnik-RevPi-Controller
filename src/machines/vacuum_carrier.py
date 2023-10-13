@@ -11,6 +11,8 @@ This class is composed by the following objects:
     5. vacuum gripper O_11; 
 """
 
+import revpimodio2
+from mqtt.mqtt_publisher import MqttPublisher
 from components.revpi_reference_sensor import RevPiReferenceSensor
 from components.revpi_double_motion_actuator import RevPiDoubleMotionActuator
 from components.revpi_vacuum_actuator import RevPiVacuumActuator
@@ -28,10 +30,11 @@ from machines.configurations.default_station_configs \
 
 class VacuumCarrier(object):
     """Vacuum Carrier class for oven objects."""
-    def __init__(self, rpi, dept: str, station: str, at_turntable_act_pin: int,
+    def __init__(self, rpi: revpimodio2.RevPiModIO, dept: str, station: str, 
+                 at_turntable_act_pin: int, 
                  at_oven_act_pin: int, grip_act_pin: int, 
                  grip_lower_act_pin: int, at_turntable_sens_pin: int, 
-                 at_oven_sens_pin: int, mqtt_publisher):
+                 at_oven_sens_pin: int, mqtt_publisher: MqttPublisher):
         
         self.logger = logging.getLogger('multiproc_dept_logger')
 

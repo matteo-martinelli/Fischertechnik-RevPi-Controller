@@ -13,7 +13,7 @@ import logging
 
 class MqttConfListener(object):
     """Mqtt publisher class to publish mqtt topics."""
-    def __init__(self, topic_to_subscribe, deserialize_function):
+    def __init__(self, topic_to_subscribe: str, deserialize_function):
         
         self.logger = logging.getLogger('multiproc_dept_logger')
         
