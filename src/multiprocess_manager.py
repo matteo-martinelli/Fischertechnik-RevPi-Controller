@@ -12,6 +12,7 @@ blocking, with a personalised while loop next to the event system.
 """
 
 
+import threading
 import revpimodio2
 import time
 import logging
@@ -161,7 +162,11 @@ class MultiprocessManager():
         self.mqtt_publisher.open_connection() 
         # With the configuration listener
         self.mqtt_conf_listener.open_connection()
-        time.sleep(0.5)
+        # Alternative to time.sleep(0.5)
+        time_sleep = threading.Thread(name="mqtt_conf_wait", 
+                                          target=time.sleep, args=(0.5,)) 
+        time_sleep.start()
+        time_sleep.join()
         if(self.mqtt_conf_listener.configuration != None):
             self.set_received_configuration(self.mqtt_conf_listener\
                                             .configuration)

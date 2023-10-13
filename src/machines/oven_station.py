@@ -214,10 +214,16 @@ class OvenStation(object):
                                                    True)
 
         # Wait until the oven carrier reaches the outward oven switch
-        while (self.inside_oven_switch.read_state() == False):
-            self.read_carrier_position()
-            self.read_light_barrier_state()
-        
+        # Alternative to: 
+        #while (self.inside_oven_switch.read_state() == False):
+        #    self.read_carrier_position()
+        #    self.read_light_barrier_state()
+        time_sleep = threading.Thread(name="oven_inward_stop_condition", 
+                                      target=self.oven_inward_stop_condition, 
+                                      args=()) 
+        time_sleep.start()
+        time_sleep.join()
+
         self.oven_carrier.turn_off()
         self.read_carrier_position()
         self.logger.info('oven carrier deactivated')
@@ -230,6 +236,11 @@ class OvenStation(object):
         self.logger.info('oven door closed')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(),
                                                    True)
+
+    def oven_inward_stop_condition(self) -> None: 
+        while (self.inside_oven_switch.read_state() == False):
+            self.read_carrier_position()
+            self.read_light_barrier_state()
 
     def move_carrier_outward(self) -> None:
         self.oven_door_opening.turn_on()
@@ -244,8 +255,14 @@ class OvenStation(object):
                                                    True)
 
         # Wait until the oven carrier reaches the outward oven switch
-        while (self.outside_oven_switch.read_state() == False):
-            self.read_light_barrier_state()
+        # Alternative to:
+        #while (self.outside_oven_switch.read_state() == False):
+        #    self.read_light_barrier_state()
+        time_sleep = threading.Thread(name="oven_outward_stop_condition", 
+                                      target=self.oven_outward_stop_condition, 
+                                      args=()) 
+        time_sleep.start()
+        time_sleep.join()
             
         self.oven_carrier.turn_off()
         self.read_carrier_position()
@@ -256,6 +273,10 @@ class OvenStation(object):
         self.read_door_pos()
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(),
                                                    True)
+
+    def oven_outward_stop_condition(self) -> None: 
+        while (self.outside_oven_switch.read_state() == False):
+            self.read_light_barrier_state()
 
     def activate_proc_light(self) -> None:
         if (self.oven_proc_light.state == False):
@@ -331,7 +352,11 @@ class OvenStation(object):
                                     self.max_temperature, 1, 'unknown')
             self.logger.info('Heating up, oven state {}, temp {}°C'.\
                              format(self.oven_state, self.temperature_inside))
-            time.sleep(1)
+            # Alternative to time.sleep(1)
+            time_sleep = threading.Thread(name="heating_cycle", 
+                                          target=time.sleep, args=(1,)) 
+            time_sleep.start()
+            time_sleep.join()
             # publish data
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                     self.to_json(), True)
@@ -358,7 +383,11 @@ class OvenStation(object):
                              ' oven temp {}°C'.\
                              format(self.oven_state, self.temperature_inside))
             
-            time.sleep(1)
+            # Alternative to time.sleep(1)
+            time_sleep = threading.Thread(name="oven_temp_keep", 
+                                          target=time.sleep, args=(1,)) 
+            time_sleep.start()
+            time_sleep.join()
             #time.sleep(self.configuration.oven_processing_time) - Alternative, for "real simulation" purposes
             
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
@@ -388,8 +417,11 @@ class OvenStation(object):
             self.logger.info('cooling down, oven state {}, temp {}°C'.\
                              format(self.oven_state, self.temperature_inside))
             
-            time.sleep(1)
-            
+            # Alternative to time.sleep(1)
+            time_sleep = threading.Thread(name="oven_temp_cool", 
+                                          target=time.sleep, args=(1,)) 
+            time_sleep.start()
+            time_sleep.join()
             # publish data
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json(), True)

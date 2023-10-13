@@ -7,6 +7,7 @@ This class is composed by the following objects:
     1. single activation motor O_4; 
 """
 
+import threading
 import revpimodio2
 from mqtt.mqtt_publisher import MqttPublisher
 from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
@@ -131,7 +132,12 @@ class SawStation(object):
             self.activate_saw()
             self.logger.info('saw activated')
             # Time in seconds
-            time.sleep(self.configuration.saw_processing_time)
+            # Alternative to time.sleep(self.configuration.saw_processing_time)
+            time_sleep = threading.Thread(name="saw_proc_time", 
+                                          target=time.sleep, 
+                                          args=(self.configuration.saw_processing_time,)) 
+            time_sleep.start()
+            time_sleep.join()
             self.deactivate_saw()
             self.logger.info('saw deactivated')
             self.process_completed = True

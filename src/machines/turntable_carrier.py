@@ -11,6 +11,7 @@ This class is composed by the following objects:
     5. vacuum actuated pusher O_14;
 """
 
+import threading
 import revpimodio2
 from mqtt.mqtt_publisher import MqttPublisher
 from components.revpi_reference_sensor import RevPiReferenceSensor
@@ -181,7 +182,11 @@ class TurntableCarrier(object):
         if(self.pusher_activation.state == False):
             self.pusher_activation.turn_on()
             self.logger.info('turntable pusher activated')
-            time.sleep(0.8)
+            # Alternative to time.sleep(0.8)
+            time_sleep = threading.Thread(name="turntable_pusher_activation", 
+                                          target=time.sleep, args=(0.8,)) 
+            time_sleep.start()
+            time_sleep.join()
             self.read_pusher_state()
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json(), True)
@@ -190,7 +195,11 @@ class TurntableCarrier(object):
         if(self.pusher_activation.state == True):
             self.pusher_activation.turn_off()
             self.logger.info('turntable pusher deactivated')
-            time.sleep(0.4)
+            # Alternative to time.sleep(0.4)
+            time_sleep = threading.Thread(name="turntable_pusher_deactivation", 
+                                          target=time.sleep, args=(0.4,)) 
+            time_sleep.start()
+            time_sleep.join()
             self.read_pusher_state()
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json(), True)
@@ -206,20 +215,33 @@ class TurntableCarrier(object):
                                                        self.to_json(), True)
             # Carrier speed variation system # Start #
             # Wait until the at_turntable sensor turns into True
-            if (start_time != 0):
-                while (time.time() - start_time < 0.5):
-                    #self.logger.info('delta time is %s', time.time() - start_time)
-                    pass
+            # Alternative to:
+            #if (start_time != 0):
+            #    while (time.time() - start_time < 0.5):
+            #        #self.logger.info('delta time is %s', time.time() - start_time)
+            #        pass
+            time_sleep = threading.Thread(name="turntable_init_moving", 
+                                          target=time.sleep, args=(0.5,)) 
+            time_sleep.start()
+            time_sleep.join()
             
             self.motor.turn_off()
             carrier_speed = self.configuration.turntable_carrier_speed
             if (carrier_speed == "Low"):
                 self.logger.info('Stopping for 5 seconds')
-                time.sleep(5)
+                # Alternative to time.sleep(5)
+                time_sleep = threading.Thread(name="turntable_stop", 
+                                          target=time.sleep, args=(5,)) 
+                time_sleep.start()
+                time_sleep.join()
                 self.logger.info('Stopped for 5 seconds')
             elif (carrier_speed  == "Medium"): 
                 self.logger.info('Stopping for 2 seconds')
-                time.sleep(3)
+                # Alternative to time.sleep(3)
+                time_sleep = threading.Thread(name="turntable_stop", 
+                                          target=time.sleep, args=(3,)) 
+                time_sleep.start()
+                time_sleep.join()
                 self.logger.info('Stopped for 2 seconds')
             elif (carrier_speed == "High"): 
                 self.logger.info('No stop planned')
@@ -241,8 +263,14 @@ class TurntableCarrier(object):
         
         self.motor.turn_on(self.motor._pin_tuple[0])
         # Wait until the turntable reaches the at_saw sensor
-        while(self.at_saw.read_state() == False):
-            pass
+        # Alternative to:
+        #while(self.at_saw.read_state() == False):
+        #    pass
+        time_sleep = threading.Thread(name="turntable_at_saw_stop", 
+                                          target=self.at_saw_stop_condition, 
+                                          args=()) 
+        time_sleep.start()
+        time_sleep.join()
             
         self.motor.turn_off()
         self.read_motor_state()
@@ -250,6 +278,10 @@ class TurntableCarrier(object):
         self.logger.info('turntable deactivated')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
                                                    True)
+
+    def at_saw_stop_condition(self) -> None: 
+        while (self.at_saw.read_state() == False):
+            pass
 
     def rotate_towards_conveyor(self) -> None:
         self.motor.turn_on(self.motor._pin_tuple[0])     # Clockwise
@@ -262,20 +294,33 @@ class TurntableCarrier(object):
         
         # Carrier speed variation system # Start #
         # Wait until the at_turntable sensor turns into True
-        if (start_time != 0):
-            while (time.time() - start_time < 0.3):
-                #self.logger.info('Delta time is %s', time.time() - start_time)
-                pass
+        # Alternative to: 
+        #if (start_time != 0):
+        #    while (time.time() - start_time < 0.3):
+        #        #self.logger.info('Delta time is %s', time.time() - start_time)
+        #        pass
+        time_sleep = threading.Thread(name="turntable_init_moving", 
+                                      target=time.sleep, args=(0.3,)) 
+        time_sleep.start()
+        time_sleep.join()
         
         self.motor.turn_off()
         carrier_speed = self.configuration.turntable_carrier_speed 
         if (carrier_speed == "Low"):
             self.logger.info('Stopping for 5 seconds')
-            time.sleep(5)
+            # Alternative to time.sleep(5)
+            time_sleep = threading.Thread(name="turntable_stop", 
+                                          target=time.sleep, args=(5,)) 
+            time_sleep.start()
+            time_sleep.join()
             self.logger.info('Stopped for 5 seconds')
         elif (carrier_speed  == "Medium"): 
             self.logger.info('Stopping for 2 seconds')
-            time.sleep(3)
+            # Alternative to time.sleep(3)
+            time_sleep = threading.Thread(name="turntable_stop", 
+                                          target=time.sleep, args=(3,)) 
+            time_sleep.start()
+            time_sleep.join()
             self.logger.info('Stopped for 2 seconds')
         elif (carrier_speed == "High"): 
             self.logger.info('No stop planned')
@@ -289,8 +334,15 @@ class TurntableCarrier(object):
         # Carrier speed variation system ## End ##
         
         # Wait until the turntable reaches the at_conveyor sensor
-        while (self.at_conveyor.read_state() == False):
-            pass
+        #Alternative to:
+        #while (self.at_conveyor.read_state() == False):
+        #    pass
+
+        time_sleep = threading.Thread(name="turntable_at_conveyor_stop", 
+                                      target=self.at_conveyor_stop_condition, 
+                                      args=()) 
+        time_sleep.start()
+        time_sleep.join()
 
         self.motor.turn_off()
         self.read_turntable_pos()
@@ -298,6 +350,10 @@ class TurntableCarrier(object):
         self.logger.info('turntable deactivated')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
                                                    True)
+
+    def at_conveyor_stop_condition(self) -> None: 
+        while (self.at_conveyor.read_state() == False):
+            pass
 
     def rotate_towards_vacuum_carrier(self) -> None:
         self.motor.turn_on(self.motor._pin_tuple[1])     # Counter-clockwise
@@ -308,15 +364,26 @@ class TurntableCarrier(object):
                                                    True)
         
         # Wait until the turntable reaches the at_vacuum_carrier sensor
-        while (self.at_vacuum_carrier.read_state() == False):
-            pass
+        # Alternative to:
+        #while (self.at_vacuum_carrier.read_state() == False):
+        #    pass
         
+        time_sleep = threading.Thread(name="turntable_at_vacuum_stop", 
+                                      target=self.at_vacuum_stop_condition, 
+                                      args=()) 
+        time_sleep.start()
+        time_sleep.join()
+
         self.motor.turn_off()
         self.read_motor_state()
         self.read_turntable_pos()
         self.logger.info('turntable deactivated')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
                                                    True)
+
+    def at_vacuum_stop_condition(self) -> None: 
+        while (self.at_vacuum_carrier.read_state() == False):
+            pass
 
     def transfer_product_to_saw(self) -> None:
         self.rotate_towards_saw()

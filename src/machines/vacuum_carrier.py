@@ -11,6 +11,7 @@ This class is composed by the following objects:
     5. vacuum gripper O_11; 
 """
 
+import threading
 import revpimodio2
 from mqtt.mqtt_publisher import MqttPublisher
 from components.revpi_reference_sensor import RevPiReferenceSensor
@@ -186,7 +187,11 @@ class VacuumCarrier(object):
         if(self._gripper_activation_state == True):
             self.gripper_activation.turn_off()
             # Fixed time for the pneumatic propagation to take effect
-            time.sleep(0.8)
+            # Alternative to time.sleep(0.8)
+            time_sleep = threading.Thread(name="vacuum_deactivate_gripper", 
+                                          target=time.sleep, args=(0.8,)) 
+            time_sleep.start()
+            time_sleep.join()
             self.read_gripper_activation_state()
             self.logger.info('vacuum carrier gripper deactivated')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
@@ -195,7 +200,11 @@ class VacuumCarrier(object):
     def lower_gripper(self) -> None:  
         if(self._gripper_lowering_state == False):
             self.gripper_lowering.turn_on() 
-            time.sleep(0.8)
+            # Alternative to time.sleep(0.8)
+            time_sleep = threading.Thread(name="vacuum_lowering_gripper", 
+                                          target=time.sleep, args=(0.8,)) 
+            time_sleep.start()
+            time_sleep.join()
             self.read_gripper_lowering_state()
             self.logger.info('vacuum carrier gripper lowered')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
@@ -204,7 +213,11 @@ class VacuumCarrier(object):
     def higher_gripper(self) -> None: 
         if(self._gripper_lowering_state == True):
             self.gripper_lowering.turn_off()
-            time.sleep(0.4)
+            # Alternative to time.sleep(0.4)
+            time_sleep = threading.Thread(name="vacuum_highering_gripper", 
+                                          target=time.sleep, args=(0.8,)) 
+            time_sleep.start()
+            time_sleep.join()
             self.read_gripper_lowering_state()
             self.logger.info('vacuum carrier gripper highered')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
@@ -232,8 +245,14 @@ class VacuumCarrier(object):
                                                        self.to_json(), True)
 
         # Wait until the at_oven sensor turns into True
-        while (self.at_oven.read_state() == False):
-            pass
+        # Alternative to:
+        #while (self.at_oven.read_state() == False):
+        #    pass
+        time_sleep = threading.Thread(name="vacuum_carrier_towards_oven_sleep", 
+                                      target=self.at_oven_stop_condition, 
+                                      args=()) 
+        time_sleep.start()
+        time_sleep.join()
         
         self.motor.turn_off()
         self.read_carrier_position()
@@ -241,6 +260,10 @@ class VacuumCarrier(object):
         self.logger.info('vacuum carrier deactivated')
         self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                    self.to_json(), True)
+
+    def at_oven_stop_condition(self) -> None:
+        while (self.at_oven.read_state() == False):
+            pass
 
     def move_carrier_towards_turntable(self) -> None:
         start_time = 0
@@ -255,19 +278,32 @@ class VacuumCarrier(object):
         
         # Carrier speed variation system # Start #
         # Wait until the at_turntable sensor turns into True
-        if (start_time != 0):
-            while (time.time() - start_time < 2):
-                pass
+        # Alternative to:
+        #if (start_time != 0):
+        #    while (time.time() - start_time < 2):
+        #        pass
+        time_sleep = threading.Thread(name="vacuum_carrier_init_moving", 
+                                      target=time.sleep, args=(2,)) 
+        time_sleep.start()
+        time_sleep.join()
         
         self.motor.turn_off()
         carrier_speed = self.configuration.vacuum_carrier_speed 
         if (carrier_speed == "Low"):
             self.logger.info('Stopping for 5 seconds')
-            time.sleep(5)
+            # Alternative to time.sleep(5)
+            time_sleep = threading.Thread(name="vacuum_stop", 
+                                          target=time.sleep, args=(5,)) 
+            time_sleep.start()
+            time_sleep.join()
             self.logger.info('Stopped for 5 seconds')
         elif (carrier_speed  == "Medium"): 
             self.logger.info('Stopping for 2 seconds')
-            time.sleep(3)
+            # Alternative to time.sleep(3)
+            time_sleep = threading.Thread(name="vacuum_stop", 
+                                          target=time.sleep, args=(5,)) 
+            time_sleep.start()
+            time_sleep.join()
             self.logger.info('Stopped for 2 seconds')
         elif (carrier_speed == "High"): 
             self.logger.info('No stop planned')
@@ -278,9 +314,14 @@ class VacuumCarrier(object):
                           carrier_speed) 
         self.motor.turn_on(self.motor._pin_tuple[1])  
         # Carrier speed variation system ## End ##
-
-        while (self.at_turntable.read_state() == False):
-            pass
+        # Alternative to:
+        #while (self.at_turntable.read_state() == False):
+        #    pass
+        time_sleep = threading.Thread(name="vacuum_carrier_towards_turntable_sleep", 
+                                      target=self.at_turntable_stop_condition, 
+                                      args=()) 
+        time_sleep.start()
+        time_sleep.join()
 
         self.motor.turn_off()
         self.read_carrier_position()
@@ -288,6 +329,10 @@ class VacuumCarrier(object):
         self.logger.info('vacuum carrier deactivated')
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
                                                    True)
+
+    def at_turntable_stop_condition(self) -> None:
+        while (self.at_turntable.read_state() == False):
+            pass
 
     def transfer_product_from_oven_to_turntable(self) -> None:
         self.grip_product()

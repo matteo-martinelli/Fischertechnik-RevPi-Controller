@@ -8,6 +8,7 @@ This class is composed by the following objects:
     2. light barrier sensor I_3;
 """
 
+import threading
 import revpimodio2
 from mqtt.mqtt_publisher import MqttPublisher
 from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
@@ -137,19 +138,32 @@ class ConveyorCarrier(object):
         
         # Carrier speed variation system # Start #
         # Wait until the at_turntable sensor turns into True
-        if (start_time != 0):
-            while (time.time() - start_time < 0.5): 
-                pass
+        # Alternative to: 
+        #if (start_time != 0):
+        #    while (time.time() - start_time < 0.5): 
+        #        pass
+        time_sleep = threading.Thread(name="turntable_init_moving", 
+                                      target=time.sleep, args=(0.5,)) 
+        time_sleep.start()
+        time_sleep.join()
         
         self.motor.turn_off()
         carrier_speed = self.configuration.conveyor_carrier_speed
         if (carrier_speed == "Low"):
             self.logger.info('Stopping for 5 seconds')
-            time.sleep(5)
+            # Alternative to time.sleep(5)
+            time_sleep = threading.Thread(name="conveyor_stop", 
+                                          target=time.sleep, args=(5,)) 
+            time_sleep.start()
+            time_sleep.join()
             self.logger.info('Stopped for 5 seconds')
         elif (carrier_speed == "Medium"):
             self.logger.info('Stopping for 2 seconds')
-            time.sleep(3)
+            # Alternative to time.sleep(3)
+            time_sleep = threading.Thread(name="conveyor_stop", 
+                                          target=time.sleep, args=(3,)) 
+            time_sleep.start()
+            time_sleep.join()
             self.logger.info('Stopped for 2 seconds')
         elif (carrier_speed == "High"):
             self.logger.info('No stop planned')
@@ -162,9 +176,14 @@ class ConveyorCarrier(object):
         # Carrier speed variation system ## End ##
          
         # Wait until a product reaches the light_barrier sensor
-        while (self.light_barrier.read_state() != False):
-            pass
-
+        # Alternative to:
+        #while (self.light_barrier.read_state() != False):
+        #    pass
+        time_sleep = threading.Thread(name="conveyor_stop_condition", 
+                                      target=self.light_barrier_stop_condition, 
+                                      args=()) 
+        time_sleep.start()
+        time_sleep.join()
 
         self.motor.turn_off()
         self.read_motor_state()
@@ -172,6 +191,10 @@ class ConveyorCarrier(object):
         self.process_completed = True
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(),
                                                    True)
+
+    def light_barrier_stop_condition(self) -> None: 
+        while (self.light_barrier.read_state() != False):
+            pass
 
     def turn_off_all_actuators(self) -> None: 
         self.motor.turn_off()
