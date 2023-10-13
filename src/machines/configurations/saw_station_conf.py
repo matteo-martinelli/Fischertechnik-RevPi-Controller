@@ -11,14 +11,14 @@ class SawStationConf(object):
         self._saw_processing_time = saw_processing_time
         
     @property
-    def saw_processing_time(self): 
+    def saw_processing_time(self) -> int: 
         return self._saw_processing_time
     
     @saw_processing_time.setter
-    def saw_processing_time(self, value: int): 
+    def saw_processing_time(self, value: int) -> None: 
         self._saw_processing_time = value
 
     @staticmethod
-    def to_object(d):
+    def to_object(d) -> "SawStationConf":
         inst = SawStationConf(d['saw_processing_time'])
         return inst

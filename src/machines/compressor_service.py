@@ -81,7 +81,7 @@ class CompressorService(object):
             self._motor_state = value
     
     # Class methods
-    def activate_service(self):
+    def activate_service(self) -> None:
         self.read_conf()
         self.motor.turn_on()
         self._motor_state = True
@@ -97,7 +97,7 @@ class CompressorService(object):
     def close_connections(self) -> None: 
         self.mqtt_conf_listener.close_connection()
 
-    def deactivate_service(self):
+    def deactivate_service(self) -> None:
         self.turn_off_all_actuators()
         self.close_connections()
 
@@ -138,7 +138,7 @@ class CompressorService(object):
                             .format(self.configuration.oven_processing_time, 
                                     self.station))
 
-    def to_dto(self):
+    def to_dto(self) -> dict:
         timestamp = time.time()
         current_moment = \
             datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
@@ -155,5 +155,5 @@ class CompressorService(object):
         }
         return dto_dict
 
-    def to_json(self):
+    def to_json(self) -> str:
         return json.dumps(self.to_dto())

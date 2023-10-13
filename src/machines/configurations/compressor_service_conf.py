@@ -30,6 +30,6 @@ class CompressorServiceConf(object):
                               value, type(value))
 
     @staticmethod
-    def to_object(d):
+    def to_object(d) -> "CompressorServiceConf":
         inst = CompressorServiceConf(d['motor_behaviour'])
         return inst

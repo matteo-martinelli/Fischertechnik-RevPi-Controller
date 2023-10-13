@@ -199,7 +199,7 @@ class SawStation(object):
                                         saw_processing_time, 
                                         self.station))
 
-    def to_dto(self):
+    def to_dto(self) -> dict:
         timestamp = time.time()
         current_moment = \
             datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
@@ -218,5 +218,5 @@ class SawStation(object):
         }
         return dto_dict
 
-    def to_json(self):
+    def to_json(self) -> str:
         return json.dumps(self.to_dto())

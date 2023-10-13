@@ -84,21 +84,21 @@ class MultiprocessManager():
         self.process_completed = False
         self.to_reset = False
 
-    def set_received_configuration(self, conf):
+    def set_received_configuration(self, conf) -> None:
         self.logger.info('Saving the new configuration for {}'\
                          .format(self.dept_name))
         self.multiproc_dept_conf.pieces_to_produce = conf.pieces_to_produce
         self.pieces_to_produce = self.multiproc_dept_conf.pieces_to_produce
         self.pieces_left = self.pieces_to_produce - self.pieces_completed
     
-    def read_all_sensors(self):
+    def read_all_sensors(self) -> None:
         self.oven_station.read_all_sensors()            # Oven station
         self.vacuum_gripper_carrier.read_all_sensors()  # Vacuum carrier  
         self.turntable_carrier.read_all_sensors()       # Turntable carrier
         # no senors!                                    # Saw station
         self.conveyor_carrier.read_all_sensors()        # Conveyor station
     
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Cleanup function to leave the RevPi in a defined state."""
         self.logger.info('Cleaning the system state')
 
@@ -118,7 +118,7 @@ class MultiprocessManager():
         # Closing the publisher MQTT connection
         self.mqtt_publisher.close_connection()
     
-    def reset_station_states_and_stop(self):
+    def reset_station_states_and_stop(self) -> None:
         # - turning off all station actuators method;
         # - resetting station states method; 
         self.oven_station.reset_station()
@@ -129,7 +129,7 @@ class MultiprocessManager():
         self.compressor_service.turn_off_all_actuators()
         self.cleanup()
     
-    def reset_station_states_and_restart(self): 
+    def reset_station_states_and_restart(self) -> None: 
         # - turning off all station actuators method;
         # - resetting station states method; 
         self.oven_station.reset_station()
@@ -138,7 +138,7 @@ class MultiprocessManager():
         self.saw_station.reset_station()
         self.conveyor_carrier.reset_carrier()
 
-    def start(self):        
+    def start(self) -> None:        
         """Start event system and own cyclic loop."""
         self.logger.info('start')
         # Start event system loop without blocking here. Reference at 

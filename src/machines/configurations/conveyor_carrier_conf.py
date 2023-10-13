@@ -10,17 +10,16 @@ import logging
 
 
 class ConveyorCarrierConf(object):
-    def __init__(self, conveyor_carrier_speed: str):
+    def __init__(self, conveyor_carrier_speed: str) -> None:
         self._conveyor_carrier_speed = conveyor_carrier_speed
-        
         self.logger = logging.getLogger('multiproc_dept_logger')
         
     @property
-    def conveyor_carrier_speed(self): 
+    def conveyor_carrier_speed(self) -> str: 
         return self._conveyor_carrier_speed
     
     @conveyor_carrier_speed.setter
-    def conveyor_carrier_speed(self, value: str): 
+    def conveyor_carrier_speed(self, value: str) -> None: 
         if(value == "Low" or value == "Medium" or value == "High"):
             self._conveyor_carrier_speed = value
         else: 
@@ -30,6 +29,6 @@ class ConveyorCarrierConf(object):
                               value, type(value))
 
     @staticmethod
-    def to_object(d):
+    def to_object(d) -> "ConveyorCarrierConf":
         inst = ConveyorCarrierConf(d['conveyor_carrier_speed'])
         return inst

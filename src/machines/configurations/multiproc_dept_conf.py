@@ -17,11 +17,11 @@ class MultiProcDeptConf(object):
         self.logger = logging.getLogger('multiproc_dept_logger')
 
     @property
-    def pieces_to_produce(self):
+    def pieces_to_produce(self) -> int:
         return self._pieces_to_produce
     
     @pieces_to_produce.setter
-    def pieces_to_produce(self, value: int):
+    def pieces_to_produce(self, value: int) -> None:
         if (value > 0):
             self._pieces_to_produce = value
         else: 
@@ -30,6 +30,6 @@ class MultiProcDeptConf(object):
                               value, type(value))
     
     @staticmethod
-    def to_object(d):
+    def to_object(d) -> "MultiProcDeptConf":
         inst = MultiProcDeptConf(d['pieces_to_produce'])
         return inst

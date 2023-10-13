@@ -299,7 +299,7 @@ class OvenStation(object):
         self.move_carrier_outward()
         self.set_process_completed(True)
 
-    def check_oven_if_cooling(self):
+    def check_oven_if_cooling(self) -> None:
         if (self.cooling_oven_process != None):
             logging.debug("Oven cooling process is running. Stopping it")
             self.stop_event.set()
@@ -311,7 +311,7 @@ class OvenStation(object):
         else: 
             logging.debug("Oven is not cooling down, heating it up")
 
-    def heat_oven_up(self, target_temp):
+    def heat_oven_up(self, target_temp) -> None:
         self.check_oven_if_cooling()
         
         self.set_temperature = target_temp
@@ -340,7 +340,7 @@ class OvenStation(object):
         self.logger.info('Target temp reached, oven state {}, temp {}°C'.\
                          format(self.oven_state, self.temperature_inside))
         
-    def oven_keep_temp(self, processing_time):
+    def oven_keep_temp(self, processing_time) -> None:
         for i in range(processing_time):
             self.temperature_inside, self.oven_state = \
                 update_temperature(self.room_temperature, 
@@ -371,7 +371,7 @@ class OvenStation(object):
         # deactivating processing light
         self.deactivate_proc_light()
 
-    def cool_oven_down(self, target_temperature: float):
+    def cool_oven_down(self, target_temperature: float) -> None:
         # publish data
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
                                                    True)
@@ -448,7 +448,7 @@ class OvenStation(object):
 
     # Reading underlying sensors/actuators
     # Sensor
-    def read_light_barrier_state(self) -> None:  # LETTURA
+    def read_light_barrier_state(self) -> None:
         light_barrier_read = self.light_barrier.read_state()
         process_complete = self.process_completed
         if (light_barrier_read == False):
@@ -465,7 +465,7 @@ class OvenStation(object):
                                                        self.to_json(), True)
 
     # Sensor
-    def read_carrier_position(self) -> None:     # LETTURA
+    def read_carrier_position(self) -> None:
         if (self.inside_oven_switch.read_state() == True
             and self.oven_carrier.state[0] == False
             and self.oven_carrier.state[1] == False): 
@@ -532,7 +532,7 @@ class OvenStation(object):
             print('New configuration received for oven station process time ',\
                   self.configuration.oven_processing_time)
         
-    def to_dto(self):   # Data Transfer Objet
+    def to_dto(self) -> dict:   # Data Transfer Objet
         timestamp = time.time()
         current_moment = \
             datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
@@ -557,5 +557,5 @@ class OvenStation(object):
 
         return dto_dict
 
-    def to_json(self):
+    def to_json(self) -> str:
         return json.dumps(self.to_dto())

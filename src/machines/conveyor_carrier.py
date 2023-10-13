@@ -196,14 +196,14 @@ class ConveyorCarrier(object):
         #self.mqtt_conf_listener.close_connection                               -> actually not present
 
     # Reading underlying sensors/actuators
-    def read_motor_state(self) -> None: # QUESTA E' UNA LETTURA
+    def read_motor_state(self) -> None:
         value = self.motor.read_state()
         if (value != self._motor_state):
             self._motor_state = value
             self.mqtt_publisher.publish_telemetry_data(self.topic,
                                                        self.to_json(), True)
 
-    def read_light_barrier_state(self) -> None: # QUESTA E' UNA LETTURA 
+    def read_light_barrier_state(self) -> None: 
         value = self.light_barrier.read_state()
         if (value != self._light_barrier_state):
             self._light_barrier_state = value
@@ -245,7 +245,7 @@ class ConveyorCarrier(object):
                                          conveyor_carrier_speed, 
                                          self.station))
 
-    def to_dto(self):
+    def to_dto(self) -> dict:
         timestamp = time.time()
         current_moment = \
             datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
@@ -265,5 +265,5 @@ class ConveyorCarrier(object):
         }
         return dto_dict
 
-    def to_json(self):
+    def to_json(self) -> str:
         return json.dumps(self.to_dto())

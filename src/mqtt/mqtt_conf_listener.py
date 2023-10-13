@@ -22,12 +22,12 @@ class MqttConfListener(object):
         self.deserialize_function = deserialize_function
         self.configuration = None
 
-    def on_connect(self, client , userdata , flags , rc):
+    def on_connect(self, client , userdata , flags , rc) -> None:
         self.logger.info('Mqtt listener client connected with result code {}'\
                          .format(str(rc)))
         self.subscribe_multiproc_dept_configuration(self.topic_to_subscribe)
 
-    def on_message(self, client, userdata, msg):
+    def on_message(self, client, userdata, msg) -> None:
         try: 
             decoded_message = str(msg.payload.decode("utf-8"))
             self.configuration = json.loads(decoded_message,
@@ -40,10 +40,10 @@ class MqttConfListener(object):
             # printing stack trace
             self.logger.info(traceback.print_exc())
 
-    def on_subscribe(self, client, userdata, mid, granted_qos):
+    def on_subscribe(self, client, userdata, mid, granted_qos) -> None:
         self.logger.info('Succesfully subscribed with mid {}'.format(mid))
 
-    def open_connection(self):
+    def open_connection(self) -> None:
         self.mqtt_client.on_connect = self.on_connect
         self.mqtt_client.on_message = self.on_message
         self.mqtt_client.on_subscribe = self.on_subscribe
@@ -58,11 +58,11 @@ class MqttConfListener(object):
         
         self.mqtt_client.loop_start()
         
-    def close_connection(self):
+    def close_connection(self) -> None:
         self.mqtt_client.loop_stop()
         self.logger.info('Mqtt listener client Loop stopped')
 
-    def subscribe_multiproc_dept_configuration(self, topic: str):
+    def subscribe_multiproc_dept_configuration(self, topic: str) -> None:
         if (MqttConfiguratorParameter.ACTIVE_MQTT == True):
             mqtt_configured_user = MqttConfiguratorParameter.MQTT_USER
             target_topic = 'user:{0}/{1}/'.format(mqtt_configured_user, topic)

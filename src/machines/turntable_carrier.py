@@ -318,12 +318,12 @@ class TurntableCarrier(object):
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
                                                    True)
 
-    def transfer_product_to_saw(self):
+    def transfer_product_to_saw(self) -> None:
         self.logger.info('Reading configuration on the MQTT broker')
         self.read_conf()
         self.rotate_towards_saw()
         
-    def transfer_product_to_conveyor(self):
+    def transfer_product_to_conveyor(self) -> None:
         self.logger.info('Reading configuration on the MQTT broker')
         self.read_conf()
         self.rotate_towards_conveyor()
@@ -457,7 +457,7 @@ class TurntableCarrier(object):
                                          turntable_carrier_speed, 
                                          self.station))
 
-    def to_dto(self):
+    def to_dto(self) -> dict:
         timestamp = time.time()
         current_moment = \
             datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
@@ -478,5 +478,5 @@ class TurntableCarrier(object):
         }
         return dto_dict
 
-    def to_json(self):
+    def to_json(self) -> str:
         return json.dumps(self.to_dto())

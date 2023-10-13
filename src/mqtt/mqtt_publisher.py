@@ -22,7 +22,7 @@ class MqttPublisher(object):
         self.mqtt_client = mqtt.Client()
         self.lwm_topic = lwm_topic
 
-    def on_connect(self, client , userdata , flags , rc):
+    def on_connect(self, client , userdata , flags , rc) -> None:
         self.logger.info('Mqtt publisher client connected with result code {}'\
                          .format(str(rc)))
         connection_message = {'status': 'on'}
@@ -30,7 +30,7 @@ class MqttPublisher(object):
             self.mqtt_client.publish(self.lwm_topic, \
                                     json.dumps(connection_message), 0, True)
 
-    def open_connection(self):
+    def open_connection(self) -> None:
         self.mqtt_client.on_connect = self.on_connect
         if (self.lwm_topic != None):
             self.mqtt_client.will_set(self.lwm_topic,\
@@ -45,12 +45,12 @@ class MqttPublisher(object):
         self.mqtt_client.connect(mqtt_configured_address, mqtt_configured_port)
         self.mqtt_client.loop_start()
         
-    def close_connection(self):
+    def close_connection(self) -> None:
         self.mqtt_client.loop_stop()
         self.logger.info('Mqtt publisher client Loop stopped')
 
     def publish_telemetry_data(self, topic: str, target_payload: str, 
-                               retain_flag: bool):
+                               retain_flag: bool) -> None:
         if (MqttConfiguratorParameter.ACTIVE_MQTT == True):
             mqtt_configured_user = MqttConfiguratorParameter.MQTT_USER
             target_topic = 'user:{0}/{1}/'.format(mqtt_configured_user, topic)

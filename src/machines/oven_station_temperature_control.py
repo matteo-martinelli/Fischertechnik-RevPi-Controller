@@ -4,7 +4,7 @@ import random
 def update_temperature(outside_temperature, current_inside_temperature, 
                        wanted_temperature, flucutation, 
                        min_oven_set_temperature, max_oven_set_temperature, 
-                       time_passed, insulation) -> "tuple[float, str|None]" :
+                       time_passed, insulation) -> "tuple[float, str|None]":
     inside_temp = current_inside_temperature
     state_oven = None
     for i in range(time_passed):

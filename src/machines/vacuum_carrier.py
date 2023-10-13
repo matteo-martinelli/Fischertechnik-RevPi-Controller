@@ -208,13 +208,13 @@ class VacuumCarrier(object):
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json(), True)
 
-    def grip_product(self):
+    def grip_product(self) -> None:
         self.lower_gripper()
         self.activate_gripper()
         self.higher_gripper()
         self.prod_on_carrier = True
 
-    def release_product(self):
+    def release_product(self) -> None:
         self.lower_gripper()
         self.deactivate_gripper()
         self.higher_gripper()
@@ -279,7 +279,6 @@ class VacuumCarrier(object):
         self.motor.turn_on(self.motor._pin_tuple[1])  
         # Carrier speed variation system ## End ##
 
-        
         while (self.at_turntable.read_state() == False):
             pass
 
@@ -290,7 +289,7 @@ class VacuumCarrier(object):
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
                                                    True)
 
-    def transfer_product_from_oven_to_turntable(self):
+    def transfer_product_from_oven_to_turntable(self) -> None:
         self.read_conf()
         self.grip_product()
         self.move_carrier_towards_turntable()
@@ -325,7 +324,7 @@ class VacuumCarrier(object):
         
     def deactivate_carrier(self) -> None: 
         self.turn_off_all_actuators()
-        self.reset_process_states()           
+        self.reset_process_states()
         self.close_connections()
     
     # Reading underlying sensors/actuators
@@ -420,7 +419,7 @@ class VacuumCarrier(object):
                         .format(self.configuration.vacuum_carrier_speed, 
                                 self.station))
 
-    def to_dto(self):
+    def to_dto(self) -> dict:
         timestamp = time.time()
         current_moment = \
             datetime.fromtimestamp(timestamp).strftime("%d.%m.%Y - %H:%M:%S")
@@ -443,5 +442,5 @@ class VacuumCarrier(object):
         }
         return dto_dict
 
-    def to_json(self):
+    def to_json(self) -> str:
         return json.dumps(self.to_dto())

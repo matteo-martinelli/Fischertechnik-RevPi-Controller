@@ -16,11 +16,11 @@ class VacuumCarrierConf(object):
         self.logger = logging.getLogger('multiproc_dept_logger')
         
     @property
-    def vacuum_carrier_speed(self): 
+    def vacuum_carrier_speed(self) -> str: 
         return self._vacuum_carrier_speed
     
     @vacuum_carrier_speed.setter
-    def vacuum_carrier_speed(self, value: str): 
+    def vacuum_carrier_speed(self, value: str) -> None: 
         if(value == "Low" or value == "Medium" or value == "High"):
             self._vacuum_carrier_speed = value
         else: 
@@ -30,6 +30,6 @@ class VacuumCarrierConf(object):
                               value, type(value))
 
     @staticmethod
-    def to_object(d):
+    def to_object(d) -> "VacuumCarrierConf":
         inst = VacuumCarrierConf(d['vacuum_carrier_speed'])
         return inst
