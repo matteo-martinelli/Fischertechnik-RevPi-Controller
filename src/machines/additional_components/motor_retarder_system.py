@@ -26,13 +26,24 @@ class MotorRetarderSystem(object):
         self._motor_to_retard = motor
 
 
+    # Getters
+    @property
+    def name(self) -> str: 
+        return self._name
+
+    @property
+    def motor_to_retard(self) -> [RevPiSingleMotionActuator, 
+                                  RevPiDoubleMotionActuator]: 
+        return self._motor_to_retard
+
+    # Class methods
     def stop_and_restart_motor(self, speed_level: str, pin: int = -1):
         if (speed_level == "Low"):
-            self.stoppping_motor(5)
-            self.restarting_motor(pin)
+            self.__stoppping_motor(5)
+            self.__restarting_motor(pin)
         elif (speed_level == "Medium"):
-            self.stoppping_motor(3)
-            self.restarting_motor(pin)
+            self.__stoppping_motor(3)
+            self.__restarting_motor(pin)
         elif (speed_level == "High"):
             self.logger.info('No stop planned')
         else: 
@@ -41,9 +52,9 @@ class MotorRetarderSystem(object):
                             ' expected \"Low\" or \"Medium\" or' +
                             ' \"High\", got %s', speed_level)
 
-    def stoppping_motor(self, time: [int, float] = -1) -> None: 
+    def __stoppping_motor(self, time: [int, float] = -1) -> None: 
         if (time != -1):
-            self._motor_to_retard.turn_off()
+            self.motor_to_retard.turn_off()
             self.logger.info('Stopping for ' + time  + ' seconds')
             # Alternative to time.sleep(5)
             time_sleep = threading.Thread(name=self._name, 
@@ -55,12 +66,13 @@ class MotorRetarderSystem(object):
             self.logger.error('Wrong input time given, expecteda positive ' + 
                               'int or float number, got {}'.format(time))
 
-    def restarting_motor(self, pin: int = -1) -> None: 
-        if (type(self._motor) == "RevPiSingleMotionActuator"): 
-            self._motor_to_retard.turn_on()
+    def __restarting_motor(self, pin: int = -1) -> None: 
+        if (type(self.motor_to_retard) == "RevPiSingleMotionActuator"): 
+            self.motor_to_retard.turn_on()
         else: 
             if(pin == -1):
                 self.logger.error('Wrong input time given, expecteda ' + 
                                   'positive int number, got {}'.format(time))
             else: 
-                self._motor_to_retard.turn_on(self._motor._pin_tuple[pin])
+                self.motor_to_retard.turn_on(self.motor_to_retard\
+                                             ._pin_tuple[pin])
