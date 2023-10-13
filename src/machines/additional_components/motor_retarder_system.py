@@ -28,37 +28,11 @@ class MotorRetarderSystem(object):
 
     def stop_and_restart_motor(self, speed_level: str, pin: int = -1):
         if (speed_level == "Low"):
-            self._motor_to_retard.turn_off()
-            self.logger.info('Stopping for 5 seconds')
-            # Alternative to time.sleep(5)
-            time_sleep = threading.Thread(name=self._name, 
-                                        target=time.sleep, args=(5,)) 
-            time_sleep.start()
-            time_sleep.join()
-            self.logger.info('Stopped for 5 seconds')
-            if (type(self._motor) == "RevPiSingleMotionActuator"): 
-                self._motor_to_retard.turn_on()
-            else: 
-                if(pin == -1):
-                    raise Exception
-                else: 
-                    self._motor_to_retard.turn_on(self._motor._pin_tuple[pin])
+            self.stoppping_motor(5)
+            self.restarting_motor(pin)
         elif (speed_level == "Medium"):
-            self._motor_to_retard.turn_off()
-            self.logger.info('Stopping for 2 seconds')
-            # Alternative to time.sleep(3)
-            time_sleep = threading.Thread(name=self._name, 
-                                            target=time.sleep, args=(3,)) 
-            time_sleep.start()
-            time_sleep.join()
-            self.logger.info('Stopped for 2 seconds')
-            if (type(self._motor) == "RevPiSingleMotionActuator"): 
-                self._motor_to_retard.turn_on()
-            else: 
-                if(pin == -1):
-                    raise Exception
-                else: 
-                    self._motor_to_retard.turn_on(self._motor._pin_tuple[pin])
+            self.stoppping_motor(3)
+            self.restarting_motor(pin)
         elif (speed_level == "High"):
             self.logger.info('No stop planned')
         else: 
@@ -66,3 +40,27 @@ class MotorRetarderSystem(object):
                             ' received in transfering product to the exit;' + 
                             ' expected \"Low\" or \"Medium\" or' +
                             ' \"High\", got %s', speed_level)
+
+    def stoppping_motor(self, time: [int, float] = -1) -> None: 
+        if (time != -1):
+            self._motor_to_retard.turn_off()
+            self.logger.info('Stopping for ' + time  + ' seconds')
+            # Alternative to time.sleep(5)
+            time_sleep = threading.Thread(name=self._name, 
+                                        target=time.sleep, args=(time,)) 
+            time_sleep.start()
+            time_sleep.join()
+            self.logger.info('Stopped for ' + time  + ' seconds')
+        else: 
+            self.logger.error('Wrong input time given, expecteda positive ' + 
+                              'int or float number, got {}'.format(time))
+
+    def restarting_motor(self, pin: int = -1) -> None: 
+        if (type(self._motor) == "RevPiSingleMotionActuator"): 
+            self._motor_to_retard.turn_on()
+        else: 
+            if(pin == -1):
+                self.logger.error('Wrong input time given, expecteda ' + 
+                                  'positive int number, got {}'.format(time))
+            else: 
+                self._motor_to_retard.turn_on(self._motor._pin_tuple[pin])
