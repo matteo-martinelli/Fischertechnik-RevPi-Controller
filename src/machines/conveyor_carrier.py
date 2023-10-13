@@ -18,11 +18,13 @@ import time
 import json
 import logging
 
-from machines.configurations.conveyor_carrier_conf import ConveyorCarrierConf
 from mqtt.mqtt_conf_listener import MqttConfListener
 
+from machines.configurations.conveyor_carrier_conf import ConveyorCarrierConf
 from machines.configurations.default_station_configs \
     import DefaultStationsConfigs
+
+from machines.additional_components.motor_retarder_system import MotorRetarderSystem  
 
 
 class ConveyorCarrier(object):
@@ -63,6 +65,7 @@ class ConveyorCarrier(object):
             RevPiLightBarrierSensor(rpi, 'light-barrier', 
                                     barrier_sens_pin, self.topic, 
                                     self.mqtt_publisher)
+        self.motor_retarder = MotorRetarderSystem("conveyor_stop", self.motor)
         self.read_all_sensors()
         self.read_all_actuators()
 
@@ -136,7 +139,6 @@ class ConveyorCarrier(object):
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(),
                                                    True)
         
-        # Carrier speed variation system # Start #
         # Wait until the at_turntable sensor turns into True
         # Alternative to: 
         #if (start_time != 0):
@@ -147,34 +149,11 @@ class ConveyorCarrier(object):
         time_sleep.start()
         time_sleep.join()
         
-        self.motor.turn_off()
-        carrier_speed = self.configuration.conveyor_carrier_speed
-        if (carrier_speed == "Low"):
-            self.logger.info('Stopping for 5 seconds')
-            # Alternative to time.sleep(5)
-            time_sleep = threading.Thread(name="conveyor_stop", 
-                                          target=time.sleep, args=(5,)) 
-            time_sleep.start()
-            time_sleep.join()
-            self.logger.info('Stopped for 5 seconds')
-        elif (carrier_speed == "Medium"):
-            self.logger.info('Stopping for 2 seconds')
-            # Alternative to time.sleep(3)
-            time_sleep = threading.Thread(name="conveyor_stop", 
-                                          target=time.sleep, args=(3,)) 
-            time_sleep.start()
-            time_sleep.join()
-            self.logger.info('Stopped for 2 seconds')
-        elif (carrier_speed == "High"):
-            self.logger.info('No stop planned')
-        else: 
-            self.logger.error('Illegal conveyor speed configuration ' +
-                            ' received in transfering product to the exit;' + 
-                            ' expected \"Low\" or \"Medium\" or' +
-                            ' \"High\", got %s', carrier_speed)
-        self.motor.turn_on() 
+        # Carrier speed variation system # Start #
+        self.motor_retarder.stop_and_restart_motor(
+            self.configuration.conveyor_carrier_speed) 
         # Carrier speed variation system ## End ##
-         
+        
         # Wait until a product reaches the light_barrier sensor
         # Alternative to:
         #while (self.light_barrier.read_state() != False):

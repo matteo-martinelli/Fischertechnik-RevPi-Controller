@@ -22,11 +22,13 @@ import time
 import json
 import logging
 
-from machines.configurations.turntable_carrier_conf import TurntableCarrierConf
 from mqtt.mqtt_conf_listener import MqttConfListener
 
+from machines.configurations.turntable_carrier_conf import TurntableCarrierConf
 from machines.configurations.default_station_configs \
     import DefaultStationsConfigs
+
+from machines.additional_components.motor_retarder_system import MotorRetarderSystem
 
 
 class TurntableCarrier(object):
@@ -87,6 +89,7 @@ class TurntableCarrier(object):
         self.at_saw = \
             RevPiReferenceSensor(rpi, 'carrier-at-saw', at_saw_sens_pin, 
                                  self.topic, self.mqtt_publisher)
+        self.motor_retarder = MotorRetarderSystem("turntable_stop", self.motor)
         # Initializing class fields
         self.read_all_sensors()
         self.read_all_actuators()
@@ -213,7 +216,6 @@ class TurntableCarrier(object):
             self.logger.info('turntable activated')
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json(), True)
-            # Carrier speed variation system # Start #
             # Wait until the at_turntable sensor turns into True
             # Alternative to:
             #if (start_time != 0):
@@ -225,32 +227,9 @@ class TurntableCarrier(object):
             time_sleep.start()
             time_sleep.join()
             
-            self.motor.turn_off()
-            carrier_speed = self.configuration.turntable_carrier_speed
-            if (carrier_speed == "Low"):
-                self.logger.info('Stopping for 5 seconds')
-                # Alternative to time.sleep(5)
-                time_sleep = threading.Thread(name="turntable_stop", 
-                                          target=time.sleep, args=(5,)) 
-                time_sleep.start()
-                time_sleep.join()
-                self.logger.info('Stopped for 5 seconds')
-            elif (carrier_speed  == "Medium"): 
-                self.logger.info('Stopping for 2 seconds')
-                # Alternative to time.sleep(3)
-                time_sleep = threading.Thread(name="turntable_stop", 
-                                          target=time.sleep, args=(3,)) 
-                time_sleep.start()
-                time_sleep.join()
-                self.logger.info('Stopped for 2 seconds')
-            elif (carrier_speed == "High"): 
-                self.logger.info('No stop planned')
-            else:
-                self.logger.error('Illegal turntable speed configuration ' +
-                            ' received in moving turntable towards saw;' + 
-                            ' expected \"Low\" or \"Medium\" or' +
-                            ' \"High\", got %s', carrier_speed) 
-            #self.motor.turn_on(self.motor._pin_tuple[0])
+            # Carrier speed variation system # Start #
+            self.motor_retarder.stop_and_restart_motor(
+            self.configuration.turntable_carrier_speed, 0)
             # Carrier speed variation system ## End ##
 
         elif(self.at_conveyor.state == True):
@@ -261,7 +240,7 @@ class TurntableCarrier(object):
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json(), True)
         
-        self.motor.turn_on(self.motor._pin_tuple[0])
+        #self.motor.turn_on(self.motor._pin_tuple[0])
         # Wait until the turntable reaches the at_saw sensor
         # Alternative to:
         #while(self.at_saw.read_state() == False):
@@ -292,7 +271,6 @@ class TurntableCarrier(object):
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
                                                    True)
         
-        # Carrier speed variation system # Start #
         # Wait until the at_turntable sensor turns into True
         # Alternative to: 
         #if (start_time != 0):
@@ -304,33 +282,9 @@ class TurntableCarrier(object):
         time_sleep.start()
         time_sleep.join()
         
-        self.motor.turn_off()
-        carrier_speed = self.configuration.turntable_carrier_speed 
-        if (carrier_speed == "Low"):
-            self.logger.info('Stopping for 5 seconds')
-            # Alternative to time.sleep(5)
-            time_sleep = threading.Thread(name="turntable_stop", 
-                                          target=time.sleep, args=(5,)) 
-            time_sleep.start()
-            time_sleep.join()
-            self.logger.info('Stopped for 5 seconds')
-        elif (carrier_speed  == "Medium"): 
-            self.logger.info('Stopping for 2 seconds')
-            # Alternative to time.sleep(3)
-            time_sleep = threading.Thread(name="turntable_stop", 
-                                          target=time.sleep, args=(3,)) 
-            time_sleep.start()
-            time_sleep.join()
-            self.logger.info('Stopped for 2 seconds')
-        elif (carrier_speed == "High"): 
-            self.logger.info('No stop planned')
-        else:
-            self.logger.error('Illegal turntable speed configuration ' +
-                            ' received in moving turntable towards conveyor;' +
-                            ' received; expected \"Low\" or \"Medium\" or' +
-                            ' \"High\", got %s', carrier_speed)  
-        
-        self.motor.turn_on(self.motor._pin_tuple[0])
+        # Carrier speed variation system # Start #
+        self.motor_retarder.stop_and_restart_motor(
+            self.configuration.turntable_carrier_speed, 0)
         # Carrier speed variation system ## End ##
         
         # Wait until the turntable reaches the at_conveyor sensor

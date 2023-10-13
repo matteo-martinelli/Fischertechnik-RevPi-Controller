@@ -22,11 +22,13 @@ import time
 import json
 import logging
 
-from machines.configurations.vacuum_carrier_conf import VacuumCarrierConf
 from mqtt.mqtt_conf_listener import MqttConfListener
 
+from machines.configurations.vacuum_carrier_conf import VacuumCarrierConf
 from machines.configurations.default_station_configs \
     import DefaultStationsConfigs
+
+from machines.additional_components.motor_retarder_system import MotorRetarderSystem
 
 
 class VacuumCarrier(object):
@@ -84,7 +86,7 @@ class VacuumCarrier(object):
         self.at_oven = \
             RevPiReferenceSensor(rpi, 'carrier-at-oven', at_oven_sens_pin, 
                                  self.topic, self.mqtt_publisher)
-        
+        self.motor_retarder = MotorRetarderSystem("vacuum_stop", self.motor)
         # Initializing class fields
         self.read_all_sensors()
         self.read_all_actuators()
@@ -276,7 +278,6 @@ class VacuumCarrier(object):
             self.mqtt_publisher.publish_telemetry_data(self.topic, 
                                                        self.to_json(), True)
         
-        # Carrier speed variation system # Start #
         # Wait until the at_turntable sensor turns into True
         # Alternative to:
         #if (start_time != 0):
@@ -287,32 +288,10 @@ class VacuumCarrier(object):
         time_sleep.start()
         time_sleep.join()
         
-        self.motor.turn_off()
-        carrier_speed = self.configuration.vacuum_carrier_speed 
-        if (carrier_speed == "Low"):
-            self.logger.info('Stopping for 5 seconds')
-            # Alternative to time.sleep(5)
-            time_sleep = threading.Thread(name="vacuum_stop", 
-                                          target=time.sleep, args=(5,)) 
-            time_sleep.start()
-            time_sleep.join()
-            self.logger.info('Stopped for 5 seconds')
-        elif (carrier_speed  == "Medium"): 
-            self.logger.info('Stopping for 2 seconds')
-            # Alternative to time.sleep(3)
-            time_sleep = threading.Thread(name="vacuum_stop", 
-                                          target=time.sleep, args=(5,)) 
-            time_sleep.start()
-            time_sleep.join()
-            self.logger.info('Stopped for 2 seconds')
-        elif (carrier_speed == "High"): 
-            self.logger.info('No stop planned')
-            pass
-        else:
-            self.logger.error('Illegal vacuum speed configuration received; ' + 
-                          'expected \"Low\" or \"Medium\" or \"High\", got {}', 
-                          carrier_speed) 
-        self.motor.turn_on(self.motor._pin_tuple[1])  
+        # Carrier speed variation system # Start #
+        self.logger.info("HERE HERE carrier speed: {}".format(self.configuration.vacuum_carrier_speed))
+        self.motor_retarder.stop_and_restart_motor(
+            self.configuration.vacuum_carrier_speed, 1)  
         # Carrier speed variation system ## End ##
         # Alternative to:
         #while (self.at_turntable.read_state() == False):
@@ -322,7 +301,7 @@ class VacuumCarrier(object):
                                       args=()) 
         time_sleep.start()
         time_sleep.join()
-
+        
         self.motor.turn_off()
         self.read_carrier_position()
         self.read_motor_state()
@@ -331,7 +310,9 @@ class VacuumCarrier(object):
                                                    True)
 
     def at_turntable_stop_condition(self) -> None:
+        self.logger.info("INSIDE THREAD")
         while (self.at_turntable.read_state() == False):
+            #self.logger.info("INSIDE THREAD WHILE")
             pass
 
     def transfer_product_from_oven_to_turntable(self) -> None:
