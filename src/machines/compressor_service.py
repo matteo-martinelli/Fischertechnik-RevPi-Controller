@@ -45,7 +45,6 @@ class CompressorService(object):
             MqttConfListener('multiproc_dept/compressor-service/conf', 
                              self.configuration.to_object)        
         self.mqtt_conf_listener.open_connection()
-        self.read_conf()
         
         # Class actuators
         self.motor = \
@@ -84,7 +83,6 @@ class CompressorService(object):
     
     # Class methods
     def activate_service(self) -> None:
-        self.read_conf()
         self.motor.turn_on()
         self._motor_state = True
         self.logger.info('compressor activated')

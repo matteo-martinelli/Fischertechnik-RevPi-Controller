@@ -82,7 +82,6 @@ class OvenStation(object):
             MqttConfListener('multiproc_dept/oven-station/conf', 
                              self.configuration.to_object)
         self.mqtt_conf_listener.open_connection()
-        self.read_conf()
 
         # Class actuators
         # pin 5, 6
@@ -274,8 +273,6 @@ class OvenStation(object):
     
     #def oven_process_start(self, proc_time, target_temperature: float = 300.0) -> None:
     def oven_process_start(self, target_temperature: float = 200.0) -> None:
-        self.read_conf()
-
         # for each product, start producing ...
         self.move_carrier_inward()
 

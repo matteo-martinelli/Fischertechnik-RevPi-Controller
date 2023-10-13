@@ -59,7 +59,6 @@ class TurntableCarrier(object):
             MqttConfListener('multiproc_dept/turntable-carrier/conf',
                              self.configuration.to_object)
         self.mqtt_conf_listener.open_connection()
-        self.read_conf()
 
         # Class actuators
         # pin 1,2
@@ -301,7 +300,6 @@ class TurntableCarrier(object):
                                                    True)
 
     def rotate_towards_vacuum_carrier(self) -> None:
-        #self.read_conf()
         self.motor.turn_on(self.motor._pin_tuple[1])     # Counter-clockwise
         self.read_motor_state()
         self.read_turntable_pos()
@@ -321,13 +319,9 @@ class TurntableCarrier(object):
                                                    True)
 
     def transfer_product_to_saw(self) -> None:
-        self.logger.info('Reading configuration on the MQTT broker')
-        self.read_conf()
         self.rotate_towards_saw()
         
     def transfer_product_to_conveyor(self) -> None:
-        self.logger.info('Reading configuration on the MQTT broker')
-        self.read_conf()
         self.rotate_towards_conveyor()
         self.push_product()
         

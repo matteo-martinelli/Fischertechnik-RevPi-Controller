@@ -47,7 +47,6 @@ class SawStation(object):
               MqttConfListener('multiproc_dept/saw-station/conf', 
                                self.configuration.to_object)
         self.mqtt_conf_listener.open_connection()
-        self.read_conf()
        
         # Class actuators
         # pin 4
@@ -128,7 +127,6 @@ class SawStation(object):
                                                        self.to_json(), True)
 
     def processing(self) -> None: 
-        self.read_conf()
         if(self.motor.state == False):
             self.activate_saw()
             self.logger.info('saw activated')

@@ -50,7 +50,6 @@ class ConveyorCarrier(object):
             MqttConfListener('multiproc_dept/conveyor-carrier/conf',
                              self.configuration.to_object)
         self.mqtt_conf_listener.open_connection()
-        self.read_conf()
         
         # Class actuators
         # pin 3
@@ -129,7 +128,6 @@ class ConveyorCarrier(object):
     # Class Methods
     # Processes methods
     def move_to_the_exit(self) -> None:
-        self.read_conf()
         self.motor.turn_on()
         start_time = time.time()
         self.read_motor_state()

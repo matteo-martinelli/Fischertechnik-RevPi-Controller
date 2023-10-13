@@ -91,6 +91,13 @@ class MultiprocessManager():
         self.pieces_to_produce = self.multiproc_dept_conf.pieces_to_produce
         self.pieces_left = self.pieces_to_produce - self.pieces_completed
     
+    def read_all_configurations(self) -> None:
+        self.oven_station.read_conf()            # Oven station
+        self.vacuum_gripper_carrier.read_conf()  # Vacuum carrier  
+        self.turntable_carrier.read_conf()       # Turntable carrier
+        self.saw_station.read_conf()             # Saw station
+        self.conveyor_carrier.read_conf()        # Conveyor station
+
     def read_all_sensors(self) -> None:
         self.oven_station.read_all_sensors()            # Oven station
         self.vacuum_gripper_carrier.read_all_sensors()  # Vacuum carrier  
@@ -164,6 +171,8 @@ class MultiprocessManager():
             self.logger.info('No conf saved found, proceeding the standard '    
                              'conf for {}'.format(self.dept_name))
         
+        self.read_all_configurations()
+
         # Activating the process services - i.e. the compressor_service
         self.compressor_service.activate_service()
 
@@ -282,6 +291,9 @@ class MultiprocessManager():
                     self.reset_station_states_and_stop()
                     break
                 else:
+                    self.logger.info('Checking if new configurations has ' + 
+                                     'been received')
+                    self.read_all_configurations()
                     self.logger.info('Accepting another piece')
                     # Reset the system
                     self.conveyor_carrier.prod_on_conveyor = False

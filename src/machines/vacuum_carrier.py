@@ -59,7 +59,6 @@ class VacuumCarrier(object):
             MqttConfListener('multiproc_dept/vacuum-carrier/conf',
                               self.configuration.to_object)
         self.mqtt_conf_listener.open_connection()
-        self.read_conf()
         # Class actuators
         # pin 7,8
         self.motor = \
@@ -224,7 +223,6 @@ class VacuumCarrier(object):
         self.prod_on_carrier = False
 
     def move_carrier_towards_oven(self) -> None:
-        self.read_conf()
         if(self.at_oven.state == False):
             self.motor.turn_on(self.motor._pin_tuple[0])
             self.logger.info('vacuum carrier activated')
@@ -245,7 +243,6 @@ class VacuumCarrier(object):
                                                    self.to_json(), True)
 
     def move_carrier_towards_turntable(self) -> None:
-        self.read_conf()
         start_time = 0
         if(self.at_turntable.state == False):
             self.motor.turn_on(self.motor._pin_tuple[1])
@@ -293,7 +290,6 @@ class VacuumCarrier(object):
                                                    True)
 
     def transfer_product_from_oven_to_turntable(self) -> None:
-        self.read_conf()
         self.grip_product()
         self.move_carrier_towards_turntable()
         self.release_product()
