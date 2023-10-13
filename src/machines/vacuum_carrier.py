@@ -289,7 +289,6 @@ class VacuumCarrier(object):
         time_sleep.join()
         
         # Carrier speed variation system # Start #
-        self.logger.info("HERE HERE carrier speed: {}".format(self.configuration.vacuum_carrier_speed))
         self.motor_retarder.stop_and_restart_motor(
             self.configuration.vacuum_carrier_speed, 1)  
         # Carrier speed variation system ## End ##
@@ -310,9 +309,7 @@ class VacuumCarrier(object):
                                                    True)
 
     def at_turntable_stop_condition(self) -> None:
-        self.logger.info("INSIDE THREAD")
         while (self.at_turntable.read_state() == False):
-            #self.logger.info("INSIDE THREAD WHILE")
             pass
 
     def transfer_product_from_oven_to_turntable(self) -> None:
