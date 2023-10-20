@@ -75,7 +75,7 @@ class MotorRetarderSystem(object):
                 "revpi_single_motion_actuator.RevPiSingleMotionActuator'>"
         motor_type_double_actuator = \
             "<class 'components." + \
-                "revpi_single_motion_actuator.RevPiDoubleMotionActuator'>"
+                "revpi_double_motion_actuator.RevPiDoubleMotionActuator'>"
         if (str(type(self.motor_to_retard)) == motor_type_single_actuator): 
             self.motor_to_retard.turn_on()
         elif (str(type(self.motor_to_retard)) == motor_type_double_actuator): 
