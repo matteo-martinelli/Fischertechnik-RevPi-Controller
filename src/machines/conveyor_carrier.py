@@ -150,8 +150,8 @@ class ConveyorCarrier(object):
         time_sleep.join()
         
         # Carrier speed variation system # Start #
-        self.motor_retarder.stop_and_restart_motor(
-            self.configuration.conveyor_carrier_speed) 
+        self.motor_retarder\
+            .stop_and_restart_motor(self.configuration.conveyor_carrier_speed) 
         # Carrier speed variation system ## End ##
         
         # Wait until a product reaches the light_barrier sensor
