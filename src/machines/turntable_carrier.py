@@ -180,6 +180,8 @@ class TurntableCarrier(object):
         self.activate_pusher()
         self.deactivate_pusher()
         self.process_completed = True
+        self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                       self.to_json(), True)
     
     def activate_pusher(self) -> None: 
         if(self.pusher_activation.state == False):
