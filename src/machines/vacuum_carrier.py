@@ -50,6 +50,7 @@ class VacuumCarrier(object):
         self._gripper_lowering_state = False
         self._prod_on_carrier = False
         self._process_completed = False
+        # TODO: make a method that updates the object state and, contextually, publish the change in the mqtt broker
 
         self.configuration = VacuumCarrierConf(DefaultStationsConfigs.\
                                                VACUUM_CARRIER_SPEED)
@@ -230,12 +231,16 @@ class VacuumCarrier(object):
         self.activate_gripper()
         self.higher_gripper()
         self.prod_on_carrier = True
+        self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                   self.to_json(), True)
 
     def release_product(self) -> None:
         self.lower_gripper()
         self.deactivate_gripper()
         self.higher_gripper()
         self.prod_on_carrier = False
+        self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                   self.to_json(), True)
 
     def move_carrier_towards_oven(self) -> None:
         if(self.at_oven.state == False):
@@ -313,10 +318,13 @@ class VacuumCarrier(object):
             pass
 
     def transfer_product_from_oven_to_turntable(self) -> None:
+        # TODO: add here a check if the carrier is at the oven; if not, move towards the oven. Then delete the same logic in the multiprocess_manager
         self.grip_product()
         self.move_carrier_towards_turntable()
         self.release_product()
         self.process_completed = True
+        self.mqtt_publisher.publish_telemetry_data(self.topic, 
+                                                   self.to_json(), True)
 
     def turn_off_all_actuators(self) -> None: 
         self.motor.turn_off()
