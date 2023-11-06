@@ -75,6 +75,7 @@ class OvenStation(object):
         self.carrier_ec = 0.007                         # EC of carrier per cycle in kW
         self.door_ec = 0.002                            # energy consumption opening the door in kW per time it is triggered
         self.cycle_time = 1                             # time in seconds per cycle (sleep timer)
+        self.idle_ec = 0.012                            # EC during idle
 
         self.configuration = OvenStationConf(DefaultStationsConfigs.\
                                              OVEN_PROCESSING_TIME)
@@ -347,6 +348,8 @@ class OvenStation(object):
         
         self.set_temperature = target_temp
         self.logger.info('Oven activated')
+
+        self._energy_consumed = self.idle_ec
         
         # publish data
         self.mqtt_publisher.publish_telemetry_data(self.topic, 
@@ -412,6 +415,7 @@ class OvenStation(object):
         self.deactivate_proc_light()
 
     def cool_oven_down(self, target_temperature: float) -> None:
+        self._energy_consumed = self.idle_ec
         # publish data
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
                                                    True)
@@ -428,7 +432,7 @@ class OvenStation(object):
             
             self.logger.info('cooling down, oven state {}, temp {}°C'.\
                              format(self.oven_state, self.temperature_inside))
-            self._energy_consumed = 0
+            self._energy_consumed = self.idle_ec
             # Alternative to time.sleep(1)
             time_sleep = threading.Thread(name="oven_temp_cool", 
                                           target=time.sleep, args=(1,)) 
@@ -451,6 +455,7 @@ class OvenStation(object):
 
         self.oven_proc_light.turn_off()
         self.read_proc_light_state()
+        self._energy_consumed = 0.0
         
         self.oven_door_opening.turn_off()
         self.read_door_pos()
