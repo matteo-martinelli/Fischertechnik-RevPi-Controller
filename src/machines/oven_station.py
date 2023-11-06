@@ -209,7 +209,7 @@ class OvenStation(object):
         self.oven_door_opening.turn_on()
         self.read_door_pos()
         self.logger.info('oven door opened')
-        self._energy_consumed = self.oven_door_opening
+        self._energy_consumed = self.door_ec
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(),
                                                    True)
 
