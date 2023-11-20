@@ -70,7 +70,7 @@ class OvenStation(object):
         self.fluctuation = 5.0                          # Physical - 3.0 from prod
         self.max_temperature = 100.0                    # Conf - 400 from prod
         self.min_set_temperature = 100.0                # Conf
-        self._energy_consumed = 0.0                     # EC per cycletime in kWh
+        self._real_time_energy_consumption = 0.0        # EC per cycletime in kWh
         self.oven_consumption = 1.2                     # EC of oven per cycle in kW
         self.carrier_ec = 0.007                         # EC of carrier per cycle in kW
         self.door_ec = 0.002                            # energy consumption opening the door in kW per time it is triggered
@@ -209,7 +209,7 @@ class OvenStation(object):
         self.oven_door_opening.turn_on()
         self.read_door_pos()
         self.logger.info('oven door opened')
-        self._energy_consumed = self.door_ec
+        self._real_time_energy_consumption = self.door_ec
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(),
                                                    True)
 
@@ -217,7 +217,7 @@ class OvenStation(object):
         self.read_carrier_position()
         self.read_light_barrier_state()
         self.logger.info('oven carrier activated')
-        self._energy_consumed = self.carrier_ec
+        self._real_time_energy_consumption = self.carrier_ec
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(),
                                                    True)
 
@@ -233,21 +233,21 @@ class OvenStation(object):
         time_sleep.join()
 
         self.oven_carrier.turn_off()
-        self._energy_consumed = 0.0
+        self._real_time_energy_consumption = 0.0
         self.read_carrier_position()
         self.logger.info('oven carrier deactivated')
         self.read_light_barrier_state()
-        self._energy_consumed = 0.0
+        self._real_time_energy_consumption = 0.0
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(),
                                                    True)
         
         self.oven_door_opening.turn_off()
         self.read_door_pos()
         self.logger.info('oven door closed')
-        self._energy_consumed = self.door_ec
+        self._real_time_energy_consumption = self.door_ec
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(),
                                                    True)
-        self._energy_consumed = 0.0
+        self._real_time_energy_consumption = 0.0
 
     def oven_inward_stop_condition(self) -> None: 
         while (self.inside_oven_switch.read_state() == False):
@@ -349,7 +349,7 @@ class OvenStation(object):
         self.set_temperature = target_temp
         self.logger.info('Oven activated')
 
-        self._energy_consumed = self.idle_ec
+        self._real_time_energy_consumption = self.idle_ec
         
         # publish data
         self.mqtt_publisher.publish_telemetry_data(self.topic, 
@@ -364,7 +364,7 @@ class OvenStation(object):
                                     self.fluctuation, 
                                     self.min_set_temperature, 
                                     self.max_temperature, 1, 'unknown')
-            self._energy_consumed = self.cycle_time * self.oven_consumption
+            self._real_time_energy_consumption = self.cycle_time * self.oven_consumption
             self.logger.info('Heating up, oven state {}, temp {}°C'.\
                              format(self.oven_state, self.temperature_inside))
             # Alternative to time.sleep(1)
@@ -393,7 +393,7 @@ class OvenStation(object):
                 self.activate_proc_light()
             if self.oven_state == "cooling":
                 self.deactivate_proc_light()
-            self._energy_consumed = self.cycle_time * (self.oven_consumption / 2)
+            self._real_time_energy_consumption = self.cycle_time * (self.oven_consumption / 2)
             self.logger.info('Processing the product: oven state {},' 
                              ' oven temp {}°C'.\
                              format(self.oven_state, self.temperature_inside))
@@ -415,7 +415,7 @@ class OvenStation(object):
         self.deactivate_proc_light()
 
     def cool_oven_down(self, target_temperature: float) -> None:
-        self._energy_consumed = self.idle_ec
+        self._real_time_energy_consumption = self.idle_ec
         # publish data
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(), 
                                                    True)
@@ -432,7 +432,7 @@ class OvenStation(object):
             
             self.logger.info('cooling down, oven state {}, temp {}°C'.\
                              format(self.oven_state, self.temperature_inside))
-            self._energy_consumed = self.idle_ec
+            self._real_time_energy_consumption = self.idle_ec
             # Alternative to time.sleep(1)
             time_sleep = threading.Thread(name="oven_temp_cool", 
                                           target=time.sleep, args=(1,)) 
@@ -455,7 +455,7 @@ class OvenStation(object):
 
         self.oven_proc_light.turn_off()
         self.read_proc_light_state()
-        self._energy_consumed = 0.0
+        self._real_time_energy_consumption = 0.0
         
         self.oven_door_opening.turn_off()
         self.read_door_pos()
@@ -598,7 +598,7 @@ class OvenStation(object):
             'light-barrier': self._light_barrier_state,
             'prod-on-carrier': self._prod_on_carrier,
             'proc-completed': self._process_completed,
-            'EC' : self._energy_consumed,
+            'EC' : self._real_time_energy_consumption,
             
             'timestamp': int(timestamp),
             'current-time': current_moment
