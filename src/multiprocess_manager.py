@@ -199,6 +199,10 @@ class MultiprocessManager():
             # First things first: reading all the sensors states
             self.read_all_sensors()
             # Follows the process description #################################
+            # Start the conveyor and keep it moving for the whole process until
+            # a piece reaches its light-barrier
+            self.conveyor_carrier.move_to_the_exit()
+
             # If there is the product on the oven_station carrier, move the 
             # vacuum carrier towards the oven_station
             if (self.oven_station.process_completed == False and 
@@ -251,12 +255,15 @@ class MultiprocessManager():
                     self.turntable_carrier.transfer_product_to_conveyor()
                     self.conveyor_carrier.prod_on_conveyor = True
             
-            # Activate the conveyor
-            if (self.conveyor_carrier.prod_on_conveyor == True
-                and self.conveyor_carrier.process_completed == False):
-                # Move towards exit
-                if (self.conveyor_carrier.light_barrier_state == True):
-                    self.conveyor_carrier.move_to_the_exit()
+            # Activate the conveyor - Code modified to keep the conveyor always
+            # on, and stop it only when the piece reaches the light-barrier.
+            # The part that keeps the conveyor on is placed at the start of the
+            # multiprocess-cycle.
+            #if (self.conveyor_carrier.prod_on_conveyor == True
+            #    and self.conveyor_carrier.process_completed == False):
+            #    # Move towards exit
+            #    if (self.conveyor_carrier.light_barrier_state == True):
+            #        self.conveyor_carrier.move_to_the_exit()
 
             ###################################################################
             # If there is the product in front of the light sensor
