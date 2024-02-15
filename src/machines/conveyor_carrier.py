@@ -24,7 +24,7 @@ from machines.configurations.conveyor_carrier_conf import ConveyorCarrierConf
 from machines.configurations.default_station_configs \
     import DefaultStationsConfigs
 
-from machines.additional_components.motor_retarder_system import MotorRetarderSystem  
+from machines.additional_components.motor_retarder_system_anomaly import MotorRetarderSystemAnomaly  
 
 
 class ConveyorCarrier(object):
@@ -65,7 +65,7 @@ class ConveyorCarrier(object):
             RevPiLightBarrierSensor(rpi, 'light-barrier', 
                                     barrier_sens_pin, self.topic, 
                                     self.mqtt_publisher)
-        self.motor_retarder = MotorRetarderSystem("conveyor_stop", self.motor)
+        self.motor_retarder = MotorRetarderSystemAnomaly("conveyor_stop", self.motor)
         self.read_all_sensors()
         self.read_all_actuators()
 
@@ -171,6 +171,36 @@ class ConveyorCarrier(object):
         self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(),
                                                    True)
 
+    # Processes methods
+    def move_to_the_exit_anomaly_version(self) -> None:
+        self.read_conf()
+        if (self.light_barrier.read_state() == False):  # Product at barrier
+            self.process_completed = True
+            self.motor.turn_off()
+            self.read_motor_state()
+            #self.logger.info('conveyor deactivated')
+            self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(),
+                                                    True)
+            #time.sleep(2)
+        else:   # Product not at barrier
+            if (self.configuration.conveyor_carrier_speed != 'High'):
+                if (self.motor_retarder.restarted_thread_on == False):
+                    # Carrier speed variation system # Start #
+                    self.motor_retarder.restarted_thread_on = True
+                    retarder_thread = threading.Thread(name="retarder thread", 
+                                      target=self.motor_retarder.stop_and_restart_motor, 
+                                      args=(self.configuration.conveyor_carrier_speed,)) 
+                    retarder_thread.start()
+                    #self.motor_retarder\
+                    #    .stop_and_restart_motor(self.configuration.conveyor_carrier_speed) 
+                    # Carrier speed variation system ## End ##
+            else:
+                self.motor.turn_on()
+                self.read_motor_state()
+                #self.logger.info('conveyor activated')
+                self.mqtt_publisher.publish_telemetry_data(self.topic, self.to_json(),
+                                                    True)
+        
     def light_barrier_stop_condition(self) -> None: 
         while (self.light_barrier.read_state() != False):
             pass
@@ -237,17 +267,19 @@ class ConveyorCarrier(object):
                 self.configuration.conveyor_carrier_speed = \
                     new_conveyor_carrier_speed_conf.conveyor_carrier_speed
             else: 
-                self.logger.info('No conf updated, proceeding with the last '
-                                 'carrier speed of {} for {}'\
-                                 .format(self.configuration.\
-                                         conveyor_carrier_speed, 
-                                         self.station))
+                pass
+                #self.logger.info('No conf updated, proceeding with the last '
+                #                 'carrier speed of {} for {}'\
+                #                 .format(self.configuration.\
+                #                         conveyor_carrier_speed, 
+                #                         self.station))
         else: 
-                self.logger.info('No conf updated, proceeding with the last '
-                                 'carrier speed of {} for {}'\
-                                 .format(self.configuration.\
-                                         conveyor_carrier_speed, 
-                                         self.station))
+                pass
+                #self.logger.info('No conf updated, proceeding with the last '
+                #                 'carrier speed of {} for {}'\
+                #                 .format(self.configuration.\
+                #                         conveyor_carrier_speed, 
+                #                         self.station))
 
     def to_dto(self) -> dict:
         timestamp = time.time()

@@ -17,13 +17,14 @@ from components.revpi_double_motion_actuator import RevPiDoubleMotionActuator
 from components.revpi_single_motion_actuator import RevPiSingleMotionActuator
 
 
-class MotorRetarderSystem(object):
+class MotorRetarderSystemAnomaly(object):
     """Conveyor Carrier class for conveyor objects."""
     def __init__(self, name: str, motor: [RevPiSingleMotionActuator, 
                                           RevPiDoubleMotionActuator]):
         self.logger = logging.getLogger('multiproc_dept_logger')
         self._name = name
         self._motor_to_retard = motor
+        self.restarted_thread_on = False
 
 
     # Getters
@@ -39,12 +40,16 @@ class MotorRetarderSystem(object):
     # Class methods
     def stop_and_restart_motor(self, speed_level: str, pin: int = -1):
         if (speed_level == "Low"):
-            self.__stoppping_motor(5)
+            self.__stopping_motor(4)
              # TODO: maybe could be better to divide into 3 steps: stop, wait, restart, an implement the associated functions.
             self.__restarting_motor(pin)
+            time.sleep(2)
+            self.restarted_thread_on = False
         elif (speed_level == "Medium"):
-            self.__stoppping_motor(3)
+            self.__stopping_motor(2)
             self.__restarting_motor(pin)
+            time.sleep(2)
+            self.restarted_thread_on = False
         elif (speed_level == "High"):
             #self.logger.info('No stop planned')
             pass
@@ -54,7 +59,7 @@ class MotorRetarderSystem(object):
                             ' expected \"Low\" or \"Medium\" or' +
                             ' \"High\", got %s', speed_level)
 
-    def __stoppping_motor(self, stopping_time: [int, float] = -1) -> None: 
+    def __stopping_motor(self, stopping_time: [int, float] = -1) -> None: 
         if (time != -1):
             self.motor_to_retard.turn_off()
             self.logger.info('Stopping for {} seconds'.format(stopping_time))

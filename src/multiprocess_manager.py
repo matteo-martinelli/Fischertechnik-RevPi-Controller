@@ -201,7 +201,7 @@ class MultiprocessManager():
             # Follows the process description #################################
             # Start the conveyor and keep it moving for the whole process until
             # a piece reaches its light-barrier 
-            self.conveyor_carrier.move_to_the_exit()
+            self.conveyor_carrier.move_to_the_exit_anomaly_version()
 
             # If there is the product on the oven_station carrier, move the 
             # vacuum carrier towards the oven_station
@@ -252,7 +252,7 @@ class MultiprocessManager():
                 if (self.saw_station.process_completed == True and
                     self.turntable_carrier.turntable_pos != 'conveyor'):                    
                     self.saw_station.prod_under_saw = False
-                    self.turntable_carrier.transfer_product_to_conveyor()
+                    self.turntable_carrier.transfer_product_to_conveyor_anomaly_version()
                     self.conveyor_carrier.prod_on_conveyor = True
             
             # Activate the conveyor - Code modified to keep the conveyor always
@@ -274,6 +274,9 @@ class MultiprocessManager():
                and self.vacuum_gripper_carrier.process_completed == True 
                and self.oven_station.process_completed == True
                and self.process_completed == False):
+                # Move the turntable towards the vacuum carrier for the anomaly
+                # experiment
+                self.turntable_carrier.rotate_towards_vacuum_carrier()
                 # Add 1 to the piece counter
                 self.pieces_completed += 1
                 # Setting the process as completed

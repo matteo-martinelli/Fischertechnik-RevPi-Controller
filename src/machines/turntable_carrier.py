@@ -343,6 +343,7 @@ class TurntableCarrier(object):
 
     def transfer_product_to_saw(self) -> None:
         self.rotate_towards_saw()
+    
         
     def transfer_product_to_conveyor(self) -> None:
         self.rotate_towards_conveyor()
@@ -350,6 +351,12 @@ class TurntableCarrier(object):
         
         self.prod_on_carrier = False
         self.rotate_towards_vacuum_carrier()
+
+    def transfer_product_to_conveyor_anomaly_version(self) -> None:
+        self.rotate_towards_conveyor()
+        self.push_product()
+        
+        self.prod_on_carrier = False
 
     def turn_off_all_actuators(self) -> None: 
         self.motor.turn_off()
