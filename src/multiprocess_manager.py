@@ -200,7 +200,7 @@ class MultiprocessManager():
             self.read_all_sensors()
             # Follows the process description #################################
             # Start the conveyor and keep it moving for the whole process until
-            # a piece reaches its light-barrier
+            # a piece reaches its light-barrier 
             self.conveyor_carrier.move_to_the_exit()
 
             # If there is the product on the oven_station carrier, move the 
